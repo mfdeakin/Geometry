@@ -9,29 +9,64 @@
 #include "genericfp.hpp"
 
 template <unsigned size, typename fptype>
-fptype kahanSum(const fptype (&summands)[size]) {
-  fptype ret = 0.0;
-  fptype c = 0.0;
+fptype kahanSum(const fptype(&summands)[size]) {
+  fptype sum = 0.0;
+  fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
-    fptype mod = summands[i] - c;
-    fptype tmp = ret + mod;
-    c = (tmp - ret) - mod;
-    ret = tmp;
+    fptype mod = summands[i] - extra;
+    fptype tmp = sum + mod;
+    extra = (tmp - sum) - mod;
+    sum = tmp;
   }
-  return ret;
+  return sum;
 }
 
 template <typename fptype>
 fptype kahanSum(const fptype *summands, unsigned size) {
-  fptype ret = 0.0;
-  fptype c = 0.0;
+  fptype sum = 0.0;
+  fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
-    fptype mod = summands[i] - c;
-    fptype tmp = ret + mod;
-    c = (tmp - ret) - mod;
-    ret = tmp;
+    fptype mod = summands[i] - extra;
+    fptype tmp = sum + mod;
+    extra = (tmp - sum) - mod;
+    sum = tmp;
   }
-  return ret;
+  return sum;
+}
+
+template <typename fptype,
+          fptype (*sumFunc)(const fptype *summands,
+                            unsigned i, fptype curSum)>
+fptype kahanSum(const fptype *summands, unsigned size) {
+  fptype sum = 0.0;
+  fptype extra = 0.0;
+  for(unsigned i = 0; i < size; i++) {
+    fptype mod = summands[i] - extra;
+    fptype tmp = sumFunc(summands, i, sum);
+    extra = (tmp - sum) - mod;
+    sum = tmp;
+  }
+  return sum;
+}
+
+template <typename fptype, unsigned size,
+          fptype (*sumFunc)(const fptype *summands,
+                            unsigned i, fptype curSum)>
+fptype kahanSum(const fptype *summands) {
+  fptype sum = 0.0;
+  fptype extra = 0.0;
+  for(unsigned i = 0; i < size; i++) {
+    fptype mod = summands[i] - extra;
+    fptype tmp = sumFunc(summands, i, sum);
+    extra = (tmp - sum) - mod;
+    sum = tmp;
+  }
+  return sum;
+}
+template <typename fptype>
+fptype twoNormSum(const fptype *summands, unsigned i,
+                  fptype curSum) {
+  return std::fma(summands[i], summands[i], curSum);
 }
 
 template <typename fptype>
@@ -57,7 +92,8 @@ std::array<fptype, 2> twoProd(fptype lhs, fptype rhs) {
 }
 
 template <typename fptype>
-std::array<fptype, 3> threeFMA(fptype a, fptype b, fptype c) {
+std::array<fptype, 3> threeFMA(fptype a, fptype b,
+                               fptype c) {
   fptype r1 = std::fma(a, b, c);
   std::array<fptype, 2> mult = twoProd(a, b);
   std::array<fptype, 2> sum1 = twoSum(c, mult[1]);
@@ -76,7 +112,8 @@ fptype compensatedDotProd(const fptype *vec1,
   fptype s = prod[0];
   fptype c = prod[1];
   for(unsigned i = 1; i < dim; i++) {
-    std::array<fptype, 3> temp = threeFMA(vec1[i], vec2[i], s);
+    std::array<fptype, 3> temp =
+        threeFMA(vec1[i], vec2[i], s);
     s = temp[0];
     c = c + (temp[1] + temp[2]);
   }

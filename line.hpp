@@ -11,34 +11,35 @@ namespace Geometry {
 
 template <unsigned _dim, typename fptype>
 class Line : public Geometry<_dim, fptype> {
-public:
-  Line() {
-  }
-  
-  virtual ~Line() {
-  }
-  
+ public:
+  Line() {}
+
+  virtual ~Line() {}
+
   Line(const Line &src) {
     currentOrigin = src.currentOrigin;
   }
 
-  virtual PointLocation
-  ptLocation(const Point<_dim, float> &test) {
+  virtual PointLocation ptLocation(
+      const Point<_dim, float> &test,
+      fptype absPrecision = defAbsPrecision) {
+    
     return PT_OUTSIDE;
   }
-  
-  virtual PointLocation
-  ptLocation(const Point<_dim, double> &test) {
+
+  virtual PointLocation ptLocation(
+      const Point<_dim, double> &test,
+      fptype absPrecision = defAbsPrecision) {
     return PT_OUTSIDE;
   }
-  
-  template<unsigned, typename>
+
+  template <unsigned, typename>
   friend class Line;
-protected:
+
+ protected:
   Point<_dim, fptype> points[2];
   Point<_dim, fptype> currentOrigin;
 };
-
 };
 
 #endif
