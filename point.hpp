@@ -3,6 +3,9 @@
 #define _POINT_HPP_
 
 #include "geometry.hpp"
+#include "origin.hpp"
+#include "vector.hpp"
+#include "line.hpp"
 
 #include <assert.h>
 #include <typeinfo>
@@ -12,66 +15,51 @@
 
 namespace Geometry {
 
-template <unsigned _dim, typename fptype>
-class Point : public Geometry<_dim, fptype> {
+template <int dim, typename fptype>
+class Point : public Solid<dim, fptype> {
  public:
-  Point() {
-    for(unsigned i = 0; i < _dim; i++) {
-      setPos(i, 0.0);
-    }
-  };
+  Point(const Origin<dim, fptype> &origin,
+        const Vector<dim, fptype> &offset)
+      : Solid<dim, fptype>(origin), offset(offset) {}
+
+  Point(const Point<dim, fptype> &src)
+      : Solid<dim, fptype>(src.origin),
+        offset(src.offset) {}
 
   virtual ~Point(){};
 
-  fptype getPos(unsigned dimension) const {
+  fptype getPos(int dimension) const {
     assert(dimension < this->dim);
-    return pos[dimension];
+    return NAN;
   }
 
-  fptype setPos(unsigned dimension, fptype value) {
+  fptype setPos(int dimension, fptype value) {
     assert(dimension < this->dim);
-    pos[dimension] = value;
-    return pos[dimension];
+    return NAN;
   }
 
-  fptype operator()(unsigned dimension) const {
+  fptype operator()(int dimension) const {
     return getPos(dimension);
   }
 
-  fptype operator()(unsigned dimension, fptype pos) {
+  fptype operator()(int dimension, fptype pos) {
     return setPos(dimension, pos);
   }
 
-  Point<_dim, fptype> subtract(
-      const Point<_dim, fptype> &rhs) {
-    Point<_dim, fptype> diff;
-    for(unsigned i = 0; i < _dim; i++) {
-      fptype delta = getPos(i) - rhs.getPos(i);
-      diff(i, delta);
-    }
-    return diff;
+  Vector<dim, fptype> pointOffset(
+      const Point<dim, fptype> &other) {
+    assert(other.origin == this->origin);
+    return offset - other.offset;
   }
 
-  Point<_dim, fptype> add(const Point<_dim, fptype> &rhs) {
-    Point<_dim, fptype> sum;
-    for(unsigned i = 0; i < _dim; i++) {
-      fptype total = getPos(i) + rhs.getPos(i);
-      sum(i, total);
-    }
-    return sum;
-  }
-
-  fptype distToOrigin() {
-    fptype sum = kahanSum<fptype, _dim, twoNormSum>(pos);
-    return sqrt(sum);
-  }
+  fptype distToOrigin() { return offset.norm(); }
 
   PointLocation ptLocation(
-      const Point<_dim, float> &pt,
-      fptype absPrecision = 9.5367431640625e-7) {
+      const Point<dim, float> &pt,
+      fptype absPrecision = defAbsPrecision) {
     // We have no knowledge of the precision, so downcast
-    Point<_dim, float> diff = subtract(pt);
-    float dist = diff.distToOrigin();
+    Vector<dim, float> delta = pointOffset(pt);
+    float dist = delta.norm();
     if(dist > absPrecision)
       return PT_OUTSIDE;
     else
@@ -79,18 +67,9 @@ class Point : public Geometry<_dim, fptype> {
   }
 
   PointLocation ptLocation(
-      const Point<_dim, double> &pt,
-      fptype absPrecision = 9.5367431640625e-7) {
+      const Point<dim, double> &pt,
+      fptype absPrecision = defAbsPrecision) {
     bool isEq = true;
-    if(typeid(fptype) == typeid(float)) {
-      for(unsigned i = 0; i < this->dim && isEq; i++) {
-        isEq = isEq && (pos[i] == ((float)pt.pos[i]));
-      }
-    } else {
-      for(unsigned i = 0; i < this->dim && isEq; i++) {
-        isEq = isEq && (pos[i] == pt.pos[i]);
-      }
-    }
     if(isEq) {
       return PT_INSIDE;
     } else {
@@ -98,13 +77,14 @@ class Point : public Geometry<_dim, fptype> {
     }
   }
 
-  template <unsigned, typename>
-  friend class Geometry;
-  template <unsigned, typename>
+  template <int, typename>
+  friend class Line;
+
+  template <int, typename>
   friend class Point;
 
  protected:
-  fptype pos[_dim];
+  Vector<dim, fptype> offset;
 };
 };
 

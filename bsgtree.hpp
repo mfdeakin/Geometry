@@ -2,21 +2,27 @@
 #ifndef _BSGTREE_HPP_
 #define _BSGTREE_HPP_
 
+#include "geometry.hpp"
 #include "quadrics.hpp"
+#include "origin.hpp"
 
-typedef Geometry::Quadric<2, float> q2f;
-typedef Geometry::Quadric<3, float> q3f;
+namespace Geometry {
 
-typedef Geometry::Quadric<2, double> q2d;
-typedef Geometry::Quadric<3, double> q3d;
+typedef Quadric<2, float> q2f;
+typedef Quadric<3, float> q3f;
 
-class BSGNode {
-public:
-  BSGNode() {
+typedef Quadric<2, double> q2d;
+typedef Quadric<3, double> q3d;
+
+template <int dim, typename fptype>
+class BSGNode : public Solid<dim, fptype> {
+ public:
+  BSGNode(const Origin<dim, fptype> &origin)
+      : Solid<dim, fptype>(origin) {
     parent = NULL;
     refs = 0;
   }
-  
+
   BSGNode(const BSGNode &src) {
     refs = 0;
     addRef(parent, src.parent);
@@ -24,41 +30,41 @@ public:
     addRef(sibilings[1], src.sibilings[1]);
     addRef(children, src.children);
   }
-  
+
   virtual ~BSGNode() {
     remRef(parent);
     remRef(sibilings[0]);
     remRef(sibilings[1]);
     remRef(children);
   }
-  
+
   bool isRoot() {
     if(parent == NULL)
       return true;
     else
       return false;
   }
-protected:
+
+ protected:
   q3f quadric;
   unsigned refs;
   BSGNode *parent;
   BSGNode *sibilings[2];
   BSGNode *children;
-  
-  static void addRef(BSGNode * &newRef, BSGNode *ref) {
+
+  static void addRef(BSGNode *&newRef, BSGNode *ref) {
     newRef = ref;
-    if(newRef)
-      newRef->refs++;
+    if(newRef) newRef->refs++;
   }
-  
-  static void remRef(BSGNode * &oldRef) {
+
+  static void remRef(BSGNode *&oldRef) {
     if(oldRef) {
       oldRef->refs--;
-      if(oldRef->refs <= 0)
-        delete oldRef;
+      if(oldRef->refs <= 0) delete oldRef;
       oldRef = NULL;
     }
   }
 };
+}
 
 #endif

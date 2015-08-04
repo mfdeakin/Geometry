@@ -4,41 +4,48 @@
 
 #include <stdlib.h>
 #include <assert.h>
+
 #include "geometry.hpp"
-#include "accurate_math.hpp"
+#include "origin.hpp"
+#include "point.hpp"
+#include "vector.hpp"
 
 namespace Geometry {
 
-template <unsigned _dim, typename fptype>
-class Line : public Geometry<_dim, fptype> {
+template <int dim, typename fptype>
+class Line : public Solid<dim, fptype> {
  public:
-  Line() {}
+  Line(const Point<dim, fptype> &intercept,
+       const Vector<dim, fptype> &direction)
+      : Solid<dim, fptype>(intercept.origin),
+        intercept(intercept),
+        dir(direction) {}
+
+  Line(const Line &src)
+      : Solid<dim, fptype>(src.origin),
+        intercept(src.intercept),
+        dir(src.dir) {}
 
   virtual ~Line() {}
 
-  Line(const Line &src) {
-    currentOrigin = src.currentOrigin;
-  }
-
   virtual PointLocation ptLocation(
-      const Point<_dim, float> &test,
-      fptype absPrecision = defAbsPrecision) {
-    
-    return PT_OUTSIDE;
-  }
-
-  virtual PointLocation ptLocation(
-      const Point<_dim, double> &test,
+      const Point<dim, float> &test,
       fptype absPrecision = defAbsPrecision) {
     return PT_OUTSIDE;
   }
 
-  template <unsigned, typename>
+  virtual PointLocation ptLocation(
+      const Point<dim, double> &test,
+      fptype absPrecision = defAbsPrecision) {
+    return PT_OUTSIDE;
+  }
+
+  template <int, typename>
   friend class Line;
 
  protected:
-  Point<_dim, fptype> points[2];
-  Point<_dim, fptype> currentOrigin;
+  Point<dim, fptype> intercept;
+  Vector<dim, fptype> dir;
 };
 };
 

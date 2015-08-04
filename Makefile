@@ -5,3 +5,7 @@ test: test.cpp quadrics.hpp point.hpp line.hpp bsgtree.hpp accurate_math.hpp
 
 clean:
 	rm -f test
+
+rebuild:
+	make clean
+	make test

@@ -5,17 +5,20 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "origin.hpp"
 #include "point.hpp"
+#include "line.hpp"
 
 namespace Geometry {
 
-template <unsigned _dim, typename fptype>
-class Quadric : public Geometry<_dim, fptype> {
+template <unsigned dim, typename fptype>
+class Quadric : public Solid<dim, fptype> {
  public:
   const static unsigned numCoeffs =
-      (_dim + 2) * (_dim + 1) / 2;
+      (dim + 2) * (dim + 1) / 2;
 
-  Quadric() {
+  Quadric(const Origin<dim, fptype> &origin)
+      : Solid<dim, fptype>(origin) {
     initialCoeffs = new fptype[numCoeffs];
     currentCoeffs = new fptype[numCoeffs];
     refs = new unsigned;
@@ -25,7 +28,6 @@ class Quadric : public Geometry<_dim, fptype> {
   Quadric(const Quadric &src) {
     refs = src.refs;
     (*refs)++;
-    currentOrigin = src.currentOrigin;
     initialCoeffs = src.initialCoeffs;
     currentCoeffs = src.currentCoeffs;
   }
@@ -43,15 +45,16 @@ class Quadric : public Geometry<_dim, fptype> {
   }
 
   template <typename ptfptype>
-  fptype evaluatePoint(const Point<_dim, ptfptype> &pt,
-                       fptype absPrecision = defAbsPrecision) {
+  fptype evaluatePoint(
+      const Point<dim, ptfptype> &pt,
+      fptype absPrecision = defAbsPrecision) {
     /* Use Kahan summation to evaluate this more correctly
      */
     fptype ret = 0.0;
     fptype extra = 0.0;
-    for(unsigned i = 0; i < _dim; i++) {
-      for(unsigned j = 0; j < _dim; j++) {
-        unsigned coeffNum = std::fma(i, _dim, j);
+    for(unsigned i = 0; i < dim; i++) {
+      for(unsigned j = 0; j < dim; j++) {
+        unsigned coeffNum = std::fma(i, dim, j);
         fptype product =
             currentCoeffs[coeffNum] * pt(i) * pt(j) - extra;
         fptype tmp = ret + product;
@@ -61,9 +64,15 @@ class Quadric : public Geometry<_dim, fptype> {
     }
     return ret;
   }
-  
-  PointLocation ptLocation(const Point<_dim, float> &pt,
-                           fptype absPrecision = defAbsPrecision) {
+
+  template <typename linefptype>
+  fptype calcLineIntersect(
+      const Line<dim, linefptype> &line,
+      fptype absPrecision = defAbsPrecision) {}
+
+  PointLocation ptLocation(
+      const Point<dim, float> &pt,
+      fptype absPrecision = defAbsPrecision) {
     assert(absPrecision >= 0.0);
     double ptPos = evaluatePoint(pt);
     if(ptPos < -absPrecision)
@@ -74,7 +83,7 @@ class Quadric : public Geometry<_dim, fptype> {
       return PT_OUTSIDE;
   }
 
-  PointLocation ptLocation(const Point<_dim, double> &pt,
+  PointLocation ptLocation(const Point<dim, double> &pt,
                            fptype absPrecision) {
     double ptPos = evaluatePoint(pt);
     if(ptPos < 0)
@@ -86,7 +95,6 @@ class Quadric : public Geometry<_dim, fptype> {
   }
 
  private:
-  Point<_dim, fptype> currentOrigin;
   fptype *initialCoeffs;
   fptype *currentCoeffs;
   unsigned *refs;

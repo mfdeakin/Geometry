@@ -4,9 +4,6 @@
 
 namespace Geometry {
 
-template <unsigned, typename>
-class Point;
-
 enum PointLocation {
   PT_INSIDE = -1,
   PT_ON = 0,
@@ -15,20 +12,47 @@ enum PointLocation {
 
 constexpr float defAbsPrecision = 9.5367431640625e-7;
 
-template <unsigned _dim, typename fptype>
+template <int _dim, typename fptype>
 class Geometry {
  public:
   virtual ~Geometry(){};
 
+  static_assert(_dim >= 0,
+                "The dimension of a geometric object "
+                "cannot be negative!");
+  static constexpr int dim = _dim;
+};
+
+template <int, typename>
+class Point;
+
+template <int, typename>
+class Origin;
+
+/* A solid is a well defined geometric object which
+ * is positioned relative to an origin,
+ * and which has a defined interior and exterior,
+ * and possibly surface
+ */
+template <int dim, typename fptype>
+class Solid : public Geometry<dim, fptype> {
+ public:
+  Solid(const Origin<dim, fptype> &origin) {
+    this->origin = origin;
+  }
+  
+  virtual ~Solid(){};
+
   virtual PointLocation ptLocation(
-      const Point<_dim, float> &test,
+      const Point<dim, float> &test,
       fptype absPrecision = defAbsPrecision) = 0;
 
   virtual PointLocation ptLocation(
-      const Point<_dim, double> &test,
+      const Point<dim, double> &test,
       fptype absPrecision = defAbsPrecision) = 0;
 
-  const unsigned dim = _dim;
+ protected:
+  Origin<dim, fptype> origin;
 };
 };
 
