@@ -68,7 +68,19 @@ class Quadric : public Solid<dim, fptype> {
   template <typename linefptype>
   fptype calcLineIntersect(
       const Line<dim, linefptype> &line,
-      fptype absPrecision = defAbsPrecision) {}
+      fptype absPrecision = defAbsPrecision) {
+    auto ld = line.getDir();
+    fptype sqCoeff = 0;
+    for(int i = 0; i < dim; i++) {
+      sqCoeff += currentCoeffs[i] * ld(i) * ld(i);
+      for(int j = i + 1; j < dim; j++) {
+        /* TODO: Verify this equation!!! */
+        int coeffPos = (i + 1) * (dim - i - 1) / 2 +
+                       (j + i) + (dim - 2);
+        sqCoeff += currentCoeffs[coeffPos] * ld(i) * ld(j);
+      }
+    }
+  }
 
   PointLocation ptLocation(
       const Point<dim, float> &pt,

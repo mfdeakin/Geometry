@@ -40,6 +40,8 @@ class Line : public Solid<dim, fptype> {
     return PT_OUTSIDE;
   }
 
+  Vector<dim, fptype> getDirection() const { return dir; }
+
   template <int, typename>
   friend class Line;
 

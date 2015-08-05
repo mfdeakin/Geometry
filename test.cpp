@@ -5,6 +5,7 @@
 #include "bsgtree.hpp"
 #include <math.h>
 #include <stdio.h>
+#include <gtest/gtest.h>
 
 int main(int argc, char **argv) {
   constexpr int dim = 3;
@@ -14,5 +15,6 @@ int main(int argc, char **argv) {
   Geometry::Point<dim, fptype> pt(o, ptOffset);
   Geometry::Vector<dim, fptype> dir;
   Geometry::Line<dim, fptype> line(pt, dir);
+  Geometry::Quadric<dim, fptype> q(o);
   return 0;
 }
