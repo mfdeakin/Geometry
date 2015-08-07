@@ -5,6 +5,7 @@
 #include "geometry.hpp"
 
 #include <assert.h>
+#include <array>
 #include <cmath>
 
 namespace Geometry {
@@ -49,17 +50,21 @@ class Vector : public Geometry<dim, fptype> {
     return diff;
   }
 
-  Vector<dim, fptype> operator+(
-      const Vector<dim, fptype> &rhs) const {
-    return add(rhs);
-  }
-
   fptype operator()(int dimension) const {
     return get(dimension);
   }
 
   fptype operator()(int dimension, fptype val) {
     return set(dimension, val);
+  }
+
+  Vector<dim, fptype> operator*(fptype scale) {
+    return this->scale(scale);
+  }
+
+  Vector<dim, fptype> operator+(
+      const Vector<dim, fptype> &rhs) const {
+    return add(rhs);
   }
 
   Vector<dim, fptype> operator-(
@@ -93,6 +98,7 @@ class Vector : public Geometry<dim, fptype> {
     Vector<dim, fptype> normalized;
     for(int i = 0; i < dim; i++)
       normalized.offset[i] = offset[i] / mag;
+    return normalized;
   }
 
   fptype norm() const {
@@ -105,6 +111,42 @@ class Vector : public Geometry<dim, fptype> {
     for(int i = 0; i < dim; i++)
       scaled.offset[i] = offset[i] * scalar;
     return scaled;
+  }
+
+  std::array<Vector<dim, fptype>, dim - 1> calcOrthogonals()
+      const {
+    fptype totalProd = 1.0;
+    fptype newMag = 0.0;
+    int subtractIdx = -1;
+    int vecNum = 0;
+    std::array<Vector<dim, fptype>, dim - 1> basis;
+    /* O(dim) computation of a basis for orthogonal vectors
+     */
+    for(int i = 0; i < dim; i++) {
+      if(offset[i] != 0.0) {
+        totalProd *= offset[i];
+        subtractIdx = i;
+        newMag += 1.0 / offset[i] / offset[i];
+      } else {
+        basis[vecNum].offset[i] = 1.0;
+        vecNum++;
+      }
+    }
+    /* Ignore degenerate cases when all components are 0 */
+    assert(subtractIdx != -1);
+    for(int vComp = 0; vecNum < dim - 1; vComp++) {
+      if(offset[vComp] == 0.0) continue;
+      fptype vecMag =
+          std::sqrt(newMag +
+                    (dim - 2) * (dim - 2) / offset[vComp] /
+                        offset[vComp]) * totalProd;
+      for(int i = 0; i < dim; i++) {
+        if(i != vComp && offset[i] != 0.0)
+          basis[vecNum].offset[i] =
+              totalProd / offset[i] / vecMag;
+      }
+    }
+    return basis;
   }
 
   template <int, typename>

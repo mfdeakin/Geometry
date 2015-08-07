@@ -3,6 +3,7 @@
 #include "quadrics.hpp"
 #include "line.hpp"
 #include "bsgtree.hpp"
+#include <array>
 #include <math.h>
 #include <stdio.h>
 #include <gtest/gtest.h>
@@ -16,5 +17,6 @@ int main(int argc, char **argv) {
   Geometry::Vector<dim, fptype> dir;
   Geometry::Line<dim, fptype> line(pt, dir);
   Geometry::Quadric<dim, fptype> q(o);
+  auto orthogs = dir.calcOrthogonals();
   return 0;
 }

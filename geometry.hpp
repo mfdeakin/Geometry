@@ -40,16 +40,16 @@ class Solid : public Geometry<dim, fptype> {
   Solid(const Origin<dim, fptype> &origin) {
     this->origin = origin;
   }
-  
+
   virtual ~Solid(){};
 
   virtual PointLocation ptLocation(
       const Point<dim, float> &test,
-      fptype absPrecision = defAbsPrecision) = 0;
+      fptype absPrecision = defAbsPrecision) const = 0;
 
   virtual PointLocation ptLocation(
       const Point<dim, double> &test,
-      fptype absPrecision = defAbsPrecision) = 0;
+      fptype absPrecision = defAbsPrecision) const = 0;
 
  protected:
   Origin<dim, fptype> origin;

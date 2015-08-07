@@ -30,13 +30,16 @@ class Line : public Solid<dim, fptype> {
 
   virtual PointLocation ptLocation(
       const Point<dim, float> &test,
-      fptype absPrecision = defAbsPrecision) {
+      fptype absPrecision = defAbsPrecision) const {
+    auto ptDir = test.pointOffset(intercept);
+    fptype dist = ptDir.dot(dir);
+    
     return PT_OUTSIDE;
   }
 
   virtual PointLocation ptLocation(
       const Point<dim, double> &test,
-      fptype absPrecision = defAbsPrecision) {
+      fptype absPrecision = defAbsPrecision) const {
     return PT_OUTSIDE;
   }
 
