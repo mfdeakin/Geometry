@@ -32,15 +32,30 @@ class Line : public Solid<dim, fptype> {
       const Point<dim, float> &test,
       fptype absPrecision = defAbsPrecision) const {
     auto ptDir = test.pointOffset(intercept);
+    fptype offsetLen = ptDir.dot(ptDir);
     fptype dist = ptDir.dot(dir);
-    
-    return PT_OUTSIDE;
+    fptype perpDist = std::abs(offsetLen - dist * dist);
+    if(perpDist < absPrecision)
+      return PT_INSIDE;
+    else if(perpDist == absPrecision)
+      return PT_ON;
+    else
+      return PT_OUTSIDE;
   }
 
   virtual PointLocation ptLocation(
       const Point<dim, double> &test,
       fptype absPrecision = defAbsPrecision) const {
-    return PT_OUTSIDE;
+    auto ptDir = test.pointOffset(intercept);
+    fptype offsetLen = ptDir.dot(ptDir);
+    fptype dist = ptDir.dot(dir);
+    fptype perpDist = std::abs(offsetLen - dist * dist);
+    if(perpDist < absPrecision)
+      return PT_INSIDE;
+    else if(perpDist == absPrecision)
+      return PT_ON;
+    else
+      return PT_OUTSIDE;
   }
 
   Vector<dim, fptype> getDirection() const { return dir; }

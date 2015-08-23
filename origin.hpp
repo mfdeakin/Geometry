@@ -13,7 +13,8 @@ class Origin : public Geometry<dim, fptype> {
     for(int i = 0; i < dim; i++) globalCoords[i] = 0.0;
   }
 
-  Origin(const Origin &src) {
+  template <typename srctype>
+  Origin(const Origin<dim, srctype> &src) {
     for(int i = 0; i < dim; i++)
       globalCoords[i] = src.globalCoords[i];
   }
@@ -25,6 +26,8 @@ class Origin : public Geometry<dim, fptype> {
     return isEq;
   }
 
+  template <int, typename>
+  friend class Origin;
  private:
   fptype globalCoords[dim];
 };

@@ -17,7 +17,8 @@ class Vector : public Geometry<dim, fptype> {
     for(int i = 0; i < dim; i++) offset[i] = 0.0;
   }
 
-  Vector(const Vector<dim, fptype> &src) {
+  template <typename srctype>
+  Vector(const Vector<dim, srctype> &src) {
     for(int i = 0; i < dim; i++) offset[i] = src.offset[i];
   }
 
@@ -115,35 +116,20 @@ class Vector : public Geometry<dim, fptype> {
 
   std::array<Vector<dim, fptype>, dim - 1> calcOrthogonals()
       const {
-    fptype totalProd = 1.0;
-    fptype newMag = 0.0;
-    int subtractIdx = -1;
-    int vecNum = 0;
     std::array<Vector<dim, fptype>, dim - 1> basis;
-    /* O(dim) computation of a basis for orthogonal vectors
-     */
-    for(int i = 0; i < dim; i++) {
-      if(offset[i] != 0.0) {
-        totalProd *= offset[i];
-        subtractIdx = i;
-        newMag += 1.0 / offset[i] / offset[i];
-      } else {
-        basis[vecNum].offset[i] = 1.0;
+    int firstNonZero = -1;
+    for(int d = 0, vecNum = 0; d < dim; d++) {
+      if(offset[d] == 0.0) {
+        basis[vecNum].offset[d] = 1.0;
         vecNum++;
       }
-    }
-    /* Ignore degenerate cases when all components are 0 */
-    assert(subtractIdx != -1);
-    for(int vComp = 0; vecNum < dim - 1; vComp++) {
-      if(offset[vComp] == 0.0) continue;
-      fptype vecMag =
-          std::sqrt(newMag +
-                    (dim - 2) * (dim - 2) / offset[vComp] /
-                        offset[vComp]) * totalProd;
-      for(int i = 0; i < dim; i++) {
-        if(i != vComp && offset[i] != 0.0)
-          basis[vecNum].offset[i] =
-              totalProd / offset[i] / vecMag;
+      else if(firstNonZero == -1) {
+        firstNonZero = d;
+      }
+      else {
+        basis[vecNum].offset[d] = -offset[firstNonZero];
+        basis[vecNum].offset[firstNonZero] = offset[d];
+        vecNum++;
       }
     }
     return basis;

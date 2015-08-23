@@ -16,13 +16,16 @@
 namespace Geometry {
 
 template <int dim, typename fptype>
-class Point : public Solid<dim, fptype> {
+class Point : public Solid<dim, fptype>,
+              public Origin<dim, fptype> {
  public:
-  Point(const Origin<dim, fptype> &origin,
-        const Vector<dim, fptype> &offset)
+  template <typename srctype>
+  Point(const Origin<dim, srctype> &origin,
+        const Vector<dim, srctype> &offset)
       : Solid<dim, fptype>(origin), offset(offset) {}
 
-  Point(const Point<dim, fptype> &src)
+  template <typename srctype>
+  Point(const Point<dim, srctype> &src)
       : Solid<dim, fptype>(src.origin),
         offset(src.offset) {}
 
