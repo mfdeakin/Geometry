@@ -58,7 +58,7 @@ class Point : public Solid<dim, fptype>,
   fptype distToOrigin() const { return offset.norm(); }
 
   PointLocation ptLocation(
-      const Point<dim, float> &pt,
+      const Point<dim, fptype> &pt,
       fptype absPrecision = defAbsPrecision) const {
     // We have no knowledge of the precision, so downcast
     Vector<dim, float> delta = pointOffset(pt);
@@ -67,17 +67,6 @@ class Point : public Solid<dim, fptype>,
       return PT_OUTSIDE;
     else
       return PT_INSIDE;
-  }
-
-  PointLocation ptLocation(
-      const Point<dim, double> &pt,
-      fptype absPrecision = defAbsPrecision) const {
-    bool isEq = true;
-    if(isEq) {
-      return PT_INSIDE;
-    } else {
-      return PT_OUTSIDE;
-    }
   }
 
   template <int, typename>

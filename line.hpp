@@ -29,22 +29,7 @@ class Line : public Solid<dim, fptype> {
   virtual ~Line() {}
 
   virtual PointLocation ptLocation(
-      const Point<dim, float> &test,
-      fptype absPrecision = defAbsPrecision) const {
-    auto ptDir = test.pointOffset(intercept);
-    fptype offsetLen = ptDir.dot(ptDir);
-    fptype dist = ptDir.dot(dir);
-    fptype perpDist = std::abs(offsetLen - dist * dist);
-    if(perpDist < absPrecision)
-      return PT_INSIDE;
-    else if(perpDist == absPrecision)
-      return PT_ON;
-    else
-      return PT_OUTSIDE;
-  }
-
-  virtual PointLocation ptLocation(
-      const Point<dim, double> &test,
+      const Point<dim, fptype> &test,
       fptype absPrecision = defAbsPrecision) const {
     auto ptDir = test.pointOffset(intercept);
     fptype offsetLen = ptDir.dot(ptDir);

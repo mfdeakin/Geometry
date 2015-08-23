@@ -11,14 +11,14 @@
 
 namespace Geometry {
 
-template <unsigned dim, typename fptype>
+template <int dim, typename fptype>
 class Quadric : public Solid<dim, fptype> {
  public:
   Quadric(const Origin<dim, fptype> &origin)
       : Solid<dim, fptype>(origin) {
     initialCoeffs = new fptype[numCoeffs];
     currentCoeffs = new fptype[numCoeffs];
-    refs = new unsigned;
+    refs = new int;
     *refs = 1;
   }
 
@@ -41,19 +41,25 @@ class Quadric : public Solid<dim, fptype> {
     }
   }
 
-  fptype getCoeff(int d1, int d2) {}
+  /* d=0 corresponds to the first dimension,
+   * d=1 the second, ...
+   * d=dim the constant coefficient
+   */
+  fptype &getCoeff(int d1, int d2) const {
+    int coeffNum = getCoeffPos(d1, d2);
+    return currentCoeffs[coeffNum];
+  }
 
-  template <typename ptfptype>
   fptype evaluatePoint(
-      const Point<dim, ptfptype> &pt,
+      const Point<dim, fptype> &pt,
       fptype absPrecision = defAbsPrecision) const {
     /* Use Kahan summation to evaluate this more correctly
      */
     fptype ret = 0.0;
     fptype extra = 0.0;
-    for(unsigned i = 0; i < dim; i++) {
-      for(unsigned j = 0; j < dim; j++) {
-        unsigned coeffNum = std::fma(i, dim, j);
+    for(int i = 0; i < dim; i++) {
+      for(int j = 0; j < dim; j++) {
+        int coeffNum = getCoeffPos(i, j);
         fptype product =
             currentCoeffs[coeffNum] * pt(i) * pt(j) - extra;
         fptype tmp = ret + product;
@@ -104,24 +110,28 @@ class Quadric : public Solid<dim, fptype> {
   }
 
  private:
-  int getCoeffPos(int d1, int d2) {
-    if(d1 == d2)
+  static constexpr int getCoeffPos(int d1, int d2) {
+    assert(0 <= d1);
+    assert(d1 < dim + 1);
+    assert(0 <= d2);
+    assert(d2 < dim + 1);
+    if(d1 == d2) {
       return d1;
-    else if(d2 >= 0 && d2 < dim)
-      return d1 * dim - d1 - ((d1 - 1) * d1) / 2 - 1 +
-             (d2 - d1) + dim;
-    else if(d1 >= 0 && d1 < dim)
-      return dim * (dim + 1) / 2 + d1;
-    else
-      return numCoeffs - 1;
+    } else {
+      int first = std::min(d1, d2);
+      int second = std::max(d1, d2);
+      int offset =
+          first * dim - (first * (first - 1)) / 2 + dim + 1;
+      return offset + second - first - 1;
+    }
   }
 
-  static constexpr unsigned numCoeffs =
+  static constexpr const int numCoeffs =
       (dim + 2) * (dim + 1) / 2;
 
   fptype *initialCoeffs;
   fptype *currentCoeffs;
-  unsigned *refs;
+  int *refs;
 };
 };
 

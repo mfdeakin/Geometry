@@ -5,8 +5,12 @@
 #include <array>
 #include <cmath>
 #include <limits.h>
+#include <mpfr.h>
 
+#include "geometry.hpp"
 #include "genericfp.hpp"
+
+namespace AccurateMath {
 
 template <unsigned size, typename fptype>
 fptype kahanSum(const fptype(&summands)[size]) {
@@ -119,5 +123,33 @@ fptype compensatedDotProd(const fptype *vec1,
   }
   return s + c;
 }
+
+enum QuadType {
+  QUADT_COINCIDENTPLANES,
+  QUADT_INTERSECTPLANES_IM,
+  QUADT_INTERSECTPLANES_RE,
+  QUADT_PARALLELPLANES_IM,
+  QUADT_PARALLELPLANES_RE,
+  QUADT_ELLIPSOID_IM,
+  QUADT_ELLIPSOID_RE,
+  QUADT_CONE_IM,
+  QUADT_CONE_RE,
+  QUADT_CYLINDER_ELL_IM,
+  QUADT_CYLINDER_ELL_RE,
+  QUADT_CYLINDER_HYP,
+  QUADT_CYLINDER_PAR,
+  QUADT_PARABOLOID_ELL,
+  QUADT_PARABOLOID_HYP,
+  QUADT_HYPERBOLOID_ONE,
+  QUADT_HYPERBOLOID_TWO,
+  QUADT_ERROR
+};
+
+template <typename fptype>
+QuadType classifyQuadric(
+    const Geometry::Quadric<3, fptype> &quad) {
+  return QUADT_ERROR;
+}
+};
 
 #endif

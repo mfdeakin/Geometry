@@ -29,6 +29,9 @@ class Point;
 template <int, typename>
 class Origin;
 
+template <int dim, typename fptype>
+class Quadric;
+
 /* A solid is a well defined geometric object which
  * is positioned relative to an origin,
  * and which has a defined interior and exterior,
@@ -44,16 +47,13 @@ class Solid : public Geometry<dim, fptype> {
   virtual ~Solid(){};
 
   virtual PointLocation ptLocation(
-      const Point<dim, float> &test,
-      fptype absPrecision = defAbsPrecision) const = 0;
-
-  virtual PointLocation ptLocation(
-      const Point<dim, double> &test,
+      const Point<dim, fptype> &test,
       fptype absPrecision = defAbsPrecision) const = 0;
 
  protected:
   Origin<dim, fptype> origin;
 };
+
 };
 
 #endif
