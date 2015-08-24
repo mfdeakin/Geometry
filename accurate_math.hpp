@@ -4,10 +4,15 @@
 
 #include <array>
 #include <cmath>
+#include <typeinfo>
+
 #include <limits.h>
+#include <gmp.h>
 #include <mpfr.h>
 
 #include "geometry.hpp"
+#include "quadrics.hpp"
+
 #include "genericfp.hpp"
 
 namespace AccurateMath {
@@ -145,9 +150,22 @@ enum QuadType {
   QUADT_ERROR
 };
 
-template <typename fptype>
 QuadType classifyQuadric(
-    const Geometry::Quadric<3, fptype> &quad) {
+    const Geometry::Quadric<3, float> &quad) {
+  int precision = 24;
+  constexpr const int numCoeffs = 10;
+  mpfr_t c[numCoeffs];
+  int curCoeff = 0;
+  for(int i = 0; i < 4; i++) {
+    for(int j = i; j < 4; j++) {
+      mpfr_init2(c[curCoeff], precision);
+      float coeff = 0.0;
+      mpfr_set_flt(c[curCoeff], coeff, MPFR_RNDN);
+      curCoeff++;
+    }
+  }
+  for(int i = 0; i < numCoeffs; i++)
+    mpfr_clear(c[curCoeff]);
   return QUADT_ERROR;
 }
 };

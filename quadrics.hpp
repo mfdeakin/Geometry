@@ -86,24 +86,13 @@ class Quadric : public Solid<dim, fptype> {
   }
 
   PointLocation ptLocation(
-      const Point<dim, float> &pt,
+      const Point<dim, fptype> &pt,
       fptype absPrecision = defAbsPrecision) const {
     assert(absPrecision >= 0.0);
     double ptPos = evaluatePoint(pt);
     if(ptPos < -absPrecision)
       return PT_INSIDE;
     else if(std::fabs(ptPos) < absPrecision)
-      return PT_ON;
-    else
-      return PT_OUTSIDE;
-  }
-
-  PointLocation ptLocation(const Point<dim, double> &pt,
-                           fptype absPrecision) const {
-    double ptPos = evaluatePoint(pt);
-    if(ptPos < 0)
-      return PT_INSIDE;
-    else if(ptPos == 0)
       return PT_ON;
     else
       return PT_OUTSIDE;
