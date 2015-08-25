@@ -7,7 +7,6 @@
 #include <typeinfo>
 
 #include <limits.h>
-#include <gmp.h>
 #include <mpfr.h>
 
 #include "geometry.hpp"
@@ -147,25 +146,26 @@ enum QuadType {
   QUADT_PARABOLOID_HYP,
   QUADT_HYPERBOLOID_ONE,
   QUADT_HYPERBOLOID_TWO,
-  QUADT_ERROR
+  QUADT_ERROR = -1
 };
 
+/* Warning: Requires fptype to be recognized by genericfp */
+template <typename fptype>
 QuadType classifyQuadric(
-    const Geometry::Quadric<3, float> &quad) {
-  int precision = 24;
-  constexpr const int numCoeffs = 10;
-  mpfr_t c[numCoeffs];
-  int curCoeff = 0;
-  for(int i = 0; i < 4; i++) {
-    for(int j = i; j < 4; j++) {
-      mpfr_init2(c[curCoeff], precision);
-      float coeff = 0.0;
-      mpfr_set_flt(c[curCoeff], coeff, MPFR_RNDN);
-      curCoeff++;
-    }
+    const Geometry::Quadric<3, fptype> &quad) {
+  constexpr const int precision =
+      fpconvert<fptype>::precision;
+  mpfr_t qc[quad.numCoeffs];
+  int err = 0;
+  for(int i = 0; i < quad.numCoeffs; i++) {
+    mpfr_init2(qc[i], precision);
+    err += mpfr_set_flt(qc[i], quad.currentCoeffs[i],
+                        MPFR_RNDN);
   }
-  for(int i = 0; i < numCoeffs; i++)
-    mpfr_clear(c[curCoeff]);
+
+
+  for(int i = 0; i < quad.numCoeffs; i++) mpfr_clear(qc[i]);
+  if(err) return QUADT_ERROR;
   return QUADT_ERROR;
 }
 };

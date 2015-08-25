@@ -18,5 +18,20 @@ int main(int argc, char **argv) {
   Geometry::Line<dim, fptype> line(pt, dir);
   Geometry::Quadric<dim, fptype> q(o);
   auto orthogs = dir.calcOrthogonals();
+  q.getCoeff(0, 0) = 2.0;
+  q.getCoeff(1, 1) = 3.0;
+  q.getCoeff(2, 2) = 5.0;
+  q.getCoeff(3, 3) = 7.0;
+
+  q.getCoeff(0, 1) = 11.0;
+  q.getCoeff(0, 2) = 13.0;
+  q.getCoeff(0, 3) = 17.0;
+
+  q.getCoeff(1, 2) = 19.0;
+  q.getCoeff(1, 3) = 23.0;
+
+  q.getCoeff(2, 3) = 29.0;
+  auto quadtype = AccurateMath::classifyQuadric(q);
+  printf("Quadric Type: %d\n", quadtype);
   return 0;
 }

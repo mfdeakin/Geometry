@@ -5,9 +5,12 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "geometry.hpp"
 #include "origin.hpp"
 #include "point.hpp"
 #include "line.hpp"
+
+#include "accurate_math.hpp"
 
 namespace Geometry {
 
@@ -70,9 +73,8 @@ class Quadric : public Solid<dim, fptype> {
     return ret;
   }
 
-  template <typename linefptype>
   fptype calcLineIntersect(
-      const Line<dim, linefptype> &line,
+      const Line<dim, fptype> &line,
       fptype absPrecision = defAbsPrecision) const {
     auto ld = line.getDir();
     fptype sqCoeff = 0;
@@ -97,6 +99,10 @@ class Quadric : public Solid<dim, fptype> {
     else
       return PT_OUTSIDE;
   }
+
+  friend AccurateMath::QuadType
+  AccurateMath::classifyQuadric<fptype>(
+      const Quadric<3, fptype> &quad);
 
  private:
   static constexpr int getCoeffPos(int d1, int d2) {

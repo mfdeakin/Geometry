@@ -29,6 +29,9 @@ class Point;
 template <int, typename>
 class Origin;
 
+template <int, typename>
+class Line;
+
 template <int dim, typename fptype>
 class Quadric;
 
@@ -53,7 +56,6 @@ class Solid : public Geometry<dim, fptype> {
  protected:
   Origin<dim, fptype> origin;
 };
-
 };
 
 #endif
