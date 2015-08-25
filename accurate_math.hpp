@@ -149,23 +149,79 @@ enum QuadType {
   QUADT_ERROR = -1
 };
 
+template <typename fptype>
+int classifyCalcDet(
+    const Geometry::Quadric<3, fptype> &quad, mpfr_t &det) {
+  int err = 0;
+  constexpr const int numDetTerms = 17;
+  constexpr const int detCoeffs[] = {1,  -1, -1, -1, 2, -1,
+                                     1,  2,  -2, -1, 1, 2,
+                                     -2, 2,  2,  -1, 1};
+  constexpr const int numDetProds = 4;
+  constexpr const int detProds[numDetTerms][numDetProds] = {
+      {0, 1, 2, 3},
+      {2, 3, 4, 4},
+      {1, 3, 5, 5},
+      {1, 2, 6, 6},
+      {3, 4, 5, 7},
+      {0, 3, 7, 7},
+      {6, 6, 7, 7},
+      {2, 4, 6, 8},
+      {5, 6, 7, 8},
+      {0, 2, 8, 8},
+      {5, 5, 8, 8},
+      {1, 5, 6, 9},
+      {4, 6, 7, 9},
+      {4, 5, 8, 9},
+      {0, 7, 8, 9},
+      {0, 1, 9, 9},
+      {4, 4, 9, 9}};
+  constexpr const int precision =
+      fpconvert<fptype>::precision;
+  constexpr const int detTermPrec = precision * numDetProds;
+  mpfr_t detTerm, detSum, tmpSum, extra, modAdd;
+  mpfr_init2(detTerm, detTermPrec);
+  mpfr_init2(detSum, 2 * detTermPrec);
+  mpfr_init2(tmpSum, 2 * detTermPrec);
+  mpfr_init2(extra, 2 * detTermPrec);
+  mpfr_init2(modAdd, 2 * detTermPrec);
+  mpfr_set_si(detSum, 0, MPFR_RNDN);
+  for(int i = 0; i < numDetTerms; i++) {
+    constexpr const int detTermPrec =
+        numDetProds * precision;
+    err = mpfr_set_si(detTerm, detCoeffs[i], MPFR_RNDN);
+    if(err) return err;
+    for(int j = 1; j < numDetProds; j++) {
+      int coeffIdx = detProds[i][j];
+      err = mpfr_mul_d(detTerm, detTerm,
+                       quad.currentCoeffs[coeffIdx],
+                       MPFR_RNDN);
+      if(err) return err;
+    }
+    err = mpfr_sub(modAdd, detTerm, extra, MPFR_RNDN);
+    if(err) return err;
+    err = mpfr_add(tmpSum, modAdd, detSum, MPFR_RNDN);
+    if(err) return err;
+    err = mpfr_sub(extra, tmpSum, detSum, MPFR_RNDN);
+    if(err) return err;
+    err = mpfr_sub(extra, extra, modAdd, MPFR_RNDN);
+    if(err) return err;
+    mpfr_set(detSum, tmpSum, MPFR_RNDN);
+  }
+  mpfr_clear(detTerm);
+  mpfr_clear(detSum);
+  mpfr_clear(tmpSum);
+  mpfr_clear(extra);
+  mpfr_clear(modAdd);
+
+  mpfr_set(det, detSum, MPFR_RNDN);
+  return 0;
+}
+
 /* Warning: Requires fptype to be recognized by genericfp */
 template <typename fptype>
 QuadType classifyQuadric(
     const Geometry::Quadric<3, fptype> &quad) {
-  constexpr const int precision =
-      fpconvert<fptype>::precision;
-  mpfr_t qc[quad.numCoeffs];
-  int err = 0;
-  for(int i = 0; i < quad.numCoeffs; i++) {
-    mpfr_init2(qc[i], precision);
-    err += mpfr_set_flt(qc[i], quad.currentCoeffs[i],
-                        MPFR_RNDN);
-  }
-
-
-  for(int i = 0; i < quad.numCoeffs; i++) mpfr_clear(qc[i]);
-  if(err) return QUADT_ERROR;
   return QUADT_ERROR;
 }
 };

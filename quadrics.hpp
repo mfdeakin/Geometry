@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include <mpfr.h>
+
 #include "geometry.hpp"
 #include "origin.hpp"
 #include "point.hpp"
@@ -100,9 +102,11 @@ class Quadric : public Solid<dim, fptype> {
       return PT_OUTSIDE;
   }
 
+  friend int AccurateMath::classifyCalcDet<fptype>(
+      const Quadric<3, fptype> &, mpfr_t &);
   friend AccurateMath::QuadType
   AccurateMath::classifyQuadric<fptype>(
-      const Quadric<3, fptype> &quad);
+      const Quadric<3, fptype> &);
 
  private:
   static constexpr int getCoeffPos(int d1, int d2) {
