@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include <mpfr.h>
-
 #include "geometry.hpp"
 #include "origin.hpp"
 #include "point.hpp"
@@ -102,8 +100,10 @@ class Quadric : public Solid<dim, fptype> {
       return PT_OUTSIDE;
   }
 
-  friend int AccurateMath::classifyCalcDet<fptype>(
-      const Quadric<3, fptype> &, mpfr_t &);
+  friend int AccurateMath::classifyCalcDetSign<fptype>(
+      const Quadric<3, fptype> &);
+	friend int AccurateMath::classifyCalcEigenSign<fptype>(
+			const Quadric<3, fptype> &);
   friend AccurateMath::QuadType
   AccurateMath::classifyQuadric<fptype>(
       const Quadric<3, fptype> &);

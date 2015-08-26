@@ -150,14 +150,22 @@ enum QuadType {
 };
 
 template <typename fptype>
-int classifyCalcDet(
-    const Geometry::Quadric<3, fptype> &quad, mpfr_t &det) {
+int classifyCalcDetSign(
+    const Geometry::Quadric<3, fptype> &quad) {
   int err = 0;
   constexpr const int numDetTerms = 17;
+	/* Only 4 error causing multiplications occur per term */
+  constexpr const int numDetProds = 4;
+	/* The determinant is as follows:
+	 * d = c0 c1 c2 c3 - c2 c3 c4^2 - c1 c3  c5^2 - c1 c2 c6^2 +
+	 *     2 c3 c4 c5 c7 - c0 c3 c7^2 + c6^2 c7^2 + 2 c2 c4 c6 c8 - 
+	 *     2 c5 c6 c7 c8 - c0 c2 c8^2 + c5^2 c8^2 + 2 c1 c5 c6 c9 - 
+	 *     2 c4 c6 c7 c9 + 2 c4 c5 c8 c9 + 2 c0 c7 c8 c9 -
+	 *     c0 c1 c9^2 + c4^2 c9^2
+	 */
   constexpr const int detCoeffs[] = {1,  -1, -1, -1, 2, -1,
                                      1,  2,  -2, -1, 1, 2,
                                      -2, 2,  2,  -1, 1};
-  constexpr const int numDetProds = 4;
   constexpr const int detProds[numDetTerms][numDetProds] = {
       {0, 1, 2, 3},
       {2, 3, 4, 4},
@@ -209,13 +217,18 @@ int classifyCalcDet(
     mpfr_set(detSum, tmpSum, MPFR_RNDN);
   }
   mpfr_clear(detTerm);
-  mpfr_clear(detSum);
   mpfr_clear(tmpSum);
   mpfr_clear(extra);
   mpfr_clear(modAdd);
+	int cmpZero = mpfr_cmp_si(detSum, 0);
+  mpfr_clear(detSum);
+  return cmpZero;
+}
 
-  mpfr_set(det, detSum, MPFR_RNDN);
-  return 0;
+template <typename fptype>
+int classifyCalcEigenSign(const Geometry::Quadric<3, fptype> &quad) {
+	
+	return 0;
 }
 
 /* Warning: Requires fptype to be recognized by genericfp */
