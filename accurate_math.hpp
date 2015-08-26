@@ -150,8 +150,8 @@ enum QuadType {
 };
 
 template <typename fptype>
-int classifyCalcDet(
-    const Geometry::Quadric<3, fptype> &quad, mpfr_t &det) {
+int classifyCalcDetSign(
+    const Geometry::Quadric<3, fptype> &quad) {
   int err = 0;
   constexpr const int numDetTerms = 17;
   constexpr const int detCoeffs[] = {1,  -1, -1, -1, 2, -1,
