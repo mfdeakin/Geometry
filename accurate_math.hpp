@@ -6,6 +6,7 @@
 #include <cmath>
 #include <typeinfo>
 
+#include <string.h>
 #include <limits.h>
 #include <mpfr.h>
 
@@ -154,15 +155,16 @@ int classifyCalcDetSign(
     const Geometry::Quadric<3, fptype> &quad) {
   int err = 0;
   constexpr const int numDetTerms = 17;
-	/* Only 4 error causing multiplications occur per term */
+  /* Only 4 error causing multiplications occur per term */
   constexpr const int numDetProds = 4;
-	/* The determinant is as follows:
-	 * d = c0 c1 c2 c3 - c2 c3 c4^2 - c1 c3  c5^2 - c1 c2 c6^2 +
-	 *     2 c3 c4 c5 c7 - c0 c3 c7^2 + c6^2 c7^2 + 2 c2 c4 c6 c8 - 
-	 *     2 c5 c6 c7 c8 - c0 c2 c8^2 + c5^2 c8^2 + 2 c1 c5 c6 c9 - 
-	 *     2 c4 c6 c7 c9 + 2 c4 c5 c8 c9 + 2 c0 c7 c8 c9 -
-	 *     c0 c1 c9^2 + c4^2 c9^2
-	 */
+  /* The determinant is as follows:
+   * d = c0 c1 c2 c3 - c2 c3 c4^2 - c1 c3  c5^2 -
+   *     c1 c2 c6^2 + 2 c3 c4 c5 c7 - c0 c3 c7^2 +
+   *     c6^2 c7^2 + 2 c2 c4 c6 c8 - 2 c5 c6 c7 c8 -
+   *     c0 c2 c8^2 + c5^2 c8^2 + 2 c1 c5 c6 c9 -
+   *     2 c4 c6 c7 c9 + 2 c4 c5 c8 c9 + 2 c0 c7 c8 c9 -
+   *     c0 c1 c9^2 + c4^2 c9^2
+   */
   constexpr const int detCoeffs[] = {1,  -1, -1, -1, 2, -1,
                                      1,  2,  -2, -1, 1, 2,
                                      -2, 2,  2,  -1, 1};
@@ -187,12 +189,13 @@ int classifyCalcDetSign(
   constexpr const int precision =
       fpconvert<fptype>::precision;
   constexpr const int detTermPrec = precision * numDetProds;
+  constexpr const int guessedExtraPrec = 2;
   mpfr_t detTerm, detSum, tmpSum, extra, modAdd;
   mpfr_init2(detTerm, detTermPrec);
-  mpfr_init2(detSum, 2 * detTermPrec);
-  mpfr_init2(tmpSum, 2 * detTermPrec);
-  mpfr_init2(extra, 2 * detTermPrec);
-  mpfr_init2(modAdd, 2 * detTermPrec);
+  mpfr_init2(detSum, guessedExtraPrec * detTermPrec);
+  mpfr_init2(tmpSum, guessedExtraPrec * detTermPrec);
+  mpfr_init2(extra, guessedExtraPrec * detTermPrec);
+  mpfr_init2(modAdd, guessedExtraPrec * detTermPrec);
   mpfr_set_si(detSum, 0, MPFR_RNDN);
   for(int i = 0; i < numDetTerms; i++) {
     constexpr const int detTermPrec =
@@ -220,18 +223,181 @@ int classifyCalcDetSign(
   mpfr_clear(tmpSum);
   mpfr_clear(extra);
   mpfr_clear(modAdd);
-	int cmpZero = mpfr_cmp_si(detSum, 0);
+  int cmpZero = mpfr_cmp_si(detSum, 0);
   mpfr_clear(detSum);
   return cmpZero;
 }
 
-template <typename fptype>
-int classifyCalcEigenSign(const Geometry::Quadric<3, fptype> &quad) {
-	
-	return 0;
+template <unsigned mtxDim>
+void eliminateColumn(mpfr_t elems[mtxDim][mtxDim],
+                     int column, bool rowsDone[mtxDim],
+                     mpfr_t &coeff, mpfr_t &delta) {
+  for(int i = 0; i < mtxDim; i++) {
+    int isZero = mpfr_cmp_d(elems[i][column], 0.0);
+    if(isZero != 0 && rowsDone[i] == false) {
+      for(int j = 0; j < mtxDim; j++) {
+        if(j == i) continue;
+        isZero = mpfr_cmp_d(elems[j][column], 0.0);
+        if(isZero) continue;
+        mpfr_div(coeff, elems[j][column], elems[i][column],
+                 MPFR_RNDN);
+        for(int k = column + 1; k < mtxDim; k++) {
+          mpfr_mul(delta, elems[i][k], coeff, MPFR_RNDN);
+          mpfr_sub(elems[j][k], elems[j][k], delta,
+                   MPFR_RNDN);
+        }
+        mpfr_set_d(elems[j][column], 0.0, MPFR_RNDN);
+      }
+      rowsDone[i] = true;
+      break;
+    }
+  }
 }
 
-/* Warning: Requires fptype to be recognized by genericfp */
+template <typename fptype>
+std::array<int, 2> classifyCalcRank(
+    const Geometry::Quadric<3, fptype> &quad) {
+  constexpr const int mtxDim = 4;
+  constexpr const int precision = 512;
+  constexpr const int mtxVals[mtxDim][mtxDim] = {
+      {0, 4, 5, 6},
+      {4, 1, 7, 8},
+      {5, 7, 2, 9},
+      {6, 8, 9, 3}};
+  mpfr_t elems[mtxDim][mtxDim];
+  /* Just use Gaussian Elimination with a ridiculous
+   * amount
+   * of precision */
+  for(int i = 0; i < mtxDim; i++) {
+    for(int j = 0; j < mtxDim; j++) {
+      mpfr_init2(elems[i][j], precision);
+      int coeffNum = mtxVals[i][j];
+      mpfr_set_d(elems[i][j], quad.currentCoeffs[coeffNum],
+                 MPFR_RNDN);
+    }
+  }
+  mpfr_t coeff, delta;
+  mpfr_inits2(precision, coeff, delta, (mpfr_ptr)NULL);
+  bool rowsDone[mtxDim];
+  memset(rowsDone, false, sizeof(rowsDone));
+  for(int numRowsDone = 0; numRowsDone < (mtxDim - 1);
+      numRowsDone++)
+    eliminateColumn<mtxDim>(elems, numRowsDone, rowsDone,
+                            coeff, delta);
+  mpfr_clears(coeff, delta, (mpfr_ptr)NULL);
+  std::array<int, 2> ranks;
+  ranks[0] = 0;
+  ranks[1] = 0;
+  for(int i = 0; i < mtxDim; i++) {
+    for(int j = 0; j < mtxDim; j++) {
+      int isZero = mpfr_cmp_d(elems[i][j], 0.0);
+      if(isZero != 0) {
+        ranks[1]++;
+        if(i < (mtxDim - 1) && j < (mtxDim - 1))
+          ranks[0]++;
+      }
+      mpfr_clear(elems[i][j]);
+    }
+  }
+  return ranks;
+}
+
+template <typename fptype>
+int classifyCalcEigenSign(
+    const Geometry::Quadric<3, fptype> &quad) {
+  /* Basically I'm computing the roots of the derivative
+   * of the characteristic cubic of the matrix.
+   * This is easier, and with the constant term,
+   * sufficient to determine the signs of the eigenvalues.
+   * The cubic is of the following form:
+   * -x^3 + (c0 + c1 + c2)x^2 +
+   * (c4^2/4 + c5^2/4 + c7^2/4 - c0 c1 - c0 c2 - c1 c2)x +
+   * c0 c1 c2 - c0 c7^2/4 - c1 c5^2/4 -
+   * c2 c4^2/4 + c4 c5 c7/4
+   */
+  constexpr const int precision =
+      fpconvert<fptype>::precision;
+  constexpr const int numProds = 2;
+  constexpr const int guessedExtraPrec = 2;
+  constexpr const int sqrTermPrec =
+      guessedExtraPrec * precision * numProds;
+  constexpr const int numSqrCoeffs = 4;
+  mpfr_t sqrCoeffs[numSqrCoeffs];
+  for(int i = 0; i < numSqrCoeffs; i++)
+    mpfr_init2(sqrCoeffs[i], sqrTermPrec);
+  /* Coefficient 2: -3 */
+  mpfr_set_si(sqrCoeffs[3], -3, MPFR_RNDN);
+  /* Coefficient 1: 2(c0 + c1 + c2) */
+  mpfr_set_d(sqrCoeffs[2], 2 * quad.currentCoeffs[0],
+             MPFR_RNDN);
+  int err;
+  err = mpfr_add_d(sqrCoeffs[2], 2 * quad.currentCoeffs[1],
+                   MPFR_RNDN);
+  if(err) return -1;
+  err = mpfr_add_d(sqrCoeffs[2], 2 * quad.currentCoeffs[2],
+                   MPFR_RNDN);
+  if(err) return -1;
+  /* Coefficient 0: c4^2 / 4 + c5^2 / 4 + c7^2 / 4 -
+   *                c0 c1 - c0 c2 - c1 c2
+   */
+  mpfr_set_d(sqrCoeffs[1], quad.currentCoeffs[4] / 2,
+             MPFR_RNDN);
+  err = mpfr_sqr(sqrCoeffs[1], sqrCoeffs[1], MPFR_RNDN);
+  if(err) return -1;
+  mpfr_t buf;
+  mpfr_init2(buf, sqrTermPrec);
+
+  mpfr_set_d(buf, quad.currentCoeffs[5] / 2, MPFR_RNDN);
+  err = mpfr_sqr(buf, buf, MPFR_RNDN);
+  if(err) return -1;
+  err =
+      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+  if(err) return -1;
+
+  mpfr_set_d(buf, quad.currentCoeffs[7] / 2, MPFR_RNDN);
+  err = mpfr_sqr(buf, buf, MPFR_RNDN);
+  if(err) return -1;
+  err =
+      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+  if(err) return -1;
+
+  mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[1],
+                   MPFR_RNDN);
+  if(err) return -1;
+  err =
+      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+  if(err) return -1;
+
+  mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[2],
+                   MPFR_RNDN);
+  if(err) return -1;
+  err =
+      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+  if(err) return -1;
+
+  mpfr_set_d(buf, -quad.currentCoeffs[1], MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[2],
+                   MPFR_RNDN);
+  if(err) return -1;
+  err =
+      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+  if(err) return -1;
+  mpfr_clear(buf);
+
+  /* We have the coefficients of the derivative,
+   * now find the roots.
+   * This will let us determine the sign of the
+   * eigenvalues.
+   */
+  for(int i = 0; i < numSqrCoeffs; i++)
+    mpfr_clear(sqrCoeffs[i]);
+  return 0;
+}
+
+/* Warning: Requires fptype to be recognized by genericfp
+ */
 template <typename fptype>
 QuadType classifyQuadric(
     const Geometry::Quadric<3, fptype> &quad) {
