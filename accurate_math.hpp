@@ -330,28 +330,28 @@ int classifyCalcEigenSign(
   constexpr const int guessedExtraPrec = 2;
   constexpr const int sqrTermPrec =
       guessedExtraPrec * precision * numProds;
-  constexpr const int numSqrCoeffs = 4;
+  constexpr const int numSqrCoeffs = 3;
   mpfr_t sqrCoeffs[numSqrCoeffs];
   for(int i = 0; i < numSqrCoeffs; i++)
     mpfr_init2(sqrCoeffs[i], sqrTermPrec);
   /* Coefficient 2: -3 */
-  mpfr_set_si(sqrCoeffs[3], -3, MPFR_RNDN);
+  mpfr_set_si(sqrCoeffs[2], -3, MPFR_RNDN);
   /* Coefficient 1: 2(c0 + c1 + c2) */
-  mpfr_set_d(sqrCoeffs[2], 2 * quad.currentCoeffs[0],
+  mpfr_set_d(sqrCoeffs[1], 2 * quad.currentCoeffs[0],
              MPFR_RNDN);
   int err;
-  err = mpfr_add_d(sqrCoeffs[2], sqrCoeffs[2],
+  err = mpfr_add_d(sqrCoeffs[1], sqrCoeffs[1],
                    2 * quad.currentCoeffs[1], MPFR_RNDN);
   if(err) return -1;
-  err = mpfr_add_d(sqrCoeffs[2], sqrCoeffs[2],
+  err = mpfr_add_d(sqrCoeffs[1], sqrCoeffs[1],
                    2 * quad.currentCoeffs[2], MPFR_RNDN);
   if(err) return -1;
   /* Coefficient 0: c4^2 / 4 + c5^2 / 4 + c7^2 / 4 -
    *                c0 c1 - c0 c2 - c1 c2
    */
-  mpfr_set_d(sqrCoeffs[1], quad.currentCoeffs[4] / 2,
+  mpfr_set_d(sqrCoeffs[0], quad.currentCoeffs[4] / 2,
              MPFR_RNDN);
-  err = mpfr_sqr(sqrCoeffs[1], sqrCoeffs[1], MPFR_RNDN);
+  err = mpfr_sqr(sqrCoeffs[0], sqrCoeffs[0], MPFR_RNDN);
   if(err) return -1;
   mpfr_t buf;
   mpfr_init2(buf, sqrTermPrec);
@@ -360,14 +360,14 @@ int classifyCalcEigenSign(
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
   if(err) return -1;
   err =
-      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
   if(err) return -1;
 
   mpfr_set_d(buf, quad.currentCoeffs[7] / 2, MPFR_RNDN);
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
   if(err) return -1;
   err =
-      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
   if(err) return -1;
 
   mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
@@ -375,7 +375,7 @@ int classifyCalcEigenSign(
                    MPFR_RNDN);
   if(err) return -1;
   err =
-      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
   if(err) return -1;
 
   mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
@@ -383,7 +383,7 @@ int classifyCalcEigenSign(
                    MPFR_RNDN);
   if(err) return -1;
   err =
-      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
   if(err) return -1;
 
   mpfr_set_d(buf, -quad.currentCoeffs[1], MPFR_RNDN);
@@ -391,17 +391,46 @@ int classifyCalcEigenSign(
                    MPFR_RNDN);
   if(err) return -1;
   err =
-      mpfr_add(sqrCoeffs[1], sqrCoeffs[1], buf, MPFR_RNDN);
+      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
   if(err) return -1;
-  mpfr_clear(buf);
 
   /* We have the coefficients of the derivative,
    * now find the roots.
    * This will let us determine the sign of the
    * eigenvalues.
    */
+  /* Start with the discriminant */
+  mpfr_t disc;
+  mpfr_init2(disc, sqrTermPrec);
+  err =
+      mpfr_mul(disc, sqrCoeffs[0], sqrCoeffs[0], MPFR_RNDN);
+  err =
+      mpfr_mul(buf, sqrCoeffs[1], sqrCoeffs[1], MPFR_RNDN);
+  err = mpfr_sub(disc, disc, buf, MPFR_RNDN);
+  /* Now compute the roots.
+   * Use the larger root to compute the smaller one,
+   * as this doesn't suffer as much loss of precision
+   */
+  constexpr const int numRoots = 2;
+  mpfr_t roots[numRoots];
+  for(int i = 0; i < numRoots; i++)
+    mpfr_init2(roots[i], sqrTermPrec);
+  mpfr_sqrt(buf, disc, MPFR_RNDN);
+  mpfr_clear(disc);
+	
+  int c1Sign = mpfr_signbit(sqrCoeffs[1]);
+	err = mpfr_abs(sqrCoeffs[1], sqrCoeffs[1], MPFR_RNDN);
+	err = mpfr_add(buf, buf, sqrCoeffs[1], MPFR_RNDN);
+	if(c1Sign == 0) {
+		err = mpfr_mul_d(buf, buf, -1.0, MPFR_RNDN);
+	}
+	err = mpfr_div(roots[0], buf, sqrCoeffs[0], MPFR_RNDN);
+	err = mpfr_div(roots[1], sqrCoeffs[2], buf, MPFR_RNDN);
+  mpfr_clear(buf);
+	
   for(int i = 0; i < numSqrCoeffs; i++)
     mpfr_clear(sqrCoeffs[i]);
+  for(int i = 0; i < numRoots; i++) mpfr_clear(roots[i]);
   return 0;
 }
 

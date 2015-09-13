@@ -100,6 +100,8 @@ class Quadric : public Solid<dim, fptype> {
       return PT_OUTSIDE;
   }
 
+  friend std::array<int, 2> AccurateMath::classifyCalcRank<
+      fptype>(const Quadric<3, fptype> &);
   friend int AccurateMath::classifyCalcDetSign<fptype>(
       const Quadric<3, fptype> &);
   friend int AccurateMath::classifyCalcEigenSign<fptype>(
