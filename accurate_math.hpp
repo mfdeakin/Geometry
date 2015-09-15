@@ -241,7 +241,7 @@ void eliminateColumn(mpfr_t elems[mtxDim][mtxDim],
       for(unsigned j = 0; j < mtxDim; j++) {
         if(j == i) continue;
         isZero = mpfr_cmp_d(elems[j][column], 0.0);
-        if(isZero) continue;
+        if(isZero == 0) continue;
         mpfr_div(coeff, elems[j][column], elems[i][column],
                  MPFR_RNDN);
         for(unsigned k = column + 1; k < mtxDim; k++) {
@@ -283,7 +283,7 @@ std::array<int, 2> classifyCalcRank(
   mpfr_inits2(precision, coeff, delta, (mpfr_ptr)NULL);
   bool rowsDone[mtxDim];
   memset(rowsDone, false, sizeof(rowsDone));
-  for(int numRowsDone = 0; numRowsDone < (mtxDim - 1);
+  for(int numRowsDone = 0; numRowsDone < mtxDim;
       numRowsDone++)
     eliminateColumn<mtxDim>(elems, numRowsDone, rowsDone,
                             coeff, delta);
