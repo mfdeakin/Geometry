@@ -149,8 +149,8 @@ TDest gfRoundNearest(TSrc src) {
   dest.mantissa = 0;
   dest.exponent = 0;
   /* Compute the exponents corresponding to 1.0 */
-  unsigned long srcCenter = (1 << src.eBits - 1) - 1;
-  unsigned long destCenter = (1 << dest.eBits - 1) - 1;
+  unsigned long srcCenter = (1 << (src.eBits - 1)) - 1;
+  unsigned long destCenter = (1 << (dest.eBits - 1)) - 1;
   unsigned long centerDiff = srcCenter - destCenter;
   if(dest.eBits < src.eBits &&
      src.exponent >= 2 * destCenter + centerDiff) {
@@ -164,7 +164,7 @@ TDest gfRoundNearest(TSrc src) {
     if(numShifts < 8 * dest.pBits) {
       /* Translate the mantissa to a denormalized number */
       dest.mantissa = src.mantissa >> 1;
-      dest.mantissa |= 1 << dest.pBits - 1;
+      dest.mantissa |= 1 << (dest.pBits - 1);
       dest.mantissa >>= numShifts;
     }
     /* Otherwise it's just 0 */
@@ -181,7 +181,7 @@ TDest gfRoundNearest(TSrc src) {
           src.mantissa & ((1 << roundingBit) - 1);
       /* Check the first truncated bit to see if we
        * need to consider rounding up */
-      if((truncated & (1 << roundingBit - 1)) > 0) {
+      if((truncated & (1 << (roundingBit - 1))) > 0) {
         unsigned long trailing;
         trailing =
             truncated & ((1 << (roundingBit - 1)) - 1);

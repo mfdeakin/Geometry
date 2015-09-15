@@ -203,8 +203,6 @@ int classifyCalcDetSign(
   mpfr_init2(modAdd, guessedExtraPrec * detTermPrec);
   mpfr_set_si(detSum, 0, MPFR_RNDN);
   for(int i = 0; i < numDetTerms; i++) {
-    constexpr const int detTermPrec =
-        numDetProds * precision;
     err = mpfr_set_si(detTerm, detCoeffs[i], MPFR_RNDN);
     if(err) return err;
     for(int j = 1; j < numDetProds; j++) {
@@ -307,12 +305,158 @@ std::array<int, 2> classifyCalcRank(
 }
 
 template <typename fptype>
+mpfr_ptr constructCubicCoeffs(
+    const Geometry::Quadric<3, fptype> &quad,
+    unsigned precision) {
+  /* The cubic is of the following form:
+   * -x^3 + (c0 + c1 + c2)x^2 +
+   * (c4^2/4 + c5^2/4 + c7^2/4 - c0 c1 - c0 c2 - c1 c2)x +
+   * c0 c1 c2 - c0 c7^2/4 - c1 c5^2/4 -
+   * c2 c4^2/4 + c4 c5 c7/4
+   */
+  constexpr const unsigned numCoeffs = 4;
+  mpfr_ptr coeffs = static_cast<mpfr_ptr>(
+      malloc(sizeof(mpfr_t[numCoeffs])));
+  for(unsigned i = 0; i < numCoeffs; i++)
+    mpfr_init2(&coeffs[i], precision);
+  /* Coefficient 3: -1 */
+  mpfr_set_d(&coeffs[3], -1.0, MPFR_RNDN);
+  /* Coefficient 2: c0 + c1 + c2 */
+  mpfr_set_d(&coeffs[2], quad.currentCoeffs[0], MPFR_RNDN);
+  int err = mpfr_add_d(&coeffs[2], &coeffs[2],
+                       quad.currentCoeffs[1], MPFR_RNDN);
+  err = mpfr_add_d(&coeffs[2], &coeffs[2],
+                   quad.currentCoeffs[2], MPFR_RNDN);
+  /* Coefficient 1: c4^2/4 + c5^2/4 + c7^2/4 -
+   *                c0 c1 - c0 c2 - c1 c2
+   */
+  mpfr_set_d(&coeffs[1], quad.currentCoeffs[4] / 2,
+             MPFR_RNDN);
+  err = mpfr_sqr(&coeffs[1], &coeffs[1], MPFR_RNDN);
+  mpfr_t buf;
+  mpfr_init2(buf, precision);
+
+  mpfr_set_d(buf, quad.currentCoeffs[5] / 2, MPFR_RNDN);
+  err = mpfr_sqr(buf, buf, MPFR_RNDN);
+  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+
+  mpfr_set_d(buf, quad.currentCoeffs[7] / 2, MPFR_RNDN);
+  err = mpfr_sqr(buf, buf, MPFR_RNDN);
+  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+
+  mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[1],
+                   MPFR_RNDN);
+  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+
+  mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[2],
+                   MPFR_RNDN);
+  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+
+  mpfr_set_d(buf, -quad.currentCoeffs[1], MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[2],
+                   MPFR_RNDN);
+  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+  /* Coefficient 0: c0 c1 c2 + c4 c5 c7/4 - c0 c7^2/4 -
+   *                c1 c5^2/4 - c2 c4^2/4
+   */
+  /* c0 c1 c2 */
+  err = mpfr_set_d(&coeffs[0], quad.currentCoeffs[0],
+                   MPFR_RNDN);
+  err = mpfr_mul_d(&coeffs[0], &coeffs[0],
+                   quad.currentCoeffs[1], MPFR_RNDN);
+  err = mpfr_mul_d(&coeffs[0], &coeffs[0],
+                   quad.currentCoeffs[2], MPFR_RNDN);
+  /* c4 c5 c7/4 */
+  err = mpfr_set_d(buf, quad.currentCoeffs[4] / 4.0,
+                   MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[5],
+                   MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[7],
+                   MPFR_RNDN);
+  err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  /* -c0 c7^2/4 */
+  err = mpfr_set_d(buf, quad.currentCoeffs[7], MPFR_RNDN);
+  err = mpfr_sqr(buf, buf, MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, -quad.currentCoeffs[0] / 4.0,
+                   MPFR_RNDN);
+  err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  /* -c1 c5^2/4 */
+  err = mpfr_set_d(buf, quad.currentCoeffs[5], MPFR_RNDN);
+  err = mpfr_sqr(buf, buf, MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, -quad.currentCoeffs[1] / 4.0,
+                   MPFR_RNDN);
+  err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  /* -c2 c4^2/4 */
+  err = mpfr_set_d(buf, quad.currentCoeffs[4], MPFR_RNDN);
+  err = mpfr_sqr(buf, buf, MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, -quad.currentCoeffs[2] / 4.0,
+                   MPFR_RNDN);
+  err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+
+  mpfr_clear(buf);
+  return coeffs;
+}
+
+mpfr_ptr calcInflections(mpfr_ptr cubic,
+                         unsigned precision) {
+  /* Compute the derivative and it's roots.
+   * The input is as follows:
+   * c3 x^3 + c2 x^2 + c1 x + c0
+   * So the derivative is as follows:
+   * 3 c3 x^2 + 2 c2 x + c1
+   */
+  /* Start with the discriminant
+   * The discriminant is as follows:
+   * (2 c2)^2 - 4(3 c3 c1)
+   */
+  mpfr_t disc;
+  mpfr_init2(disc, precision);
+  int err = mpfr_mul(disc, &cubic[1], &cubic[3], MPFR_RNDN);
+  err = mpfr_mul_d(disc, disc, -12.0, MPFR_RNDN);
+  mpfr_t buf;
+  mpfr_init2(buf, precision);
+  err = mpfr_sqr(buf, &cubic[2], MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, 4.0, MPFR_RNDN);
+  err = mpfr_add(disc, disc, buf, MPFR_RNDN);
+  /* Now compute the roots.
+   * The roots are as follows:
+   * -sign(c2) (|2 c2|+sqrt(disc)) / (3 c3)
+   * -sign(c2) c1 / (|2 c2|+sqrt(disc))
+   */
+  mpfr_sqrt(disc, disc, MPFR_RNDN);
+  constexpr const int numRoots = 2;
+  mpfr_ptr roots = static_cast<mpfr_ptr>(
+      malloc(sizeof(mpfr_t[numRoots])));
+  for(int i = 0; i < numRoots; i++)
+    mpfr_init2(&roots[i], precision);
+
+  int c2Sign = mpfr_signbit(&cubic[2]);
+  err = mpfr_abs(buf, &cubic[2], MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, 2.0, MPFR_RNDN);
+  err = mpfr_add(buf, buf, disc, MPFR_RNDN);
+  if(c2Sign == 0) {
+    err = mpfr_mul_d(buf, buf, -1.0, MPFR_RNDN);
+  }
+  err = mpfr_div(&roots[0], buf, &cubic[3], MPFR_RNDN);
+  err = mpfr_div_d(&roots[0], &roots[0], 3.0, MPFR_RNDN);
+  
+  err = mpfr_div(&roots[1], &cubic[1], buf, MPFR_RNDN);
+  mpfr_clear(disc);
+  mpfr_clear(buf);
+  return roots;
+}
+
+template <typename fptype>
 int classifyCalcEigenSign(
     const Geometry::Quadric<3, fptype> &quad) {
   /* Basically I'm computing the roots of the derivative
    * of the characteristic cubic of the matrix.
    * This is easier, and with the constant term,
    * sufficient to determine the signs of the eigenvalues.
+   * Note that since this is a real symmetric matrix,
+   * three real eigenvalues are guaranteed.
    *
    * The cubic is of the following form:
    * -x^3 + (c0 + c1 + c2)x^2 +
@@ -322,116 +466,46 @@ int classifyCalcEigenSign(
    *
    * The derivative is of the following form:
    * -3 x^2 + 2(c0 + c1 + c2)x +
-   * ((c4^2 + c5^2 + c7^2)/4 - c0 c1 - c0 c2 - c1 c2)x
+   * ((c4^2 + c5^2 + c7^2)/4 - c0 c1 - c0 c2 - c1 c2)
    */
   constexpr const int precision =
       fpconvert<fptype>::precision;
-  constexpr const int numProds = 2;
+  constexpr const int numCubeProds = 3;
   constexpr const int guessedExtraPrec = 2;
-  constexpr const int sqrTermPrec =
-      guessedExtraPrec * precision * numProds;
-  constexpr const int numSqrCoeffs = 3;
-  mpfr_t sqrCoeffs[numSqrCoeffs];
-  for(int i = 0; i < numSqrCoeffs; i++)
-    mpfr_init2(sqrCoeffs[i], sqrTermPrec);
-  /* Coefficient 2: -3 */
-  mpfr_set_si(sqrCoeffs[2], -3, MPFR_RNDN);
-  /* Coefficient 1: 2(c0 + c1 + c2) */
-  mpfr_set_d(sqrCoeffs[1], 2 * quad.currentCoeffs[0],
-             MPFR_RNDN);
-  int err;
-  err = mpfr_add_d(sqrCoeffs[1], sqrCoeffs[1],
-                   2 * quad.currentCoeffs[1], MPFR_RNDN);
-  if(err) return -1;
-  err = mpfr_add_d(sqrCoeffs[1], sqrCoeffs[1],
-                   2 * quad.currentCoeffs[2], MPFR_RNDN);
-  if(err) return -1;
-  /* Coefficient 0: c4^2 / 4 + c5^2 / 4 + c7^2 / 4 -
-   *                c0 c1 - c0 c2 - c1 c2
-   */
-  mpfr_set_d(sqrCoeffs[0], quad.currentCoeffs[4] / 2,
-             MPFR_RNDN);
-  err = mpfr_sqr(sqrCoeffs[0], sqrCoeffs[0], MPFR_RNDN);
-  if(err) return -1;
-  mpfr_t buf;
-  mpfr_init2(buf, sqrTermPrec);
-
-  mpfr_set_d(buf, quad.currentCoeffs[5] / 2, MPFR_RNDN);
-  err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  if(err) return -1;
-  err =
-      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
-  if(err) return -1;
-
-  mpfr_set_d(buf, quad.currentCoeffs[7] / 2, MPFR_RNDN);
-  err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  if(err) return -1;
-  err =
-      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
-  if(err) return -1;
-
-  mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[1],
-                   MPFR_RNDN);
-  if(err) return -1;
-  err =
-      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
-  if(err) return -1;
-
-  mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[2],
-                   MPFR_RNDN);
-  if(err) return -1;
-  err =
-      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
-  if(err) return -1;
-
-  mpfr_set_d(buf, -quad.currentCoeffs[1], MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[2],
-                   MPFR_RNDN);
-  if(err) return -1;
-  err =
-      mpfr_add(sqrCoeffs[0], sqrCoeffs[0], buf, MPFR_RNDN);
-  if(err) return -1;
-
+  constexpr const int cubeTermPrec =
+      guessedExtraPrec * precision * numCubeProds;
+  constexpr const int numCubeCoeffs = 4;
+  mpfr_ptr cubicCoeffs =
+      constructCubicCoeffs(quad, cubeTermPrec);
   /* We have the coefficients of the derivative,
    * now find the roots.
    * This will let us determine the sign of the
    * eigenvalues.
    */
-  /* Start with the discriminant */
-  mpfr_t disc;
-  mpfr_init2(disc, sqrTermPrec);
-  err =
-      mpfr_mul(disc, sqrCoeffs[0], sqrCoeffs[0], MPFR_RNDN);
-  err =
-      mpfr_mul(buf, sqrCoeffs[1], sqrCoeffs[1], MPFR_RNDN);
-  err = mpfr_sub(disc, disc, buf, MPFR_RNDN);
-  /* Now compute the roots.
-   * Use the larger root to compute the smaller one,
-   * as this doesn't suffer as much loss of precision
-   */
   constexpr const int numRoots = 2;
-  mpfr_t roots[numRoots];
-  for(int i = 0; i < numRoots; i++)
-    mpfr_init2(roots[i], sqrTermPrec);
-  mpfr_sqrt(buf, disc, MPFR_RNDN);
-  mpfr_clear(disc);
-	
-  int c1Sign = mpfr_signbit(sqrCoeffs[1]);
-	err = mpfr_abs(sqrCoeffs[1], sqrCoeffs[1], MPFR_RNDN);
-	err = mpfr_add(buf, buf, sqrCoeffs[1], MPFR_RNDN);
-	if(c1Sign == 0) {
-		err = mpfr_mul_d(buf, buf, -1.0, MPFR_RNDN);
-	}
-	err = mpfr_div(roots[0], buf, sqrCoeffs[0], MPFR_RNDN);
-	err = mpfr_div(roots[1], sqrCoeffs[2], buf, MPFR_RNDN);
-  mpfr_clear(buf);
-	
-  for(int i = 0; i < numSqrCoeffs; i++)
-    mpfr_clear(sqrCoeffs[i]);
-  for(int i = 0; i < numRoots; i++) mpfr_clear(roots[i]);
+  mpfr_ptr roots =
+      calcInflections(cubicCoeffs, cubeTermPrec);
+  for(int i = 0; i < numCubeCoeffs; i++)
+    mpfr_clear(&cubicCoeffs[i]);
+  free(cubicCoeffs);
+  for(int i = 0; i < numRoots; i++) mpfr_clear(&roots[i]);
+  free(roots);
   return 0;
+}
+
+mpfr_t *evalPolynomial(const mpfr_t *coeffs,
+                       const mpfr_t &pos,
+                       unsigned numCoeffs,
+                       unsigned requiredPrec) {
+  mpfr_t *value =
+      static_cast<mpfr_t *>(malloc(sizeof(*value)));
+  mpfr_init2(*value, requiredPrec);
+  int err = mpfr_set_d(*value, 0.0, MPFR_RNDN);
+  for(unsigned i = 0; i < numCoeffs; i++) {
+    err = mpfr_mul(*value, *value, pos, MPFR_RNDN);
+    err = mpfr_add(*value, *value, coeffs[i], MPFR_RNDN);
+  }
+  return value;
 }
 
 template <typename fptype>
