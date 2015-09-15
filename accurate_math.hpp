@@ -441,7 +441,7 @@ mpfr_ptr calcInflections(mpfr_ptr cubic,
   }
   err = mpfr_div(&roots[0], buf, &cubic[3], MPFR_RNDN);
   err = mpfr_div_d(&roots[0], &roots[0], 3.0, MPFR_RNDN);
-  
+
   err = mpfr_div(&roots[1], &cubic[1], buf, MPFR_RNDN);
   mpfr_clear(disc);
   mpfr_clear(buf);
@@ -485,11 +485,22 @@ int classifyCalcEigenSign(
   constexpr const int numRoots = 2;
   mpfr_ptr roots =
       calcInflections(cubicCoeffs, cubeTermPrec);
+  const int zeroVal = mpfr_cmp_d(&cubicCoeffs[0], 0.0);
+  const int drootSigns[] = {mpfr_cmp_d(&roots[0], 0.0),
+                            mpfr_cmp_d(&roots[1], 0.0)};
   for(int i = 0; i < numCubeCoeffs; i++)
     mpfr_clear(&cubicCoeffs[i]);
   free(cubicCoeffs);
   for(int i = 0; i < numRoots; i++) mpfr_clear(&roots[i]);
   free(roots);
+
+  bool drootsPlus =
+      (drootSigns[0] >= 0) && (drootSigns[1] >= 0);
+  bool drootsMinus =
+      (drootSigns[0] <= 0) && (drootSigns[1] <= 0);
+  if(drootsPlus && zeroVal >= 0 ||
+     drootsMinus && zeroVal <= 0)
+    return 1;
   return 0;
 }
 
