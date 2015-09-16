@@ -130,30 +130,54 @@ fptype compensatedDotProd(const fptype *vec1,
 }
 
 enum QuadType {
-  QUADT_COINCIDENTPLANES,
-  QUADT_INTERSECTPLANES,
-  QUADT_INTERSECTPLANES_IM,
-  QUADT_INTERSECTPLANES_RE,
-  QUADT_PARALLELPLANES,
-  QUADT_PARALLELPLANES_IM,
-  QUADT_PARALLELPLANES_RE,
-  QUADT_ELLIPSOID,
-  QUADT_ELLIPSOID_IM,
-  QUADT_ELLIPSOID_RE,
-  QUADT_CONE,
-  QUADT_CONE_IM,
-  QUADT_CONE_RE,
-  QUADT_CYLINDER_ELL,
-  QUADT_CYLINDER_ELL_IM,
-  QUADT_CYLINDER_ELL_RE,
-  QUADT_CYLINDER_HYP,
-  QUADT_CYLINDER_PAR,
-  QUADT_PARABOLOID_ELL,
-  QUADT_PARABOLOID_HYP,
-  QUADT_HYPERBOLOID_ONE,
-  QUADT_HYPERBOLOID_TWO,
-  QUADT_ERROR = -1
+  QUADT_ERROR = 0,
+  QUADT_COINCIDENTPLANES = 1,
+  QUADT_INTERSECTPLANES = 2,
+  QUADT_INTERSECTPLANES_IM = 3,
+  QUADT_INTERSECTPLANES_RE = 4,
+  QUADT_PARALLELPLANES = 5,
+  QUADT_PARALLELPLANES_IM = 6,
+  QUADT_PARALLELPLANES_RE = 7,
+  QUADT_ELLIPSOID = 8,
+  QUADT_ELLIPSOID_IM = 9,
+  QUADT_ELLIPSOID_RE = 10,
+  QUADT_CONE = 11,
+  QUADT_CONE_IM = 12,
+  QUADT_CONE_RE = 13,
+  QUADT_CYLINDER_ELL = 14,
+  QUADT_CYLINDER_ELL_IM = 15,
+  QUADT_CYLINDER_ELL_RE = 16,
+  QUADT_CYLINDER_HYP = 17,
+  QUADT_CYLINDER_PAR = 18,
+  QUADT_PARABOLOID_ELL = 19,
+  QUADT_PARABOLOID_HYP = 20,
+  QUADT_HYPERBOLOID_ONE = 21,
+  QUADT_HYPERBOLOID_TWO = 22,
+
+  QUADT_ERRORINVALID
 };
+
+constexpr const char *QuadTypeNames[] = {
+    "Quadratic Classification Error",
+
+    "Coincident Planes", "Intersecting Planes",
+    "Imaginary Intersecting Planes",
+    "Real Intersecting Planes", "Parallel Planes",
+    "Imaginary Parallel Planes",
+
+    "Ellipsoid", "Imaginary Ellipsoid", "Real Ellipsoid",
+
+    "Cone", "Imaginary Cone", "Real Cone",
+
+    "Elliptic Cylinder"
+    "Imaginary Elliptic Cylinder",
+    "Real Elliptic Cylinder", "Hyperbolic Cylinder",
+    "Parabolic Cylinder",
+
+    "Elliptic Paraboloid", "Hyperbolic Paraboloid",
+
+    "Hyperboloid of one sheet",
+    "Hyperboloid of two sheets"};
 
 template <typename fptype>
 int classifyCalcDetSign(
@@ -163,16 +187,21 @@ int classifyCalcDetSign(
   /* Only 4 error causing multiplications occur per term */
   constexpr const int numDetProds = 4;
   /* The determinant is as follows:
-   * d = c0 c1 c2 c3 - c2 c3 c4^2 - c1 c3  c5^2 -
+   * d = c0 c1 c2 c3 - c2 c3 c4^2 - c1 c3 c5^2 -
    *     c1 c2 c6^2 + 2 c3 c4 c5 c7 - c0 c3 c7^2 +
    *     c6^2 c7^2 + 2 c2 c4 c6 c8 - 2 c5 c6 c7 c8 -
    *     c0 c2 c8^2 + c5^2 c8^2 + 2 c1 c5 c6 c9 -
    *     2 c4 c6 c7 c9 + 2 c4 c5 c8 c9 + 2 c0 c7 c8 c9 -
    *     c0 c1 c9^2 + c4^2 c9^2
+   *
+   * Note that the quadric coefficients i>3 have an extra
+   * factor of 2, so compensate for that in the coefficient
    */
-  constexpr const int detCoeffs[] = {1,  -1, -1, -1, 2, -1,
-                                     1,  2,  -2, -1, 1, 2,
-                                     -2, 2,  2,  -1, 1};
+  constexpr const float detCoeffs[] = {
+      1,        -1 / 4.0, -1 / 4.0, -1 / 4.0, 1 / 4.0,
+      -1 / 4.0, 1 / 16.0, 1 / 4.0,  -1 / 8.0, -1 / 4.0,
+      1 / 16.0, 1 / 4.0,  -1 / 8.0, -1 / 8.0, 1 / 4.0,
+      -1 / 4.0, 1 / 16.0};
   constexpr const int detProds[numDetTerms][numDetProds] = {
       {0, 1, 2, 3},
       {2, 3, 4, 4},
@@ -203,9 +232,9 @@ int classifyCalcDetSign(
   mpfr_init2(modAdd, guessedExtraPrec * detTermPrec);
   mpfr_set_si(detSum, 0, MPFR_RNDN);
   for(int i = 0; i < numDetTerms; i++) {
-    err = mpfr_set_si(detTerm, detCoeffs[i], MPFR_RNDN);
+    err = mpfr_set_d(detTerm, detCoeffs[i], MPFR_RNDN);
     if(err) return err;
-    for(int j = 1; j < numDetProds; j++) {
+    for(int j = 0; j < numDetProds; j++) {
       int coeffIdx = detProds[i][j];
       err = mpfr_mul_d(detTerm, detTerm,
                        quad.currentCoeffs[coeffIdx],
@@ -269,13 +298,14 @@ std::array<int, 2> classifyCalcRank(
       {6, 8, 9, 3}};
   mpfr_t elems[mtxDim][mtxDim];
   /* Just use Gaussian Elimination with a ridiculous
-   * amount
-   * of precision */
+   * amount of precision */
   for(unsigned i = 0; i < mtxDim; i++) {
     for(unsigned j = 0; j < mtxDim; j++) {
       mpfr_init2(elems[i][j], precision);
       unsigned coeffNum = mtxVals[i][j];
-      mpfr_set_d(elems[i][j], quad.currentCoeffs[coeffNum],
+      fptype factor = (coeffNum < 4) ? 1.0 : 0.5;
+      mpfr_set_d(elems[i][j],
+                 quad.currentCoeffs[coeffNum] * factor,
                  MPFR_RNDN);
     }
   }
@@ -330,17 +360,17 @@ mpfr_ptr constructCubicCoeffs(
   /* Coefficient 1: c4^2/4 + c5^2/4 + c7^2/4 -
    *                c0 c1 - c0 c2 - c1 c2
    */
-  mpfr_set_d(&coeffs[1], quad.currentCoeffs[4] / 2,
+  mpfr_set_d(&coeffs[1], quad.currentCoeffs[4] / 2.0,
              MPFR_RNDN);
   err = mpfr_sqr(&coeffs[1], &coeffs[1], MPFR_RNDN);
   mpfr_t buf;
   mpfr_init2(buf, precision);
 
-  mpfr_set_d(buf, quad.currentCoeffs[5] / 2, MPFR_RNDN);
+  mpfr_set_d(buf, quad.currentCoeffs[5] / 2.0, MPFR_RNDN);
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
   err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
-  mpfr_set_d(buf, quad.currentCoeffs[7] / 2, MPFR_RNDN);
+  mpfr_set_d(buf, quad.currentCoeffs[7] / 2.0, MPFR_RNDN);
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
   err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
@@ -394,7 +424,6 @@ mpfr_ptr constructCubicCoeffs(
   err = mpfr_mul_d(buf, buf, -quad.currentCoeffs[2] / 4.0,
                    MPFR_RNDN);
   err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
-
   mpfr_clear(buf);
   return coeffs;
 }
@@ -437,11 +466,12 @@ mpfr_ptr calcInflections(mpfr_ptr cubic,
   err = mpfr_mul_d(buf, buf, 2.0, MPFR_RNDN);
   err = mpfr_add(buf, buf, disc, MPFR_RNDN);
   if(c2Sign == 0) {
-    err = mpfr_mul_d(buf, buf, -1.0, MPFR_RNDN);
+    err = mpfr_mul_d(buf, buf, -0.5, MPFR_RNDN);
+  } else {
+    err = mpfr_mul_d(buf, buf, 0.5, MPFR_RNDN);
   }
   err = mpfr_div(&roots[0], buf, &cubic[3], MPFR_RNDN);
   err = mpfr_div_d(&roots[0], &roots[0], 3.0, MPFR_RNDN);
-
   err = mpfr_div(&roots[1], &cubic[1], buf, MPFR_RNDN);
   mpfr_clear(disc);
   mpfr_clear(buf);
@@ -498,8 +528,8 @@ int classifyCalcEigenSign(
       (drootSigns[0] >= 0) && (drootSigns[1] >= 0);
   bool drootsMinus =
       (drootSigns[0] <= 0) && (drootSigns[1] <= 0);
-  if(drootsPlus && zeroVal >= 0 ||
-     drootsMinus && zeroVal <= 0)
+  if((drootsPlus && zeroVal >= 0) ||
+     (drootsMinus && zeroVal <= 0))
     return 1;
   return 0;
 }

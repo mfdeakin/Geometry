@@ -3,6 +3,7 @@
 #include "quadrics.hpp"
 #include "line.hpp"
 #include "bsgtree.hpp"
+#include "accurate_math.hpp"
 #include <array>
 #include <math.h>
 #include <stdio.h>
@@ -32,6 +33,8 @@ int main(int argc, char **argv) {
 
   q.getCoeff(2, 3) = 29.0;
   auto quadtype = AccurateMath::classifyQuadric(q);
-  printf("Quadric Type: %d\n", quadtype);
+  assert(quadtype < AccurateMath::QUADT_ERRORINVALID);
+  printf("Quadric Type: %d, %x, %s\n", quadtype,
+         AccurateMath::QuadTypeNames[quadtype]);
   return 0;
 }
