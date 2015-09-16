@@ -48,9 +48,19 @@ class Quadric : public Solid<dim, fptype> {
    * d=1 the second, ...
    * d=dim the constant coefficient
    */
-  fptype &getCoeff(int d1, int d2) const {
+  fptype &coeff(int d1, int d2) const {
     int coeffNum = getCoeffPos(d1, d2);
     return currentCoeffs[coeffNum];
+  }
+
+  /* d=0 corresponds to the first dimension,
+   * d=1 the second, ...
+   * d=dim the constant coefficient
+   */
+  fptype &coeff(int pos) const {
+    assert(pos >= 0);
+    assert(pos < numCoeffs);
+    return currentCoeffs[pos];
   }
 
   fptype evaluatePoint(
