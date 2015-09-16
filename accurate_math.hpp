@@ -157,20 +157,19 @@ enum QuadType {
   QUADT_ERRORINVALID
 };
 
-constexpr const char *QuadTypeNames[] = {
+constexpr const char *const QuadTypeNames[] = {
     "Quadratic Classification Error",
 
     "Coincident Planes", "Intersecting Planes",
     "Imaginary Intersecting Planes",
     "Real Intersecting Planes", "Parallel Planes",
-    "Imaginary Parallel Planes",
+    "Imaginary Parallel Planes", "Real Parallel Planes",
 
     "Ellipsoid", "Imaginary Ellipsoid", "Real Ellipsoid",
 
     "Cone", "Imaginary Cone", "Real Cone",
 
-    "Elliptic Cylinder"
-    "Imaginary Elliptic Cylinder",
+    "Elliptic Cylinder", "Imaginary Elliptic Cylinder",
     "Real Elliptic Cylinder", "Hyperbolic Cylinder",
     "Parabolic Cylinder",
 

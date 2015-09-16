@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   q.getCoeff(2, 3) = 29.0;
   auto quadtype = AccurateMath::classifyQuadric(q);
   assert(quadtype < AccurateMath::QUADT_ERRORINVALID);
-  printf("Quadric Type: %d, %x, %s\n", quadtype,
+  printf("Quadric Type: %d, %s\n", quadtype,
          AccurateMath::QuadTypeNames[quadtype]);
   return 0;
 }
