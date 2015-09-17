@@ -17,12 +17,19 @@ TEST(Quadric, Classify) {
   struct teststruct {
     AccurateMath::QuadType expected;
     fptype coeffs[numCoeffs];
-  } tests[] = {{AccurateMath::QUADT_HYPERBOLOID_TWO,
-                {2.0, 3.0, 5.0, 7.0, 11.0, 13.0, 17.0, 19.0,
-                 23.0, 29.0}},
-               {AccurateMath::QUADT_ELLIPSOID_RE,
-                {1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0,
-                 0.0, 0.0}}};
+  } tests[] = {
+      {AccurateMath::QUADT_HYPERBOLOID_TWO,
+       {2.0, 3.0, 5.0, 7.0, 11.0, 13.0, 17.0, 19.0, 23.0,
+        29.0}},
+      {AccurateMath::QUADT_ELLIPSOID_RE,
+       {1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+      {AccurateMath::QUADT_ELLIPSOID_IM,
+       {1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+      {AccurateMath::QUADT_CYLINDER_PAR,
+       {0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0}},
+      {AccurateMath::QUADT_ELLIPSOID_RE,
+       {1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0}}};
   Geometry::Origin<dim, fptype> o;
   Geometry::Quadric<dim, fptype> q(o);
   for(auto t : tests) {
@@ -30,6 +37,11 @@ TEST(Quadric, Classify) {
       q.coeff(i) = t.coeffs[i];
     }
     auto quadtype = AccurateMath::classifyQuadric(q);
+    printf(
+        "Expected Quadric Type: %s\n"
+        "Returned Quadric Type: %s\n",
+        AccurateMath::QuadTypeNames[t.expected],
+        AccurateMath::QuadTypeNames[quadtype]);
     EXPECT_EQ(t.expected, quadtype);
   }
 }

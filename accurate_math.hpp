@@ -131,6 +131,7 @@ fptype compensatedDotProd(const fptype *vec1,
 
 enum QuadType {
   QUADT_ERROR = 0,
+
   QUADT_COINCIDENTPLANES = 1,
   QUADT_INTERSECTPLANES = 2,
   QUADT_INTERSECTPLANES_IM = 3,
@@ -138,19 +139,24 @@ enum QuadType {
   QUADT_PARALLELPLANES = 5,
   QUADT_PARALLELPLANES_IM = 6,
   QUADT_PARALLELPLANES_RE = 7,
+
   QUADT_ELLIPSOID = 8,
   QUADT_ELLIPSOID_IM = 9,
   QUADT_ELLIPSOID_RE = 10,
+
   QUADT_CONE = 11,
   QUADT_CONE_IM = 12,
   QUADT_CONE_RE = 13,
+
   QUADT_CYLINDER_ELL = 14,
   QUADT_CYLINDER_ELL_IM = 15,
   QUADT_CYLINDER_ELL_RE = 16,
   QUADT_CYLINDER_HYP = 17,
   QUADT_CYLINDER_PAR = 18,
+
   QUADT_PARABOLOID_ELL = 19,
   QUADT_PARABOLOID_HYP = 20,
+
   QUADT_HYPERBOLOID_ONE = 21,
   QUADT_HYPERBOLOID_TWO = 22,
 
@@ -230,6 +236,7 @@ int classifyCalcDetSign(
   mpfr_init2(extra, guessedExtraPrec * detTermPrec);
   mpfr_init2(modAdd, guessedExtraPrec * detTermPrec);
   mpfr_set_si(detSum, 0, MPFR_RNDN);
+  mpfr_set_si(extra, 0, MPFR_RNDN);
   for(int i = 0; i < numDetTerms; i++) {
     err = mpfr_set_d(detTerm, detCoeffs[i], MPFR_RNDN);
     if(err) return err;
@@ -320,12 +327,15 @@ std::array<int, 2> classifyCalcRank(
   std::array<int, 2> ranks;
   ranks[0] = 0;
   ranks[1] = 0;
+  bool rowChecked;
   for(int i = 0; i < mtxDim; i++) {
+    rowChecked = false;
     for(int j = 0; j < mtxDim; j++) {
       int isZero = mpfr_cmp_d(elems[i][j], 0.0);
-      if(isZero != 0) {
+      if(isZero != 0 && rowChecked == false) {
         ranks[1]++;
         if(i < (mtxDim - 1) && j < (mtxDim - 1)) ranks[0]++;
+        rowChecked = true;
       }
       mpfr_clear(elems[i][j]);
     }
@@ -656,7 +666,7 @@ QuadType classifyRank_3_4(
     else
       return QUADT_HYPERBOLOID_TWO;
   } else {
-    if(detSign == -1)
+    if(detSign < 0)
       return QUADT_ELLIPSOID_RE;
     else
       return QUADT_ELLIPSOID_IM;
@@ -673,6 +683,14 @@ QuadType classifyQuadric(
   int eigenSign = classifyCalcEigenSign(quad);
   constexpr const int max4Ranks = 4;
   constexpr const int max3Ranks = 3;
+  printf(
+      "\nSmall Matrix Rank: %d\n"
+      "Large Matrix Rank: %d\n"
+      "Determinant Sign: %d\n"
+      "Eigenvalue Sign: %d\n",
+      mtxRanks[0], mtxRanks[1], detSign, eigenSign);
+  assert(mtxRanks[0] <= max3Ranks);
+  assert(mtxRanks[1] <= max4Ranks);
   /* The array of function pointers maps the two rank values
    * to functions specific to that rank */
   using classFunc = QuadType (
