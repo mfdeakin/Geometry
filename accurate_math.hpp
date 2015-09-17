@@ -626,7 +626,7 @@ QuadType classifyRank_2_4(
     const Geometry::Quadric<3, fptype> &quad) {
   if(detSign == 1 && eigenSign == 0)
     return QUADT_PARABOLOID_HYP;
-  else if(detSign == -1 && eigenSign == 0)
+  else if(detSign == -1 && eigenSign == 1)
     return QUADT_PARABOLOID_ELL;
   else
     return QUADT_ERROR;
