@@ -437,8 +437,8 @@ mpfr_ptr constructCubicCoeffs(
   return coeffs;
 }
 
-mpfr_ptr calcInflections(mpfr_ptr cubic,
-                         unsigned precision) {
+static mpfr_ptr calcInflections(mpfr_ptr cubic,
+                                unsigned precision) {
   /* Compute the derivative and it's roots.
    * The input is as follows:
    * c3 x^3 + c2 x^2 + c1 x + c0
@@ -543,17 +543,17 @@ int classifyCalcEigenSign(
   return 0;
 }
 
-mpfr_t *evalPolynomial(const mpfr_t *coeffs,
-                       const mpfr_t &pos,
-                       unsigned numCoeffs,
-                       unsigned requiredPrec) {
-  mpfr_t *value =
-      static_cast<mpfr_t *>(malloc(sizeof(*value)));
-  mpfr_init2(*value, requiredPrec);
-  int err = mpfr_set_d(*value, 0.0, MPFR_RNDN);
+static mpfr_ptr evalPolynomial(const mpfr_t *coeffs,
+                               const mpfr_t &pos,
+                               unsigned numCoeffs,
+                               unsigned requiredPrec) {
+  mpfr_ptr value =
+      static_cast<mpfr_ptr>(malloc(sizeof(*value)));
+  mpfr_init2(&value[0], requiredPrec);
+  int err = mpfr_set_d(&value[0], 0.0, MPFR_RNDN);
   for(unsigned i = 0; i < numCoeffs; i++) {
-    err = mpfr_mul(*value, *value, pos, MPFR_RNDN);
-    err = mpfr_add(*value, *value, coeffs[i], MPFR_RNDN);
+    err = mpfr_mul(&value[0], &value[0], pos, MPFR_RNDN);
+    err = mpfr_add(&value[0], &value[0], coeffs[i], MPFR_RNDN);
   }
   return value;
 }
