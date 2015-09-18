@@ -32,6 +32,11 @@ class Line : public Solid<dim, fptype> {
 
   virtual ~Line() {}
 
+  virtual void shiftOrigin(
+      const Origin<dim, fptype> &newOrigin) {
+    Solid<dim, fptype>::shiftOrigin(newOrigin);
+  }
+
   virtual PointLocation ptLocation(
       const Point<dim, fptype> &test,
       fptype absPrecision = defAbsPrecision) const {

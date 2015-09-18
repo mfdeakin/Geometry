@@ -83,16 +83,18 @@ class Quadric : public Solid<dim, fptype> {
     return ret;
   }
 
-  fptype calcLineIntersect(
+  std::array<fptype, 2> calcLineIntersect(
       const Line<dim, fptype> &line,
       fptype absPrecision = defAbsPrecision) const {
     auto ld = line.getDir();
-    fptype sqCoeff = 0;
+    fptype sqCoeff = 0.0;
+    fptype linCoeff = 0.0;
+    fptype constant = 0.0;
     for(int i = 0; i < dim; i++) {
-      sqCoeff += currentCoeffs[i] * ld(i) * ld(i);
+      sqCoeff += coeff(i, i) * ld(i) * ld(i);
+      linCoeff += 2 * coeff(i) * ld(i);
       for(int j = i + 1; j < dim; j++) {
-        int coeffPos = getCoeffPos(i, j);
-        sqCoeff += currentCoeffs[coeffPos] * ld(i) * ld(j);
+        sqCoeff += coeff(i, j) * ld(i) * ld(j);
       }
     }
   }

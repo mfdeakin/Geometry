@@ -191,7 +191,6 @@ constexpr const char *const QuadTypeNames[] = {
 template <typename fptype>
 static int classifyCalcDetSign(
     const Geometry::Quadric<3, fptype> &quad) {
-  int err = 0;
   constexpr const int numDetTerms = 17;
   /* Only 4 error causing multiplications occur per term */
   constexpr const int numDetProds = 4;
@@ -242,22 +241,16 @@ static int classifyCalcDetSign(
   mpfr_set_si(detSum, 0, MPFR_RNDN);
   mpfr_set_si(extra, 0, MPFR_RNDN);
   for(int i = 0; i < numDetTerms; i++) {
-    err = mpfr_set_d(detTerm, detCoeffs[i], MPFR_RNDN);
-    if(err) return err;
+    mpfr_set_d(detTerm, detCoeffs[i], MPFR_RNDN);
     for(int j = 0; j < numDetProds; j++) {
       int coeffIdx = detProds[i][j];
-      err = mpfr_mul_d(detTerm, detTerm,
-                       quad.coeff(coeffIdx), MPFR_RNDN);
-      if(err) return err;
+      mpfr_mul_d(detTerm, detTerm, quad.coeff(coeffIdx),
+                 MPFR_RNDN);
     }
-    err = mpfr_sub(modAdd, detTerm, extra, MPFR_RNDN);
-    if(err) return err;
-    err = mpfr_add(tmpSum, modAdd, detSum, MPFR_RNDN);
-    if(err) return err;
-    err = mpfr_sub(extra, tmpSum, detSum, MPFR_RNDN);
-    if(err) return err;
-    err = mpfr_sub(extra, extra, modAdd, MPFR_RNDN);
-    if(err) return err;
+    mpfr_sub(modAdd, detTerm, extra, MPFR_RNDN);
+    mpfr_add(tmpSum, modAdd, detSum, MPFR_RNDN);
+    mpfr_sub(extra, tmpSum, detSum, MPFR_RNDN);
+    mpfr_sub(extra, extra, modAdd, MPFR_RNDN);
     mpfr_set(detSum, tmpSum, MPFR_RNDN);
   }
   mpfr_clear(detTerm);
@@ -365,69 +358,66 @@ static mpfr_ptr constructCubicCoeffs(
   mpfr_set_d(&coeffs[3], -1.0, MPFR_RNDN);
   /* Coefficient 2: c0 + c1 + c2 */
   mpfr_set_d(&coeffs[2], quad.coeff(0), MPFR_RNDN);
-  int err = mpfr_add_d(&coeffs[2], &coeffs[2],
-                       quad.coeff(1), MPFR_RNDN);
-  err = mpfr_add_d(&coeffs[2], &coeffs[2], quad.coeff(2),
-                   MPFR_RNDN);
+  mpfr_add_d(&coeffs[2], &coeffs[2], quad.coeff(1),
+             MPFR_RNDN);
+  mpfr_add_d(&coeffs[2], &coeffs[2], quad.coeff(2),
+             MPFR_RNDN);
   /* Coefficient 1: c4^2/4 + c5^2/4 + c7^2/4 -
    *                c0 c1 - c0 c2 - c1 c2
    */
   mpfr_set_d(&coeffs[1], quad.coeff(4) / 2.0, MPFR_RNDN);
-  err = mpfr_sqr(&coeffs[1], &coeffs[1], MPFR_RNDN);
+  mpfr_sqr(&coeffs[1], &coeffs[1], MPFR_RNDN);
   mpfr_t buf;
   mpfr_init2(buf, precision);
 
   mpfr_set_d(buf, quad.coeff(5) / 2.0, MPFR_RNDN);
-  err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+  mpfr_sqr(buf, buf, MPFR_RNDN);
+  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
   mpfr_set_d(buf, quad.coeff(7) / 2.0, MPFR_RNDN);
-  err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+  mpfr_sqr(buf, buf, MPFR_RNDN);
+  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
   mpfr_set_d(buf, -quad.coeff(0), MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.coeff(1), MPFR_RNDN);
-  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+  mpfr_mul_d(buf, buf, quad.coeff(1), MPFR_RNDN);
+  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
   mpfr_set_d(buf, -quad.coeff(0), MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.coeff(2), MPFR_RNDN);
-  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+  mpfr_mul_d(buf, buf, quad.coeff(2), MPFR_RNDN);
+  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
   mpfr_set_d(buf, -quad.coeff(1), MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.coeff(2), MPFR_RNDN);
-  err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+  mpfr_mul_d(buf, buf, quad.coeff(2), MPFR_RNDN);
+  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
   /* Coefficient 0: c0 c1 c2 + c4 c5 c7/4 - c0 c7^2/4 -
    *                c1 c5^2/4 - c2 c4^2/4
    */
   /* c0 c1 c2 */
-  err = mpfr_set_d(&coeffs[0], quad.coeff(0), MPFR_RNDN);
-  err = mpfr_mul_d(&coeffs[0], &coeffs[0], quad.coeff(1),
-                   MPFR_RNDN);
-  err = mpfr_mul_d(&coeffs[0], &coeffs[0], quad.coeff(2),
-                   MPFR_RNDN);
+  mpfr_set_d(&coeffs[0], quad.coeff(0), MPFR_RNDN);
+  mpfr_mul_d(&coeffs[0], &coeffs[0], quad.coeff(1),
+             MPFR_RNDN);
+  mpfr_mul_d(&coeffs[0], &coeffs[0], quad.coeff(2),
+             MPFR_RNDN);
   /* c4 c5 c7/4 */
-  err = mpfr_set_d(buf, quad.coeff(4) / 4.0, MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.coeff(5), MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.coeff(7), MPFR_RNDN);
-  err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  mpfr_set_d(buf, quad.coeff(4) / 4.0, MPFR_RNDN);
+  mpfr_mul_d(buf, buf, quad.coeff(5), MPFR_RNDN);
+  mpfr_mul_d(buf, buf, quad.coeff(7), MPFR_RNDN);
+  mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
   /* -c0 c7^2/4 */
-  err = mpfr_set_d(buf, quad.coeff(7), MPFR_RNDN);
-  err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  err =
-      mpfr_mul_d(buf, buf, -quad.coeff(0) / 4.0, MPFR_RNDN);
-  err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  mpfr_set_d(buf, quad.coeff(7), MPFR_RNDN);
+  mpfr_sqr(buf, buf, MPFR_RNDN);
+  mpfr_mul_d(buf, buf, -quad.coeff(0) / 4.0, MPFR_RNDN);
+  mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
   /* -c1 c5^2/4 */
-  err = mpfr_set_d(buf, quad.coeff(5), MPFR_RNDN);
-  err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  err =
-      mpfr_mul_d(buf, buf, -quad.coeff(1) / 4.0, MPFR_RNDN);
-  err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  mpfr_set_d(buf, quad.coeff(5), MPFR_RNDN);
+  mpfr_sqr(buf, buf, MPFR_RNDN);
+  mpfr_mul_d(buf, buf, -quad.coeff(1) / 4.0, MPFR_RNDN);
+  mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
   /* -c2 c4^2/4 */
-  err = mpfr_set_d(buf, quad.coeff(4), MPFR_RNDN);
-  err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  err =
-      mpfr_mul_d(buf, buf, -quad.coeff(2) / 4.0, MPFR_RNDN);
-  err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  mpfr_set_d(buf, quad.coeff(4), MPFR_RNDN);
+  mpfr_sqr(buf, buf, MPFR_RNDN);
+  mpfr_mul_d(buf, buf, -quad.coeff(2) / 4.0, MPFR_RNDN);
+  mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
   mpfr_clear(buf);
   return coeffs;
 }
@@ -446,13 +436,13 @@ static mpfr_ptr calcInflections(mpfr_ptr cubic,
    */
   mpfr_t disc;
   mpfr_init2(disc, precision);
-  int err = mpfr_mul(disc, &cubic[1], &cubic[3], MPFR_RNDN);
-  err = mpfr_mul_d(disc, disc, -12.0, MPFR_RNDN);
+  mpfr_mul(disc, &cubic[1], &cubic[3], MPFR_RNDN);
+  mpfr_mul_d(disc, disc, -12.0, MPFR_RNDN);
   mpfr_t buf;
   mpfr_init2(buf, precision);
-  err = mpfr_sqr(buf, &cubic[2], MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, 4.0, MPFR_RNDN);
-  err = mpfr_add(disc, disc, buf, MPFR_RNDN);
+  mpfr_sqr(buf, &cubic[2], MPFR_RNDN);
+  mpfr_mul_d(buf, buf, 4.0, MPFR_RNDN);
+  mpfr_add(disc, disc, buf, MPFR_RNDN);
   /* Now compute the roots.
    * The roots are as follows:
    * -sign(c2) (|2 c2|+sqrt(disc)) / (3 c3)
@@ -466,17 +456,17 @@ static mpfr_ptr calcInflections(mpfr_ptr cubic,
     mpfr_init2(&roots[i], precision);
 
   int c2Sign = mpfr_signbit(&cubic[2]);
-  err = mpfr_abs(buf, &cubic[2], MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, 2.0, MPFR_RNDN);
-  err = mpfr_add(buf, buf, disc, MPFR_RNDN);
+  mpfr_abs(buf, &cubic[2], MPFR_RNDN);
+  mpfr_mul_d(buf, buf, 2.0, MPFR_RNDN);
+  mpfr_add(buf, buf, disc, MPFR_RNDN);
   if(c2Sign == 0) {
-    err = mpfr_mul_d(buf, buf, -0.5, MPFR_RNDN);
+    mpfr_mul_d(buf, buf, -0.5, MPFR_RNDN);
   } else {
-    err = mpfr_mul_d(buf, buf, 0.5, MPFR_RNDN);
+    mpfr_mul_d(buf, buf, 0.5, MPFR_RNDN);
   }
-  err = mpfr_div(&roots[0], buf, &cubic[3], MPFR_RNDN);
-  err = mpfr_div_d(&roots[0], &roots[0], 3.0, MPFR_RNDN);
-  err = mpfr_div(&roots[1], &cubic[1], buf, MPFR_RNDN);
+  mpfr_div(&roots[0], buf, &cubic[3], MPFR_RNDN);
+  mpfr_div_d(&roots[0], &roots[0], 3.0, MPFR_RNDN);
+  mpfr_div(&roots[1], &cubic[1], buf, MPFR_RNDN);
   mpfr_clear(disc);
   mpfr_clear(buf);
   return roots;
@@ -545,11 +535,10 @@ static mpfr_ptr evalPolynomial(const mpfr_t *coeffs,
   mpfr_ptr value =
       static_cast<mpfr_ptr>(malloc(sizeof(*value)));
   mpfr_init2(&value[0], requiredPrec);
-  int err = mpfr_set_d(&value[0], 0.0, MPFR_RNDN);
+  mpfr_set_d(&value[0], 0.0, MPFR_RNDN);
   for(unsigned i = 0; i < numCoeffs; i++) {
-    err = mpfr_mul(&value[0], &value[0], pos, MPFR_RNDN);
-    err = mpfr_add(&value[0], &value[0], coeffs[i],
-                   MPFR_RNDN);
+    mpfr_mul(&value[0], &value[0], pos, MPFR_RNDN);
+    mpfr_add(&value[0], &value[0], coeffs[i], MPFR_RNDN);
   }
   return value;
 }
