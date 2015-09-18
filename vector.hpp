@@ -17,6 +17,10 @@ class Vector : public Geometry<dim, fptype> {
     for(int i = 0; i < dim; i++) offset[i] = 0.0;
   }
 
+  Vector(std::array<fptype, dim> v) {
+    for(int i = 0; i < dim; i++) offset[i] = v[i];
+  }
+
   template <typename srctype>
   Vector(const Vector<dim, srctype> &src) {
     for(int i = 0; i < dim; i++) offset[i] = src.offset[i];

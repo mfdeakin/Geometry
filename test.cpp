@@ -19,23 +19,6 @@ int main(int argc, char **argv) {
   Geometry::Line<dim, fptype> line(pt, dir);
   Geometry::Quadric<dim, fptype> q(o);
   auto orthogs = dir.calcOrthogonals();
-  q.coeff(0, 0) = 2.0;
-  q.coeff(1, 1) = 3.0;
-  q.coeff(2, 2) = 5.0;
-  q.coeff(3, 3) = 7.0;
-
-  q.coeff(0, 1) = 11.0;
-  q.coeff(0, 2) = 13.0;
-  q.coeff(0, 3) = 17.0;
-
-  q.coeff(1, 2) = 19.0;
-  q.coeff(1, 3) = 23.0;
-
-  q.coeff(2, 3) = 29.0;
-  auto quadtype = AccurateMath::classifyQuadric(q);
-  assert(quadtype < AccurateMath::QUADT_ERRORINVALID);
-  printf("Quadric Type: %d, %s\n", quadtype,
-         AccurateMath::QuadTypeNames[quadtype]);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

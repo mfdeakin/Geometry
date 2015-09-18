@@ -18,7 +18,7 @@
 namespace AccurateMath {
 
 template <unsigned size, typename fptype>
-fptype kahanSum(const fptype(&summands)[size]) {
+static fptype kahanSum(const fptype(&summands)[size]) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -31,7 +31,8 @@ fptype kahanSum(const fptype(&summands)[size]) {
 }
 
 template <typename fptype>
-fptype kahanSum(const fptype *summands, unsigned size) {
+static fptype kahanSum(const fptype *summands,
+                       unsigned size) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -46,7 +47,8 @@ fptype kahanSum(const fptype *summands, unsigned size) {
 template <typename fptype,
           fptype (*sumFunc)(const fptype *summands,
                             unsigned i, fptype curSum)>
-fptype kahanSum(const fptype *summands, unsigned size) {
+static fptype kahanSum(const fptype *summands,
+                       unsigned size) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -61,7 +63,7 @@ fptype kahanSum(const fptype *summands, unsigned size) {
 template <typename fptype, unsigned size,
           fptype (*sumFunc)(const fptype *summands,
                             unsigned i, fptype curSum)>
-fptype kahanSum(const fptype *summands) {
+static fptype kahanSum(const fptype *summands) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -72,14 +74,15 @@ fptype kahanSum(const fptype *summands) {
   }
   return sum;
 }
+
 template <typename fptype>
-fptype twoNormSum(const fptype *summands, unsigned i,
-                  fptype curSum) {
+static fptype twoNormSum(const fptype *summands, unsigned i,
+                         fptype curSum) {
   return std::fma(summands[i], summands[i], curSum);
 }
 
 template <typename fptype>
-std::array<fptype, 2> twoSum(fptype a, fptype b) {
+static std::array<fptype, 2> twoSum(fptype a, fptype b) {
   if(a < b) {
     fptype tmp = b;
     b = a;
@@ -93,7 +96,8 @@ std::array<fptype, 2> twoSum(fptype a, fptype b) {
 }
 
 template <typename fptype>
-std::array<fptype, 2> twoProd(fptype lhs, fptype rhs) {
+static std::array<fptype, 2> twoProd(fptype lhs,
+                                     fptype rhs) {
   fptype prod = lhs * rhs;
   fptype err = std::fma(lhs, rhs, -prod);
   std::array<fptype, 2> products = {{prod, err}};
@@ -101,8 +105,8 @@ std::array<fptype, 2> twoProd(fptype lhs, fptype rhs) {
 }
 
 template <typename fptype>
-std::array<fptype, 3> threeFMA(fptype a, fptype b,
-                               fptype c) {
+static std::array<fptype, 3> threeFMA(fptype a, fptype b,
+                                      fptype c) {
   fptype r1 = std::fma(a, b, c);
   std::array<fptype, 2> mult = twoProd(a, b);
   std::array<fptype, 2> sum1 = twoSum(c, mult[1]);
@@ -114,9 +118,9 @@ std::array<fptype, 3> threeFMA(fptype a, fptype b,
 }
 
 template <typename fptype>
-fptype compensatedDotProd(const fptype *vec1,
-                          const fptype *vec2,
-                          unsigned dim) {
+static fptype compensatedDotProd(const fptype *vec1,
+                                 const fptype *vec2,
+                                 unsigned dim) {
   std::array<fptype, 2> prod = twoProd(vec1[0], vec2[0]);
   fptype s = prod[0];
   fptype c = prod[1];
@@ -185,7 +189,7 @@ constexpr const char *const QuadTypeNames[] = {
     "Hyperboloid of two sheets"};
 
 template <typename fptype>
-int classifyCalcDetSign(
+static int classifyCalcDetSign(
     const Geometry::Quadric<3, fptype> &quad) {
   int err = 0;
   constexpr const int numDetTerms = 17;
@@ -243,8 +247,7 @@ int classifyCalcDetSign(
     for(int j = 0; j < numDetProds; j++) {
       int coeffIdx = detProds[i][j];
       err = mpfr_mul_d(detTerm, detTerm,
-                       quad.currentCoeffs[coeffIdx],
-                       MPFR_RNDN);
+                       quad.coeff(coeffIdx), MPFR_RNDN);
       if(err) return err;
     }
     err = mpfr_sub(modAdd, detTerm, extra, MPFR_RNDN);
@@ -267,9 +270,10 @@ int classifyCalcDetSign(
 }
 
 template <unsigned mtxDim>
-void eliminateColumn(mpfr_t elems[mtxDim][mtxDim],
-                     int column, bool rowsDone[mtxDim],
-                     mpfr_t &coeff, mpfr_t &delta) {
+static void eliminateColumn(mpfr_t elems[mtxDim][mtxDim],
+                            int column,
+                            bool rowsDone[mtxDim],
+                            mpfr_t &coeff, mpfr_t &delta) {
   for(unsigned i = 0; i < mtxDim; i++) {
     int isZero = mpfr_cmp_d(elems[i][column], 0.0);
     if(isZero != 0 && rowsDone[i] == false) {
@@ -293,7 +297,7 @@ void eliminateColumn(mpfr_t elems[mtxDim][mtxDim],
 }
 
 template <typename fptype>
-std::array<int, 2> classifyCalcRank(
+static std::array<int, 2> classifyCalcRank(
     const Geometry::Quadric<3, fptype> &quad) {
   constexpr const int mtxDim = 4;
   constexpr const int precision = 512;
@@ -310,8 +314,7 @@ std::array<int, 2> classifyCalcRank(
       mpfr_init2(elems[i][j], precision);
       unsigned coeffNum = mtxVals[i][j];
       fptype factor = (coeffNum < 4) ? 1.0 : 0.5;
-      mpfr_set_d(elems[i][j],
-                 quad.currentCoeffs[coeffNum] * factor,
+      mpfr_set_d(elems[i][j], quad.coeff(coeffNum) * factor,
                  MPFR_RNDN);
     }
   }
@@ -344,7 +347,7 @@ std::array<int, 2> classifyCalcRank(
 }
 
 template <typename fptype>
-mpfr_ptr constructCubicCoeffs(
+static mpfr_ptr constructCubicCoeffs(
     const Geometry::Quadric<3, fptype> &quad,
     unsigned precision) {
   /* The cubic is of the following form:
@@ -361,77 +364,69 @@ mpfr_ptr constructCubicCoeffs(
   /* Coefficient 3: -1 */
   mpfr_set_d(&coeffs[3], -1.0, MPFR_RNDN);
   /* Coefficient 2: c0 + c1 + c2 */
-  mpfr_set_d(&coeffs[2], quad.currentCoeffs[0], MPFR_RNDN);
+  mpfr_set_d(&coeffs[2], quad.coeff(0), MPFR_RNDN);
   int err = mpfr_add_d(&coeffs[2], &coeffs[2],
-                       quad.currentCoeffs[1], MPFR_RNDN);
-  err = mpfr_add_d(&coeffs[2], &coeffs[2],
-                   quad.currentCoeffs[2], MPFR_RNDN);
+                       quad.coeff(1), MPFR_RNDN);
+  err = mpfr_add_d(&coeffs[2], &coeffs[2], quad.coeff(2),
+                   MPFR_RNDN);
   /* Coefficient 1: c4^2/4 + c5^2/4 + c7^2/4 -
    *                c0 c1 - c0 c2 - c1 c2
    */
-  mpfr_set_d(&coeffs[1], quad.currentCoeffs[4] / 2.0,
-             MPFR_RNDN);
+  mpfr_set_d(&coeffs[1], quad.coeff(4) / 2.0, MPFR_RNDN);
   err = mpfr_sqr(&coeffs[1], &coeffs[1], MPFR_RNDN);
   mpfr_t buf;
   mpfr_init2(buf, precision);
 
-  mpfr_set_d(buf, quad.currentCoeffs[5] / 2.0, MPFR_RNDN);
+  mpfr_set_d(buf, quad.coeff(5) / 2.0, MPFR_RNDN);
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
   err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
-  mpfr_set_d(buf, quad.currentCoeffs[7] / 2.0, MPFR_RNDN);
+  mpfr_set_d(buf, quad.coeff(7) / 2.0, MPFR_RNDN);
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
   err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
-  mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[1],
-                   MPFR_RNDN);
+  mpfr_set_d(buf, -quad.coeff(0), MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.coeff(1), MPFR_RNDN);
   err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
-  mpfr_set_d(buf, -quad.currentCoeffs[0], MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[2],
-                   MPFR_RNDN);
+  mpfr_set_d(buf, -quad.coeff(0), MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.coeff(2), MPFR_RNDN);
   err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
 
-  mpfr_set_d(buf, -quad.currentCoeffs[1], MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[2],
-                   MPFR_RNDN);
+  mpfr_set_d(buf, -quad.coeff(1), MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.coeff(2), MPFR_RNDN);
   err = mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
   /* Coefficient 0: c0 c1 c2 + c4 c5 c7/4 - c0 c7^2/4 -
    *                c1 c5^2/4 - c2 c4^2/4
    */
   /* c0 c1 c2 */
-  err = mpfr_set_d(&coeffs[0], quad.currentCoeffs[0],
+  err = mpfr_set_d(&coeffs[0], quad.coeff(0), MPFR_RNDN);
+  err = mpfr_mul_d(&coeffs[0], &coeffs[0], quad.coeff(1),
                    MPFR_RNDN);
-  err = mpfr_mul_d(&coeffs[0], &coeffs[0],
-                   quad.currentCoeffs[1], MPFR_RNDN);
-  err = mpfr_mul_d(&coeffs[0], &coeffs[0],
-                   quad.currentCoeffs[2], MPFR_RNDN);
+  err = mpfr_mul_d(&coeffs[0], &coeffs[0], quad.coeff(2),
+                   MPFR_RNDN);
   /* c4 c5 c7/4 */
-  err = mpfr_set_d(buf, quad.currentCoeffs[4] / 4.0,
-                   MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[5],
-                   MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, quad.currentCoeffs[7],
-                   MPFR_RNDN);
+  err = mpfr_set_d(buf, quad.coeff(4) / 4.0, MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.coeff(5), MPFR_RNDN);
+  err = mpfr_mul_d(buf, buf, quad.coeff(7), MPFR_RNDN);
   err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
   /* -c0 c7^2/4 */
-  err = mpfr_set_d(buf, quad.currentCoeffs[7], MPFR_RNDN);
+  err = mpfr_set_d(buf, quad.coeff(7), MPFR_RNDN);
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, -quad.currentCoeffs[0] / 4.0,
-                   MPFR_RNDN);
+  err =
+      mpfr_mul_d(buf, buf, -quad.coeff(0) / 4.0, MPFR_RNDN);
   err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
   /* -c1 c5^2/4 */
-  err = mpfr_set_d(buf, quad.currentCoeffs[5], MPFR_RNDN);
+  err = mpfr_set_d(buf, quad.coeff(5), MPFR_RNDN);
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, -quad.currentCoeffs[1] / 4.0,
-                   MPFR_RNDN);
+  err =
+      mpfr_mul_d(buf, buf, -quad.coeff(1) / 4.0, MPFR_RNDN);
   err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
   /* -c2 c4^2/4 */
-  err = mpfr_set_d(buf, quad.currentCoeffs[4], MPFR_RNDN);
+  err = mpfr_set_d(buf, quad.coeff(4), MPFR_RNDN);
   err = mpfr_sqr(buf, buf, MPFR_RNDN);
-  err = mpfr_mul_d(buf, buf, -quad.currentCoeffs[2] / 4.0,
-                   MPFR_RNDN);
+  err =
+      mpfr_mul_d(buf, buf, -quad.coeff(2) / 4.0, MPFR_RNDN);
   err = mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
   mpfr_clear(buf);
   return coeffs;
@@ -488,7 +483,7 @@ static mpfr_ptr calcInflections(mpfr_ptr cubic,
 }
 
 template <typename fptype>
-int classifyCalcEigenSign(
+static int classifyCalcEigenSign(
     const Geometry::Quadric<3, fptype> &quad) {
   /* Basically I'm computing the roots of the derivative
    * of the characteristic cubic of the matrix.
@@ -553,7 +548,8 @@ static mpfr_ptr evalPolynomial(const mpfr_t *coeffs,
   int err = mpfr_set_d(&value[0], 0.0, MPFR_RNDN);
   for(unsigned i = 0; i < numCoeffs; i++) {
     err = mpfr_mul(&value[0], &value[0], pos, MPFR_RNDN);
-    err = mpfr_add(&value[0], &value[0], coeffs[i], MPFR_RNDN);
+    err = mpfr_add(&value[0], &value[0], coeffs[i],
+                   MPFR_RNDN);
   }
   return value;
 }
@@ -676,7 +672,7 @@ QuadType classifyRank_3_4(
 /* Warning: Requires fptype to be recognized by genericfp
  */
 template <typename fptype>
-QuadType classifyQuadric(
+static QuadType classifyQuadric(
     const Geometry::Quadric<3, fptype> &quad) {
   auto mtxRanks = classifyCalcRank(quad);
   int detSign = classifyCalcDetSign(quad);

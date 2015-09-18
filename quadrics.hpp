@@ -110,21 +110,6 @@ class Quadric : public Solid<dim, fptype> {
       return PT_OUTSIDE;
   }
 
-  friend mpfr_ptr
-  AccurateMath::constructCubicCoeffs<fptype>(
-      const Quadric<3, fptype> &, unsigned precision);
-  friend std::array<int, 2> AccurateMath::classifyCalcRank<
-      fptype>(const Quadric<3, fptype> &);
-  friend int AccurateMath::classifyCalcDetSign<fptype>(
-      const Quadric<3, fptype> &);
-  friend int AccurateMath::classifyCalcEigenSign<fptype>(
-      const Quadric<3, fptype> &);
-  friend AccurateMath::QuadType
-  AccurateMath::classifyQuadric<fptype>(
-      const Quadric<3, fptype> &);
-  friend std::array<int, 2> AccurateMath::classifyCalcRank<
-      fptype>(const Quadric<3, fptype> &);
-
  private:
   static constexpr int getCoeffPos(int d1, int d2) {
     assert(0 <= d1);
