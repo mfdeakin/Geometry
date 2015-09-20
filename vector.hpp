@@ -11,7 +11,7 @@
 namespace Geometry {
 
 template <int dim, typename fptype>
-class Vector : public Geometry<dim, fptype> {
+class Vector : public GeometryBase<dim, fptype> {
  public:
   Vector() {
     for(int i = 0; i < dim; i++) offset[i] = 0.0;

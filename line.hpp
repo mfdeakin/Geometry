@@ -9,6 +9,7 @@
 #include "origin.hpp"
 #include "point.hpp"
 #include "vector.hpp"
+#include "typecast.hpp"
 
 namespace Geometry {
 
@@ -34,6 +35,15 @@ class Line : public Solid<dim, fptype> {
 
   virtual void shiftOrigin(
       const Origin<dim, fptype> &newOrigin) {
+    /* Shift the origin by changing the intercept to be the
+     * minimal perpendicular to the direction.
+     * Do this by computing the perpendicular direction
+     * of the offset and it's magnitude.
+     * This leaves the only possible catastrophic
+     * cancellation in the computation of the offset */
+    Vector<dim, fptype> offset =
+        newOrigin.offset(this->origin);
+    auto perpDirs = dir.calcOrthogonals();
     Solid<dim, fptype>::shiftOrigin(newOrigin);
   }
 

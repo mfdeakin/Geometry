@@ -13,9 +13,9 @@ enum PointLocation {
 constexpr float defAbsPrecision = 9.5367431640625e-7;
 
 template <int _dim, typename fptype>
-class Geometry {
+class GeometryBase {
  public:
-  virtual ~Geometry(){};
+  virtual ~GeometryBase(){};
 
   static_assert(_dim >= 0,
                 "The dimension of a geometric object "
@@ -41,7 +41,7 @@ class Quadric;
  * and possibly surface
  */
 template <int dim, typename fptype>
-class Solid : public Geometry<dim, fptype> {
+class Solid : public GeometryBase<dim, fptype> {
  public:
   Solid(const Origin<dim, fptype> &o) : origin(o) {}
 

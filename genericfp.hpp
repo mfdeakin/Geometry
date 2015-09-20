@@ -4,6 +4,8 @@
 
 #include <assert.h>
 
+namespace GenericFP {
+
 /* The strucure for little endian architectures */
 template <unsigned e, unsigned p>
 struct fp {
@@ -41,6 +43,7 @@ struct fpconvert<float> : public fp32 {};
 
 template <>
 struct fpconvert<double> : public fp64 {};
+
 template <>
 struct fpconvert<long double> : public fp79 {};
 
@@ -199,6 +202,7 @@ TDest gfRoundNearest(TSrc src) {
     }
   }
   return dest;
+}
 }
 
 #endif

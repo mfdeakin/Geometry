@@ -229,7 +229,7 @@ static int classifyCalcDetSign(
       {0, 1, 9, 9},
       {4, 4, 9, 9}};
   constexpr const int precision =
-      fpconvert<fptype>::precision;
+      GenericFP::fpconvert<fptype>::precision;
   constexpr const int detTermPrec = precision * numDetProds;
   constexpr const int guessedExtraPrec = 2;
   mpfr_t detTerm, detSum, tmpSum, extra, modAdd;
@@ -493,7 +493,7 @@ static int classifyCalcEigenSign(
    * ((c4^2 + c5^2 + c7^2)/4 - c0 c1 - c0 c2 - c1 c2)
    */
   constexpr const int precision =
-      fpconvert<fptype>::precision;
+      GenericFP::fpconvert<fptype>::precision;
   constexpr const int numCubeProds = 3;
   constexpr const int guessedExtraPrec = 2;
   constexpr const int cubeTermPrec =
@@ -526,21 +526,6 @@ static int classifyCalcEigenSign(
      (drootsMinus && zeroVal <= 0))
     return 1;
   return 0;
-}
-
-static mpfr_ptr evalPolynomial(const mpfr_t *coeffs,
-                               const mpfr_t &pos,
-                               unsigned numCoeffs,
-                               unsigned requiredPrec) {
-  mpfr_ptr value =
-      static_cast<mpfr_ptr>(malloc(sizeof(*value)));
-  mpfr_init2(&value[0], requiredPrec);
-  mpfr_set_d(&value[0], 0.0, MPFR_RNDN);
-  for(unsigned i = 0; i < numCoeffs; i++) {
-    mpfr_mul(&value[0], &value[0], pos, MPFR_RNDN);
-    mpfr_add(&value[0], &value[0], coeffs[i], MPFR_RNDN);
-  }
-  return value;
 }
 
 template <typename fptype>
