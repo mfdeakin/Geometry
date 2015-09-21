@@ -18,7 +18,6 @@ int main(int argc, char **argv) {
   Geometry::Vector<dim, fptype> dir;
   Geometry::Line<dim, fptype> line(pt, dir);
   Geometry::Quadric<dim, fptype> q(o);
-  auto orthogs = dir.calcOrthogonals();
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

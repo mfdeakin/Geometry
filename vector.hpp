@@ -120,20 +120,25 @@ class Vector : public GeometryBase<dim, fptype> {
 
   std::array<Vector<dim, fptype>, dim - 1> calcOrthogonals()
       const {
+    /* Use a Householder reflection to compute the
+     * orthonormal vectors.
+     * This works because the Householder matrix is unitary.
+     * See the following answer for more details:
+     * https://math.stackexchange.com/questions/710103/algorithm-to-find-an-orthogonal-basis-orthogonal-to-a-given-vector
+     */
+    fptype n = std::copysign(norm(), offset[0]);
+    assert(n > 0.0);
+    Vector<dim, fptype> w(*this);
+    w.set(0, n + offset[0]);
+    const fptype wNormSq = w.dot(w);
     std::array<Vector<dim, fptype>, dim - 1> basis;
-    int firstNonZero = -1;
-    for(int d = 0, vecNum = 0; d < dim; d++) {
-      if(offset[d] == 0.0) {
-        basis[vecNum].offset[d] = 1.0;
-        vecNum++;
-      }
-      else if(firstNonZero == -1) {
-        firstNonZero = d;
-      }
-      else {
-        basis[vecNum].offset[d] = -offset[firstNonZero];
-        basis[vecNum].offset[firstNonZero] = offset[d];
-        vecNum++;
+    for(int i = 0; i < dim - 1; i++) {
+      basis[i].offset[i + 1] = 1.0;
+      for(int j = 0; j < dim; j++) {
+        fptype updated =
+            std::fma(2 * w.get(i + 1), -w.get(j) / wNormSq,
+                     basis[i].offset[j]);
+        basis[i].set(j, updated);
       }
     }
     return basis;

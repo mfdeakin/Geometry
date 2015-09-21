@@ -2,8 +2,8 @@
 CXXFLAGS=-std=c++14 -g -Wall
 LDLIBS=-lmpfr -lgtest
 
-test: test.cpp test_classification.cpp geometry.hpp quadrics.hpp point.hpp line.hpp bsgtree.hpp accurate_math.hpp vector.hpp
-	${CXX} ${CXXFLAGS} ${LDLIBS} test.cpp test_classification.cpp -o test
+test: test.cpp test_classification.cpp test_vector.cpp geometry.hpp quadrics.hpp origin.hpp point.hpp line.hpp bsgtree.hpp accurate_math.hpp vector.hpp genericfp.hpp
+	${CXX} ${CXXFLAGS} ${LDLIBS} test.cpp test_classification.cpp test_vector.cpp -o test
 
 clean:
 	rm -f test
