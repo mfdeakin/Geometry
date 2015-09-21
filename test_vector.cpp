@@ -9,15 +9,18 @@
 
 TEST(Vector, OrthogonalBasis) {
   constexpr const int dim = 3;
-  typedef float fptype;
-  const fptype eps = 1e-7;
-  std::array<fptype, dim> tests[] = {{{1.0, 0.0, 0.0}},
-                                     {{0.0, 1.0, 0.0}},
-                                     {{0.0, 0.0, 1.0}},
-                                     {{1.0, 1.0, 0.0}},
-                                     {{1.0, 0.0, 1.0}},
-                                     {{0.0, 1.0, 1.0}},
-                                     {{1.0, 1.0, 1.0}}};
+  using fptype = float;
+  const fptype eps = 1e-4;
+  std::array<fptype, dim> tests[] = {
+      {{1.0, 0.0, 0.0}},
+      {{0.0, 1.0, 0.0}},
+      {{0.0, 0.0, 1.0}},
+      {{1.0, 1.0, 0.0}},
+      {{1.0, 0.0, 1.0}},
+      {{0.0, 1.0, 1.0}},
+      {{1.0, 1.0, 1.0}},
+      {{1.0, 1.0, 2.0}},
+      {{1.0, 1.0e3, 1.0e-3}}};
   for(auto t : tests) {
     Geometry::Vector<dim, fptype> v(t);
     auto orthogs = v.calcOrthogonals();

@@ -41,16 +41,23 @@ class Line : public Solid<dim, fptype> {
      * of the offset and it's magnitude.
      * This leaves the only possible catastrophic
      * cancellation in the computation of the offset */
-    Vector<dim, fptype> offset =
-        newOrigin.offset(this->origin);
+    Vector<dim, fptype> delta(
+        intercept.calcOffset(newOrigin));
     auto perpDirs = dir.calcOrthogonals();
+    Vector<dim, fptype> interceptOff;
+    for(int i = 0; i < dim - 1; i++) {
+      Vector<dim, fptype> p = perpDirs[i].normalize();
+      fptype scale = p.dot(delta);
+      interceptOff += p * scale;
+    }
+    intercept = Point<dim, fptype>(newOrigin, interceptOff);
     Solid<dim, fptype>::shiftOrigin(newOrigin);
   }
 
   virtual PointLocation ptLocation(
       const Point<dim, fptype> &test,
       fptype absPrecision = defAbsPrecision) const {
-    auto ptDir = test.pointOffset(intercept);
+    Vector<dim, fptype> ptDir(test.calcOffset(intercept));
     fptype offsetLen = ptDir.dot(ptDir);
     fptype dist = ptDir.dot(dir);
     fptype perpDist = std::abs(offsetLen - dist * dist);
@@ -63,9 +70,6 @@ class Line : public Solid<dim, fptype> {
   }
 
   Vector<dim, fptype> getDirection() const { return dir; }
-
-  template <int, typename>
-  friend class Line;
 
  protected:
   Point<dim, fptype> intercept;

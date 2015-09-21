@@ -63,7 +63,7 @@ class Vector : public GeometryBase<dim, fptype> {
     return set(dimension, val);
   }
 
-  Vector<dim, fptype> operator*(fptype scale) {
+  Vector<dim, fptype> operator*(fptype scale) const {
     return this->scale(scale);
   }
 
@@ -75,6 +75,26 @@ class Vector : public GeometryBase<dim, fptype> {
   Vector<dim, fptype> operator-(
       const Vector<dim, fptype> &rhs) const {
     return subtract(rhs);
+  }
+
+  Vector<dim, fptype> operator*=(fptype scale) {
+    for(unsigned i = 0; i < dim; i++)
+      set(i, get(i) * scale);
+    return *this;
+  }
+
+  Vector<dim, fptype> operator+=(
+      const Vector<dim, fptype> &rhs) {
+    for(unsigned i = 0; i < dim; i++)
+      set(i, get(i) + rhs.get(i));
+    return *this;
+  }
+
+  Vector<dim, fptype> operator-=(
+      const Vector<dim, fptype> &rhs) {
+    for(unsigned i = 0; i < dim; i++)
+      set(i, get(i) - rhs.get(i));
+    return *this;
   }
 
   fptype dot(const Vector<dim, fptype> &rhs) const {
