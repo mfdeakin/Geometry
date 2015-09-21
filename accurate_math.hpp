@@ -422,8 +422,8 @@ static mpfr_ptr constructCubicCoeffs(
   return coeffs;
 }
 
-static mpfr_ptr calcInflections(mpfr_ptr cubic,
-                                unsigned precision) {
+static inline mpfr_ptr calcInflections(mpfr_ptr cubic,
+                                       unsigned precision) {
   /* Compute the derivative and it's roots.
    * The input is as follows:
    * c3 x^3 + c2 x^2 + c1 x + c0

@@ -52,7 +52,7 @@ class Solid : public GeometryBase<dim, fptype> {
       fptype absPrecision = defAbsPrecision) const = 0;
 
   virtual void shiftOrigin(
-      const Origin<dim, fptype> newOrigin) {
+      const Origin<dim, fptype> &newOrigin) {
     origin = newOrigin;
   }
 
