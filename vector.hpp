@@ -121,6 +121,9 @@ class Vector : public GeometryBase<dim, fptype> {
   Vector<dim, fptype> normalize() const {
     fptype mag = norm();
     Vector<dim, fptype> normalized;
+    if(mag == 0.0)
+      // Can't normalize a 0 vector
+      return normalized;
     for(int i = 0; i < dim; i++)
       normalized.offset[i] = offset[i] / mag;
     return normalized;

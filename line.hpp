@@ -20,7 +20,9 @@ class Line : public Solid<dim, fptype> {
        const Vector<dim, fptype> &direction)
       : Solid<dim, fptype>(intercept.origin),
         intercept(intercept),
-        dir(direction) {}
+        dir(direction.normalize()) {
+    assert(dir.norm() != 0.0);
+  }
 
   Line(const Line &src)
       : Solid<dim, fptype>(src.origin),

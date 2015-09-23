@@ -10,12 +10,13 @@
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv) {
-  constexpr int dim = 3;
-  typedef float fptype;
+  static constexpr const int dim = 3;
+  using fptype = float;
   Geometry::Origin<dim, fptype> o;
   Geometry::Vector<dim, fptype> ptOffset;
   Geometry::Point<dim, fptype> pt(o, ptOffset);
-  Geometry::Vector<dim, fptype> dir;
+  Geometry::Vector<dim, fptype> dir(
+      std::array<fptype, dim>({{1.0, 1.0, 1.0}}));
   Geometry::Line<dim, fptype> line(pt, dir);
   Geometry::Quadric<dim, fptype> q(o);
   testing::InitGoogleTest(&argc, argv);
