@@ -18,12 +18,8 @@ class Line : public Solid<dim, fptype> {
  public:
   Line(const Point<dim, fptype> &intercept,
        const Vector<dim, fptype> &direction)
-      : Solid<dim, fptype>(
-            static_cast<const Origin<dim, fptype> &>(
-                intercept)),
-        intercept(intercept, Vector<dim, fptype>(
-                                 std::array<fptype, dim>(
-                                     {{0.0, 0.0, 0.0}}))),
+      : Solid<dim, fptype>(intercept.origin),
+        intercept(intercept),
         dir(direction) {}
 
   Line(const Line &src)
@@ -67,6 +63,10 @@ class Line : public Solid<dim, fptype> {
       return PT_ON;
     else
       return PT_OUTSIDE;
+  }
+
+  Point<dim, fptype> getIntercept() const {
+    return intercept;
   }
 
   Vector<dim, fptype> getDirection() const { return dir; }

@@ -31,22 +31,12 @@ class Point : public Solid<dim, fptype>,
 
   virtual ~Point(){};
 
-  fptype getPos(int dimension) const {
-    assert(dimension < this->dim);
-    return NAN;
+  virtual Origin<dim, fptype> getOrigin() const {
+    return this->origin;
   }
 
-  fptype setPos(int dimension, fptype value) {
-    assert(dimension < this->dim);
-    return NAN;
-  }
-
-  fptype operator()(int dimension) const {
-    return getPos(dimension);
-  }
-
-  fptype operator()(int dimension, fptype pos) {
-    return setPos(dimension, pos);
+  virtual Vector<dim, fptype> getOffset() const {
+    return offset;
   }
 
   fptype distToOrigin() const { return offset.norm(); }

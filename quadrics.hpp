@@ -70,11 +70,15 @@ class Quadric : public Solid<dim, fptype> {
      */
     fptype ret = 0.0;
     fptype extra = 0.0;
+    Point<dim, fptype> copy(pt);
+    copy.shiftOrigin(this->origin);
+    Vector<dim, fptype> quadOffset = copy.getOffset();
     for(int i = 0; i < dim; i++) {
       for(int j = 0; j < dim; j++) {
         int coeffNum = getCoeffPos(i, j);
-        fptype product =
-            currentCoeffs[coeffNum] * pt(i) * pt(j) - extra;
+        fptype product = currentCoeffs[coeffNum] *
+                             quadOffset(i) * quadOffset(j) -
+                         extra;
         fptype tmp = ret + product;
         extra = (tmp - ret) - product;
         ret = tmp;
