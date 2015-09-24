@@ -62,3 +62,47 @@ TEST(Line, ShiftOrigin) {
     }
   }
 }
+
+TEST(Line, CalcPointAtDistance) {
+  static constexpr const int dim = 3;
+  using fptype = float;
+  const fptype eps = 1e-6;
+  struct TestCase {
+    fptype distance;
+    std::array<fptype, dim> offset;
+    std::array<fptype, dim> dir;
+    std::array<fptype, dim> expected;
+  };
+  struct TestCase tests[] = {
+      {0.0,
+       {{0.0, 0.0, 0.0}},
+       {{0.0, 0.0, 1.0}},
+       {{0.0, 0.0, 0.0}}},
+      {1.0,
+       {{0.0, 0.0, 0.0}},
+       {{0.0, 0.0, 1.0}},
+       {{0.0, 0.0, 1.0}}},
+      {std::sqrt(2),
+       {{0.0, 0.0, 0.0}},
+       {{1.0, 0.0, 1.0}},
+       {{1.0, 0.0, 1.0}}},
+      {3 * std::sqrt(2),
+       {{0.0, 0.0, 0.0}},
+       {{1.0, 0.0, 1.0}},
+       {{3.0, 0.0, 3.0}}},
+  };
+  Geometry::Origin<dim, fptype> defOrigin;
+  for(auto t : tests) {
+    Geometry::Vector<dim, fptype> offset(t.offset);
+    Geometry::Point<dim, fptype> intersect(defOrigin,
+                                           offset);
+    Geometry::Vector<dim, fptype> dir(t.dir);
+    Geometry::Line<dim, fptype> line(intersect, dir);
+    Geometry::Point<dim, fptype> pos =
+        line.getPosAtDist(t.distance);
+    Geometry::Vector<dim, fptype> off = pos.getOffset();
+    for(unsigned i = 0; i < dim; i++) {
+      EXPECT_NEAR(off(i), t.expected[i], eps);
+    }
+  }
+}
