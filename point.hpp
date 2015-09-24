@@ -31,12 +31,29 @@ class Point : public Solid<dim, fptype>,
 
   virtual ~Point(){};
 
+  virtual void shiftOrigin(
+      const Origin<dim, fptype> &newOrigin) {
+    Vector<dim, fptype> v =
+        this->origin.calcOffset(newOrigin);
+    Solid<dim, fptype>::shiftOrigin(newOrigin);
+  }
+
   virtual Origin<dim, fptype> getOrigin() const {
     return this->origin;
   }
 
   virtual Vector<dim, fptype> getOffset() const {
     return offset;
+  }
+
+  Point<dim, fptype> addVector(
+      Vector<dim, fptype> v) const {
+    Vector<dim, fptype> newOffset;
+    for(int i = 0; i < dim; i++) {
+      fptype newCoord = v(i) + offset(i);
+      newOffset.set(i, newCoord);
+    }
+    return Point<dim, fptype>(this->origin, newOffset);
   }
 
   fptype distToOrigin() const { return offset.norm(); }

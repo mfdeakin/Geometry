@@ -87,20 +87,34 @@ class Quadric : public Solid<dim, fptype> {
     return ret;
   }
 
-  std::array<fptype, 2> calcLineIntersect(
-      const Line<dim, fptype> &line,
+  std::array<Point<dim, fptype>, 2> calcLineIntersect(
+      Line<dim, fptype> line,
       fptype absPrecision = defAbsPrecision) const {
-    auto ld = line.getDir();
+    line.shiftOrigin(this->origin);
+    auto lDir = line.getDirection();
+    auto lInt = line.getIntercept().getOffset();
     fptype sqCoeff = 0.0;
     fptype linCoeff = 0.0;
     fptype constant = 0.0;
     for(int i = 0; i < dim; i++) {
-      sqCoeff += coeff(i, i) * ld(i) * ld(i);
-      linCoeff += 2 * coeff(i) * ld(i);
+      sqCoeff += coeff(i, i) * lDir(i) * lDir(i);
+      linCoeff += coeff(i, dim) * lDir(i);
+      linCoeff += 2 * coeff(i) * lDir(i) * lInt(i);
+      constant += coeff(i, dim) * lInt(i);
+      constant += coeff(i, i) * lInt(i) * lInt(i);
       for(int j = i + 1; j < dim; j++) {
-        sqCoeff += coeff(i, j) * ld(i) * ld(j);
+        sqCoeff += coeff(i, j) * lDir(i) * lDir(j);
+        linCoeff += coeff(i, j) * lDir(i) * lInt(j);
+        constant += coeff(i, j) * lInt(i) * lInt(j);
       }
     }
+    std::array<fptype, 2> roots =
+        AccurateMath::kahanQuadratic(sqCoeff, linCoeff,
+                                     constant);
+
+    return std::array<Point<dim, fptype>, 2>(
+        {{line.getPosAtDist(roots[0]),
+          line.getPosAtDist(roots[1])}});
   }
 
   PointLocation ptLocation(

@@ -12,6 +12,24 @@ enum PointLocation {
 
 constexpr float defAbsPrecision = 9.5367431640625e-7;
 
+template <int, typename>
+class Origin;
+
+template <int, typename>
+class Vector;
+
+template <int, typename>
+class Solid;
+
+template <int, typename>
+class Point;
+
+template <int, typename>
+class Line;
+
+template <int dim, typename fptype>
+class Quadric;
+
 template <int _dim, typename fptype>
 class GeometryBase {
  public:
@@ -20,20 +38,8 @@ class GeometryBase {
   static_assert(_dim >= 0,
                 "The dimension of a geometric object "
                 "cannot be negative!");
-  static constexpr int dim = _dim;
+  static constexpr const int dim = _dim;
 };
-
-template <int, typename>
-class Point;
-
-template <int, typename>
-class Origin;
-
-template <int, typename>
-class Line;
-
-template <int dim, typename fptype>
-class Quadric;
 
 /* A solid is a well defined geometric object which
  * is positioned relative to an origin,

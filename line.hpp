@@ -67,6 +67,16 @@ class Line : public Solid<dim, fptype> {
       return PT_OUTSIDE;
   }
 
+  Point<dim, fptype> getPosAtDist(fptype dist) const {
+    Vector<dim, fptype> pDist;
+    const auto p0 = intercept.getOffset();
+    for(int i = 0; i < dim; i++) {
+      fptype coord = std::fma(dir(i), dist, p0(i));
+      pDist.set(i, coord);
+    }
+    return Point<dim, fptype>(this->origin, pDist);
+  }
+  
   Point<dim, fptype> getIntercept() const {
     return intercept;
   }
