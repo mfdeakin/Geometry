@@ -53,9 +53,13 @@ class Quadric : public Solid<dim, fptype> {
     return currentCoeffs[coeffNum];
   }
 
-  /* d=0 corresponds to the first dimension,
-   * d=1 the second, ...
-   * d=dim the constant coefficient
+  /* Access the coefficients as a 1D array.
+   * pos=0 to dim-1 are for the square terms
+   * pos=dim is the constant term
+   * pos=dim+1 to 2dim-1 is the first dim prod terms
+   * pos=2dim is the first dim linear term
+   * ...
+   * pos=(dim+2)*(dim+1)/2-1 is the last dim linear term
    */
   fptype &coeff(int pos) const {
     assert(pos >= 0);
