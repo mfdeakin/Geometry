@@ -73,6 +73,8 @@ TEST(Line, CalcPointAtDistance) {
     std::array<fptype, dim> dir;
     std::array<fptype, dim> expected;
   };
+  static const fptype pi =
+      (fptype)std::atan((fptype)1) * 4.0;
   struct TestCase tests[] = {
       {0.0,
        {{0.0, 0.0, 0.0}},
@@ -82,14 +84,34 @@ TEST(Line, CalcPointAtDistance) {
        {{0.0, 0.0, 0.0}},
        {{0.0, 0.0, 1.0}},
        {{0.0, 0.0, 1.0}}},
-      {std::sqrt(2),
+      {std::sqrt((fptype)2),
        {{0.0, 0.0, 0.0}},
        {{1.0, 0.0, 1.0}},
        {{1.0, 0.0, 1.0}}},
-      {3 * std::sqrt(2),
+      {3 * std::sqrt((fptype)2),
        {{0.0, 0.0, 0.0}},
        {{1.0, 0.0, 1.0}},
        {{3.0, 0.0, 3.0}}},
+      {pi * std::sqrt((fptype)3),
+       {{0.0, 0.0, 0.0}},
+       {{1.0, 1.0, 1.0}},
+       {{pi, pi, pi}}},
+      {-1.0,
+       {{0.0, 0.0, 0.0}},
+       {{0.0, 0.0, 1.0}},
+       {{0.0, 0.0, -1.0}}},
+      {-std::sqrt((fptype)2),
+       {{0.0, 0.0, 0.0}},
+       {{1.0, 0.0, 1.0}},
+       {{-1.0, 0.0, -1.0}}},
+      {-3 * std::sqrt((fptype)2),
+       {{0.0, 0.0, 0.0}},
+       {{1.0, 0.0, 1.0}},
+       {{-3.0, 0.0, -3.0}}},
+      {-pi * std::sqrt((fptype)3),
+       {{0.0, 0.0, 0.0}},
+       {{1.0, 1.0, 1.0}},
+       {{-pi, -pi, -pi}}},
   };
   Geometry::Origin<dim, fptype> defOrigin;
   for(auto t : tests) {
