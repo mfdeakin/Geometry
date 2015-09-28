@@ -144,6 +144,7 @@ static fptype kahanDiscriminant(fptype sqCoeff,
 template <typename fptype>
 static std::array<fptype, 2> kahanQuadratic(
     fptype sqCoeff, fptype linCoeff, fptype constant) {
+  assert(sqCoeff != 0.0);
   fptype disc =
       kahanDiscriminant(sqCoeff, linCoeff, constant);
   if(disc < 0) return std::array<fptype, 2>({{NAN, NAN}});

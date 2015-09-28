@@ -99,7 +99,7 @@ class Quadric : public Solid<dim, fptype> {
     auto lInt = line.getIntercept().getOffset();
     fptype sqCoeff = 0.0;
     fptype linCoeff = 0.0;
-    fptype constant = 0.0;
+    fptype constant = coeff(dim, dim);
     for(int i = 0; i < dim; i++) {
       sqCoeff += coeff(i, i) * lDir(i) * lDir(i);
       linCoeff += coeff(i, dim) * lDir(i);
@@ -115,7 +115,6 @@ class Quadric : public Solid<dim, fptype> {
     std::array<fptype, 2> roots =
         AccurateMath::kahanQuadratic(sqCoeff, linCoeff,
                                      constant);
-
     return std::array<Point<dim, fptype>, 2>(
         {{line.getPosAtDist(roots[0]),
           line.getPosAtDist(roots[1])}});

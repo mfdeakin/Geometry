@@ -56,6 +56,11 @@ class Point : public Solid<dim, fptype>,
     return Point<dim, fptype>(this->origin, newOffset);
   }
 
+  Vector<dim, fptype> ptDiff(Point<dim, fptype> rhs) {
+    rhs.shiftOrigin(this->origin);
+    return offset - rhs.offset;
+  }
+
   fptype distToOrigin() const { return offset.norm(); }
 
   PointLocation ptLocation(
@@ -74,6 +79,17 @@ class Point : public Solid<dim, fptype>,
     Vector<dim, fptype> o =
         offset + this->origin.globalOffset();
     return o;
+  }
+
+  friend std::ostream &operator<<(
+      std::ostream &os, const Point<dim, fptype> &p) {
+    auto pos = p.globalOffset();
+    os << "<";
+    if(p.dim > 0) os << pos(0);
+    for(unsigned i = 1; i < dim; i++)
+      os << ", " << pos(i);
+    os << ">";
+    return os;
   }
 
   template <int, typename>

@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <array>
 #include <cmath>
+#include <ostream>
 
 namespace Geometry {
 
@@ -165,6 +166,16 @@ class Vector : public GeometryBase<dim, fptype> {
       }
     }
     return basis;
+  }
+
+  friend std::ostream &operator<<(
+      std::ostream &os, const Vector<dim, fptype> &v) {
+    os << "(";
+    if(v.dim > 0) os << v.offset[0];
+    for(unsigned i = 1; i < dim; i++)
+      os << ", " << v.offset[i];
+    os << ")";
+    return os;
   }
 
   template <int, typename>
