@@ -4,9 +4,12 @@
 #include "line.hpp"
 #include "bsgtree.hpp"
 #include "accurate_math.hpp"
+
+#include <iostream>
+
 #include <array>
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv) {

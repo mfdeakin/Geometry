@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <ostream>
 
 #include "geometry.hpp"
 #include "origin.hpp"
@@ -83,6 +84,12 @@ class Line : public Solid<dim, fptype> {
 
   Vector<dim, fptype> getDirection() const { return dir; }
 
+  friend std::ostream &operator<<(
+      std::ostream &os, const Line<dim, fptype> &l) {
+    os << l.dir << " * t + " << l.intercept;
+    return os;
+  }
+  
  protected:
   Point<dim, fptype> intercept;
   Vector<dim, fptype> dir;
