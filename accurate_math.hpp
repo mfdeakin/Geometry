@@ -130,6 +130,12 @@ static fptype compensatedDotProd(const fptype *vec1,
 }
 
 template <typename fptype>
+static fptype solveLinear(fptype linCoeff,
+                          fptype constant) {
+  return -constant / linCoeff;
+}
+
+template <typename fptype>
 static fptype kahanDiscriminant(fptype sqCoeff,
                                 fptype linCoeff,
                                 fptype constant) {
@@ -144,7 +150,9 @@ static fptype kahanDiscriminant(fptype sqCoeff,
 template <typename fptype>
 static std::array<fptype, 2> kahanQuadratic(
     fptype sqCoeff, fptype linCoeff, fptype constant) {
-  assert(sqCoeff != 0.0);
+  if(sqCoeff == 0.0) {
+    return {solveLinear(linCoeff, constant), NAN};
+  }
   fptype disc =
       kahanDiscriminant(sqCoeff, linCoeff, constant);
   if(disc < 0) return std::array<fptype, 2>({{NAN, NAN}});

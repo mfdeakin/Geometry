@@ -136,8 +136,8 @@ class Quadric : public Solid<dim, fptype> {
           once = !once;
         os << q.coeff(i, j);
         if(i < dim) {
-          os << " * x_" << i;
-          if(j < dim) os << " * x_" << j;
+          os << " * x" << i;
+          if(j < dim) os << " * x" << j;
         }
       }
     }
