@@ -53,6 +53,12 @@ class Line : public Solid<dim, fptype> {
     Solid<dim, fptype>::shiftOrigin(newOrigin);
   }
 
+  virtual fptype argPointMinDist(
+      const Point<dim, fptype> &pt) {
+    Vector<dim, fptype> delta(pt.calcOffset(intercept));
+    return delta.dot(dir);
+  }
+
   virtual PointLocation ptLocation(
       const Point<dim, fptype> &test,
       fptype absPrecision = defAbsPrecision) const {
@@ -77,7 +83,7 @@ class Line : public Solid<dim, fptype> {
     }
     return Point<dim, fptype>(this->origin, pDist);
   }
-  
+
   Point<dim, fptype> getIntercept() const {
     return intercept;
   }
@@ -89,7 +95,7 @@ class Line : public Solid<dim, fptype> {
     os << l.dir << " * t + " << l.intercept;
     return os;
   }
-  
+
  protected:
   Point<dim, fptype> intercept;
   Vector<dim, fptype> dir;

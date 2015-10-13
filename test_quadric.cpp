@@ -13,7 +13,7 @@ TEST(Quadric, LineIntersection) {
   constexpr const int dim = 3;
   constexpr const unsigned numCoeffs =
       (dim + 2) * (dim + 1) / 2;
-  constexpr const fptype eps = 1e-5;
+  constexpr const fptype eps = 1e-3;
   struct teststruct {
     std::array<fptype, numCoeffs> coeffs;
     std::array<fptype, dim> lineDir;
@@ -32,6 +32,7 @@ TEST(Quadric, LineIntersection) {
        {1.0, 0.0, 0.0},
        {10.0, 0.0, 1.0},
        {{0.0, 0.0, 1.0}, {NAN, NAN, NAN}}},
+
       /* Elliptic Paraboloid */
       {{1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
        {1.0, 0.0, 0.0},
@@ -72,7 +73,8 @@ TEST(Quadric, LineIntersection) {
        {0.0, 1.0, 4.0},
        {-10.0, 0.0, 0.0},
        {{-10.0, std::sqrt(101.0), 4.0 * std::sqrt(101.0)},
-        {-10.0, -std::sqrt(101.0), -4.0 * std::sqrt(101.0)}}},
+        {-10.0, -std::sqrt(101.0),
+         -4.0 * std::sqrt(101.0)}}},
       /* Imaginary Elliptic Cylinder */
       {{1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
        {1.0, 0.0, 0.0},
@@ -108,6 +110,15 @@ TEST(Quadric, LineIntersection) {
        {1.0, 0.0, 0.0},
        {-10.0, 0.0, 0.0},
        {{0.0, 0.0, 0.0}, {NAN, NAN, NAN}}},
+      /* Two Sheeted Hyperboloid;
+       * a more stringent test with error ~1e-3 */
+      {{std::sqrt(2), std::exp(20), -std::atan(1) * 4 / 1e3,
+        std::log(7), std::sin(2), std::cos(2), 2.0, -1.0,
+        -std::sqrt(3), -std::exp(10)},
+       {0.0, 1.0, 4.0},
+       {0.0, 0.0, 50.0},
+       {{0.0, 0.0477354, 50.1909},
+        {0.0, -0.0475539, 49.8098}}},
   };
   Geometry::Origin<dim, fptype> o;
   for(auto t : tests) {

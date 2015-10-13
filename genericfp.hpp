@@ -2,6 +2,8 @@
 #ifndef _GENFP_H_
 #define _GENFP_H_
 
+#include <cfloat>
+
 #include <assert.h>
 
 namespace GenericFP {
@@ -39,13 +41,19 @@ template <typename fptype>
 struct fpconvert;
 
 template <>
-struct fpconvert<float> : public fp32 {};
+struct fpconvert<float> : public fp32 {
+  static constexpr const float epsilon = FLT_EPSILON;
+};
 
 template <>
-struct fpconvert<double> : public fp64 {};
+struct fpconvert<double> : public fp64 {
+  static constexpr const double epsilon = DBL_EPSILON;
+};
 
 template <>
-struct fpconvert<long double> : public fp79 {};
+struct fpconvert<long double> : public fp79 {
+  static constexpr const long double epsilon = LDBL_EPSILON;
+};
 
 template <typename fptype>
 struct fpconvert<fptype> gfFPStruct(fptype value);

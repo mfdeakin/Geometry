@@ -156,13 +156,32 @@ static std::array<fptype, 2> kahanQuadratic(
   fptype disc =
       kahanDiscriminant(sqCoeff, linCoeff, constant);
   if(disc < 0) return std::array<fptype, 2>({{NAN, NAN}});
-  fptype fracPart =
-      -std::copysign(
-          std::abs(linCoeff / 2.0) + std::sqrt(disc),
-          linCoeff);
+  fptype fracPart = -std::copysign(
+      std::abs(linCoeff / 2.0) + std::sqrt(disc), linCoeff);
   std::array<fptype, 2> roots = {
       {fracPart / sqCoeff, constant / fracPart}};
   return roots;
+}
+
+template <typename fptype>
+static fptype newtonsQuadratic(
+    fptype sqCoeff, fptype linCoeff, fptype constant,
+    fptype guess,
+    fptype maxRelErr =
+        4 * GenericFP::fpconvert<fptype>::epsilon) {
+  fptype estimate = guess;
+  fptype eval =
+      std::fma(std::fma(sqCoeff, estimate, linCoeff),
+               estimate, constant);
+  while(std::abs(eval) > maxRelErr * eval) {
+    fptype delta =
+        std::fma(2 * sqCoeff, estimate, linCoeff);
+    if(delta == 0.0 || eval / delta == 0.0) break;
+    estimate -= eval / delta;
+    eval = std::fma(std::fma(sqCoeff, estimate, linCoeff),
+                    estimate, constant);
+  }
+  return estimate;
 }
 };
 

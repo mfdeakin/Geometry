@@ -28,7 +28,9 @@ class Quadric : public Solid<dim, fptype> {
     for(int i = 0; i < numCoeffs; i++) coeff(i) = 0.0;
   }
 
-  Quadric(const Quadric &src) : coeffs(src.currentCoeffs) {}
+  Quadric(const Quadric &src)
+      : Solid<dim, fptype>(src.origin),
+        coeffs(src.coeffs) {}
 
   virtual ~Quadric() {}
 
@@ -56,23 +58,24 @@ class Quadric : public Solid<dim, fptype> {
     return coeffs.get()[pos];
   }
 
-  fptype evaluatePoint(
+  template <typename outtype>
+  outtype evaluatePoint(
       const Point<dim, fptype> &pt,
       fptype absPrecision = defAbsPrecision) const {
     /* Use Kahan summation to evaluate this more correctly
      */
-    fptype ret = 0.0;
-    fptype extra = 0.0;
+    outtype ret = 0.0;
+    outtype extra = 0.0;
     Point<dim, fptype> copy(pt);
     copy.shiftOrigin(this->origin);
     Vector<dim, fptype> quadOffset = copy.getOffset();
     for(int i = 0; i < dim; i++) {
       for(int j = 0; j < dim; j++) {
         int coeffNum = getCoeffPos(i, j);
-        fptype product = coeffs.get()[coeffNum] *
+        outtype product = coeffs.get()[coeffNum] *
                              quadOffset(i) * quadOffset(j) -
                          extra;
-        fptype tmp = ret + product;
+        outtype tmp = ret + product;
         extra = (tmp - ret) - product;
         ret = tmp;
       }
@@ -80,9 +83,12 @@ class Quadric : public Solid<dim, fptype> {
     return ret;
   }
 
-  std::array<Point<dim, fptype>, 2> calcLineIntersect(
+  std::array<fptype, 2> calcLineDistToIntersect(
       Line<dim, fptype> line,
       fptype absPrecision = defAbsPrecision) const {
+    fptype shiftDist =
+        line.argPointMinDist(Point<dim, fptype>(
+            this->origin, Vector<dim, fptype>()));
     line.shiftOrigin(this->origin);
     auto lDir = line.getDirection();
     auto lInt = line.getIntercept().getOffset();
@@ -102,27 +108,41 @@ class Quadric : public Solid<dim, fptype> {
         constant += coeff(i, j) * lInt(i) * lInt(j);
       }
     }
-    std::cout << sqCoeff << " x^2 + " << linCoeff << " x + "
-              << constant << "\n";
     std::array<fptype, 2> roots =
         AccurateMath::kahanQuadratic(sqCoeff, linCoeff,
                                      constant);
+    for(int i = 0; i < 2; i++) roots[i] += shiftDist;
+    return roots;
+  }
+
+  std::array<Point<dim, fptype>, 2> calcLineIntersect(
+      const Line<dim, fptype> &line,
+      fptype absPrecision = defAbsPrecision) const {
+    std::array<fptype, 2> roots =
+        calcLineDistToIntersect(line, absPrecision);
     return std::array<Point<dim, fptype>, 2>(
-        {{line.getPosAtDist(roots[0]),
-          line.getPosAtDist(roots[1])}});
+        {line.getPosAtDist(roots[0]),
+         line.getPosAtDist(roots[1])});
   }
 
   PointLocation ptLocation(
       const Point<dim, fptype> &pt,
       fptype absPrecision = defAbsPrecision) const {
     assert(absPrecision >= 0.0);
-    double ptPos = evaluatePoint(pt);
+    fptype ptPos = evaluatePoint<fptype>(pt);
     if(ptPos < -absPrecision)
       return PT_INSIDE;
     else if(std::fabs(ptPos) < absPrecision)
       return PT_ON;
     else
       return PT_OUTSIDE;
+  }
+
+  Quadric<dim, fptype> operator=(
+      const Quadric<dim, fptype> &q) {
+    Solid<dim, fptype>::operator =(q);
+    coeffs = q.coeffs;
+    return *this;
   }
 
   friend std::ostream &operator<<(

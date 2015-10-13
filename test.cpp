@@ -4,6 +4,7 @@
 #include "line.hpp"
 #include "bsgtree.hpp"
 #include "accurate_math.hpp"
+#include "polynomial.hpp"
 
 #include <iostream>
 
@@ -22,6 +23,8 @@ int main(int argc, char **argv) {
       std::array<fptype, dim>({{1.0, 1.0, 1.0}}));
   Geometry::Line<dim, fptype> line(pt, dir);
   Geometry::Quadric<dim, fptype> q(o);
+  Geometry::Polynomial<dim, fptype> p1, p2;
+  Geometry::Polynomial<2 * dim, fptype> prod = p1.product(p2);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

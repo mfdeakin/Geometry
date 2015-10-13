@@ -49,9 +49,16 @@ class GeometryBase {
 template <int dim, typename fptype>
 class Solid : public GeometryBase<dim, fptype> {
  public:
+  Solid(const Solid<dim, fptype> &s) : origin(s.origin) {}
   Solid(const Origin<dim, fptype> &o) : origin(o) {}
 
   virtual ~Solid(){};
+
+  Solid<dim, fptype> &operator=(
+      const Solid<dim, fptype> &s) {
+    origin = s.origin;
+    return *this;
+  }
 
   virtual PointLocation ptLocation(
       const Point<dim, fptype> &test,
