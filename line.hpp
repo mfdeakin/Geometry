@@ -10,7 +10,10 @@
 #include "origin.hpp"
 #include "point.hpp"
 #include "vector.hpp"
+
 #include "typecast.hpp"
+
+#include "mathfuncs.hpp"
 
 namespace Geometry {
 
@@ -25,7 +28,8 @@ class Line : public Solid<dim, fptype> {
     assert(dir.norm() != 0.0);
   }
 
-  Line(const Line &src)
+  template <typename srctype>
+  Line(const Line<dim, srctype> &src)
       : Solid<dim, fptype>(src.origin),
         intercept(src.intercept),
         dir(src.dir) {}
@@ -65,7 +69,8 @@ class Line : public Solid<dim, fptype> {
     Vector<dim, fptype> ptDir(test.calcOffset(intercept));
     fptype offsetLen = ptDir.dot(ptDir);
     fptype dist = ptDir.dot(dir);
-    fptype perpDist = std::abs(offsetLen - dist * dist);
+    fptype perpDist = MathFuncs::MathFuncs<fptype>::fabs(
+        offsetLen - dist * dist);
     if(perpDist < absPrecision)
       return PT_INSIDE;
     else if(perpDist == absPrecision)
@@ -95,6 +100,9 @@ class Line : public Solid<dim, fptype> {
     os << l.dir << " * t + " << l.intercept;
     return os;
   }
+
+  template <int, typename>
+  friend class Line;
 
  protected:
   Point<dim, fptype> intercept;

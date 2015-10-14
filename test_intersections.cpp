@@ -13,7 +13,7 @@ TEST(QLIntersect, LineIntersection) {
   using fptype = float;
   constexpr const int dim = 3;
   constexpr const int numCoeffs = (dim + 2) * (dim + 1) / 2;
-  constexpr const int numQuadrics = 10;
+  constexpr const int numQuadrics = 0;
   constexpr const fptype eps = 1e-3;
   using Q = Geometry::Quadric<dim, fptype>;
   using V = Geometry::Vector<dim, fptype>;
@@ -27,7 +27,7 @@ TEST(QLIntersect, LineIntersection) {
   for(int i = 0; i < numQuadrics; i++) {
     Q q(o);
     for(int j = 0; j < numCoeffs; j++) {
-      q.coeff(j) = 0.0;
+      q.setCoeff(j, 0.0);
     }
     quadrics.push_back(q);
   }

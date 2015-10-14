@@ -33,13 +33,13 @@ class PolynomialBase {
       : coeffs(p.coeffs) {}
 
   fptype get(int coeff) const {
-    assert(coeff > 0);
+    assert(coeff >= 0);
     assert(coeff < numCoeffs);
     return coeffs.get()[coeff];
   }
 
   fptype &set(int coeff, fptype val) {
-    assert(coeff > 0);
+    assert(coeff >= 0);
     assert(coeff < numCoeffs);
     if(coeffs.unique() == false) {
       fptype *newCoeffs = new fptype[numCoeffs];
@@ -85,6 +85,7 @@ class PolyIsSolvable<0, fptype, true>
 template <typename fptype>
 class PolyIsSolvable<1, fptype, true>
     : public PolynomialBase<1, fptype> {
+ public:
   std::array<fptype, 1> calcRoots() {
     return {-PolynomialBase<1, fptype>::get(0) /
             PolynomialBase<1, fptype>::get(1)};
@@ -94,6 +95,7 @@ class PolyIsSolvable<1, fptype, true>
 template <typename fptype>
 class PolyIsSolvable<2, fptype, true>
     : public PolynomialBase<2, fptype> {
+ public:
   std::array<fptype, 2> calcRoots() {
     return AccurateMath::kahanQuadratic(
         PolynomialBase<2, fptype>::get(2),

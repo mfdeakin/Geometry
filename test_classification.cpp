@@ -70,7 +70,7 @@ TEST(Quadric, SimpleClassify) {
   Geometry::Quadric<dim, fptype> q(o);
   for(auto t : tests) {
     for(unsigned i = 0; i < numCoeffs; i++) {
-      q.coeff(i) = t.coeffs[i];
+      q.setCoeff(i, t.coeffs[i]);
     }
     auto quadtype = QuadricClassify::classifyQuadric(q);
     printf(
@@ -117,7 +117,7 @@ TEST(Quadric, HyperboloidClassify) {
   Geometry::Quadric<dim, fptype> q(o);
   for(auto t : tests) {
     for(unsigned i = 0; i < numCoeffs; i++) {
-      q.coeff(i) = t.coeffs[i];
+      q.setCoeff(i, t.coeffs[i]);
     }
     auto quadtype = QuadricClassify::classifyQuadric(q);
     printf(

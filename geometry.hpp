@@ -49,8 +49,12 @@ class GeometryBase {
 template <int dim, typename fptype>
 class Solid : public GeometryBase<dim, fptype> {
  public:
-  Solid(const Solid<dim, fptype> &s) : origin(s.origin) {}
-  Solid(const Origin<dim, fptype> &o) : origin(o) {}
+  template <typename srctype>
+  Solid(const Solid<dim, srctype> &s)
+      : origin(s.origin) {}
+  template <typename srctype>
+  Solid(const Origin<dim, srctype> &o)
+      : origin(o) {}
 
   virtual ~Solid(){};
 
@@ -68,6 +72,11 @@ class Solid : public GeometryBase<dim, fptype> {
       const Origin<dim, fptype> &newOrigin) {
     origin = newOrigin;
   }
+
+  Origin<dim, fptype> getOrigin() const { return origin; }
+
+  template <int, typename>
+  friend class Solid;
 
  protected:
   Origin<dim, fptype> origin;

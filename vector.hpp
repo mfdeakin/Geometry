@@ -6,8 +6,9 @@
 
 #include <assert.h>
 #include <array>
-#include <cmath>
 #include <ostream>
+
+#include "mathfuncs.hpp"
 
 namespace Geometry {
 
@@ -24,7 +25,8 @@ class Vector : public GeometryBase<dim, fptype> {
 
   template <typename srctype>
   Vector(const Vector<dim, srctype> &src) {
-    for(int i = 0; i < dim; i++) offset[i] = src.offset[i];
+    for(int i = 0; i < dim; i++)
+      offset[i] = (fptype)src.offset[i];
   }
 
   fptype get(int dimension) const {
@@ -101,7 +103,8 @@ class Vector : public GeometryBase<dim, fptype> {
   fptype dot(const Vector<dim, fptype> &rhs) const {
     fptype sum = 0.0;
     for(int i = 0; i < dim; i++)
-      sum = std::fma(get(i), rhs.get(i), sum);
+      sum = MathFuncs::MathFuncs<fptype>::fma(
+          get(i), rhs.get(i), sum);
     return sum;
   }
 
@@ -132,7 +135,7 @@ class Vector : public GeometryBase<dim, fptype> {
 
   fptype norm() const {
     fptype normSq = dot(*this);
-    return std::sqrt(normSq);
+    return MathFuncs::MathFuncs<fptype>::sqrt(normSq);
   }
 
   Vector<dim, fptype> scale(fptype scalar) const {
@@ -150,7 +153,8 @@ class Vector : public GeometryBase<dim, fptype> {
      * See the following answer for more details:
      * https://math.stackexchange.com/questions/710103/algorithm-to-find-an-orthogonal-basis-orthogonal-to-a-given-vector
      */
-    fptype n = std::copysign(norm(), offset[0]);
+    fptype n = MathFuncs::MathFuncs<fptype>::copysign(
+        norm(), offset[0]);
     assert(n > 0.0);
     Vector<dim, fptype> w(*this);
     w.set(0, n + offset[0]);
@@ -159,9 +163,9 @@ class Vector : public GeometryBase<dim, fptype> {
     for(int i = 0; i < dim - 1; i++) {
       basis[i].offset[i + 1] = 1.0;
       for(int j = 0; j < dim; j++) {
-        fptype updated =
-            std::fma(2 * w.get(i + 1), -w.get(j) / wNormSq,
-                     basis[i].offset[j]);
+        fptype updated = MathFuncs::MathFuncs<fptype>::fma(
+            2 * w.get(i + 1), -w.get(j) / wNormSq,
+            basis[i].offset[j]);
         basis[i].set(j, updated);
       }
     }

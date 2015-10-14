@@ -128,7 +128,7 @@ TEST(Quadric, LineIntersection) {
     Geometry::Line<dim, fptype> l(intercept, dir);
     Geometry::Quadric<dim, fptype> q(o);
     for(unsigned i = 0; i < numCoeffs; i++)
-      q.coeff(i) = t.coeffs[i];
+      q.setCoeff(i, t.coeffs[i]);
     std::cout << "\nQuadric: " << q << "\n";
     std::cout << "Line: " << l << "\n";
     auto intersects = q.calcLineIntersect(l);

@@ -14,7 +14,8 @@ class Origin : public GeometryBase<dim, fptype> {
  public:
   Origin() {}
 
-  Origin(const Origin<dim, fptype> &src)
+  template <typename srctype>
+  Origin(const Origin<dim, srctype> &src)
       : globalCoords(src.globalCoords) {}
 
   Origin(const std::array<fptype, dim> &globalPos)
@@ -34,7 +35,7 @@ class Origin : public GeometryBase<dim, fptype> {
     return globalCoords;
   }
 
-  template <int, typename>
+  template <int d, typename f>
   friend class Origin;
 
  private:

@@ -14,7 +14,11 @@
 #include "point.hpp"
 #include "line.hpp"
 
+#include "polynomial.hpp"
+
 #include "accurate_math.hpp"
+
+#include "mathfuncs.hpp"
 
 namespace Geometry {
 
@@ -25,12 +29,21 @@ class Quadric : public Solid<dim, fptype> {
       : Solid<dim, fptype>(origin),
         coeffs(new fptype[numCoeffs],
                std::default_delete<fptype[]>()) {
-    for(int i = 0; i < numCoeffs; i++) coeff(i) = 0.0;
+    for(int i = 0; i < numCoeffs; i++) setCoeff(i, 0.0);
   }
 
-  Quadric(const Quadric &src)
+  Quadric(const Quadric<dim, fptype> &src)
       : Solid<dim, fptype>(src.origin),
         coeffs(src.coeffs) {}
+
+  template <typename srctype>
+  Quadric(const Quadric<dim, srctype> &src)
+      : Solid<dim, fptype>(src.origin),
+        coeffs(new fptype[numCoeffs],
+               std::default_delete<fptype[]>()) {
+    for(int i = 0; i < numCoeffs; i++)
+      setCoeff(i, src.coeff(i));
+  }
 
   virtual ~Quadric() {}
 
@@ -38,10 +51,14 @@ class Quadric : public Solid<dim, fptype> {
    * d=1 the second, ...
    * d=dim the constant coefficient
    */
-  fptype &coeff(int d1, int d2) const {
+  fptype coeff(int d1, int d2) const {
     int coeffNum = getCoeffPos(d1, d2);
-    coeffs.get()[coeffNum] = coeffs.get()[coeffNum];
     return coeffs.get()[coeffNum];
+  }
+
+  fptype setCoeff(int d1, int d2, fptype val) {
+    int coeffNum = getCoeffPos(d1, d2);
+    return setCoeff(coeffNum, val);
   }
 
   /* Access the coefficients as a 1D array.
@@ -52,9 +69,23 @@ class Quadric : public Solid<dim, fptype> {
    * ...
    * pos=(dim+2)*(dim+1)/2-1 is the last dim linear term
    */
-  fptype &coeff(int pos) const {
+  fptype coeff(int pos) const {
     assert(pos >= 0);
     assert(pos < numCoeffs);
+    return coeffs.get()[pos];
+  }
+
+  fptype setCoeff(int pos, fptype val) {
+    assert(pos >= 0);
+    assert(pos < numCoeffs);
+    if(coeffs.unique() == false) {
+      fptype *newCoeffs = new fptype[numCoeffs];
+      for(int i = 0; i < numCoeffs; i++)
+        newCoeffs[i] = coeff(i);
+      coeffs.reset(newCoeffs,
+                   std::default_delete<fptype[]>());
+    }
+    coeffs.get()[pos] = val;
     return coeffs.get()[pos];
   }
 
@@ -73,8 +104,9 @@ class Quadric : public Solid<dim, fptype> {
       for(int j = 0; j < dim; j++) {
         int coeffNum = getCoeffPos(i, j);
         outtype product = coeffs.get()[coeffNum] *
-                             quadOffset(i) * quadOffset(j) -
-                         extra;
+                              quadOffset(i) *
+                              quadOffset(j) -
+                          extra;
         outtype tmp = ret + product;
         extra = (tmp - ret) - product;
         ret = tmp;
@@ -83,13 +115,9 @@ class Quadric : public Solid<dim, fptype> {
     return ret;
   }
 
-  std::array<fptype, 2> calcLineDistToIntersect(
-      Line<dim, fptype> line,
+  Polynomial<2, fptype> calcLineDistPoly(
+      const Line<dim, fptype> &line,
       fptype absPrecision = defAbsPrecision) const {
-    fptype shiftDist =
-        line.argPointMinDist(Point<dim, fptype>(
-            this->origin, Vector<dim, fptype>()));
-    line.shiftOrigin(this->origin);
     auto lDir = line.getDirection();
     auto lInt = line.getIntercept().getOffset();
     fptype sqCoeff = 0.0;
@@ -108,9 +136,23 @@ class Quadric : public Solid<dim, fptype> {
         constant += coeff(i, j) * lInt(i) * lInt(j);
       }
     }
-    std::array<fptype, 2> roots =
-        AccurateMath::kahanQuadratic(sqCoeff, linCoeff,
-                                     constant);
+    Polynomial<2, fptype> poly;
+    poly.set(0, constant);
+    poly.set(1, linCoeff);
+    poly.set(2, sqCoeff);
+    return poly;
+  }
+
+  std::array<fptype, 2> calcLineDistToIntersect(
+      Line<dim, fptype> line,
+      fptype absPrecision = defAbsPrecision) const {
+    fptype shiftDist =
+        line.argPointMinDist(Point<dim, fptype>(
+            this->origin, Vector<dim, fptype>()));
+    line.shiftOrigin(this->origin);
+    Polynomial<2, fptype> poly =
+        calcLineDistPoly(line, absPrecision);
+    auto roots = poly.calcRoots();
     for(int i = 0; i < 2; i++) roots[i] += shiftDist;
     return roots;
   }
@@ -132,7 +174,8 @@ class Quadric : public Solid<dim, fptype> {
     fptype ptPos = evaluatePoint<fptype>(pt);
     if(ptPos < -absPrecision)
       return PT_INSIDE;
-    else if(std::fabs(ptPos) < absPrecision)
+    else if(MathFuncs::MathFuncs<fptype>::fabs(ptPos) <
+            absPrecision)
       return PT_ON;
     else
       return PT_OUTSIDE;
@@ -140,7 +183,7 @@ class Quadric : public Solid<dim, fptype> {
 
   Quadric<dim, fptype> operator=(
       const Quadric<dim, fptype> &q) {
-    Solid<dim, fptype>::operator =(q);
+    Solid<dim, fptype>::operator=(q);
     coeffs = q.coeffs;
     return *this;
   }
@@ -165,6 +208,9 @@ class Quadric : public Solid<dim, fptype> {
     return os;
   }
 
+  template <int, typename>
+  friend class Quadric;
+
  private:
   static constexpr int getCoeffPos(int d1, int d2) {
     assert(0 <= d1);
@@ -174,8 +220,9 @@ class Quadric : public Solid<dim, fptype> {
     if(d1 == d2) {
       return d1;
     } else {
-      int first = std::min(d1, d2);
-      int second = std::max(d1, d2);
+      int first = MathFuncs::MathFuncs<fptype>::min(d1, d2);
+      int second =
+          MathFuncs::MathFuncs<fptype>::max(d1, d2);
       int offset =
           first * dim - (first * (first - 1)) / 2 + dim + 1;
       return offset + second - first - 1;
