@@ -13,7 +13,7 @@ TEST(QLIntersect, LineIntersection) {
   using fptype = float;
   constexpr const int dim = 3;
   constexpr const int numCoeffs = (dim + 2) * (dim + 1) / 2;
-  constexpr const int numQuadrics = 0;
+  constexpr const int numQuadrics = 2;
   constexpr const fptype eps = 1e-3;
   using Q = Geometry::Quadric<dim, fptype>;
   using V = Geometry::Vector<dim, fptype>;
@@ -23,11 +23,14 @@ TEST(QLIntersect, LineIntersection) {
   O o;
   P intercept(o, V({1.0, 0.0, -1.0}));
   L l(intercept, V({1.0, 1.0, 1.0}));
+  fptype quadCoeffs[numQuadrics][Q::numCoeffs] = {
+      {1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.0},
+      {1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.001}};
   std::list<Q> quadrics;
   for(int i = 0; i < numQuadrics; i++) {
     Q q(o);
     for(int j = 0; j < numCoeffs; j++) {
-      q.setCoeff(j, 0.0);
+      q.setCoeff(j, quadCoeffs[i][j]);
     }
     quadrics.push_back(q);
   }

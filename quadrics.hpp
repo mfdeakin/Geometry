@@ -211,6 +211,9 @@ class Quadric : public Solid<dim, fptype> {
   template <int, typename>
   friend class Quadric;
 
+  static constexpr const int numCoeffs =
+      (dim + 2) * (dim + 1) / 2;
+
  private:
   static constexpr int getCoeffPos(int d1, int d2) {
     assert(0 <= d1);
@@ -228,9 +231,6 @@ class Quadric : public Solid<dim, fptype> {
       return offset + second - first - 1;
     }
   }
-
-  static constexpr const int numCoeffs =
-      (dim + 2) * (dim + 1) / 2;
 
   std::shared_ptr<fptype> coeffs;
 };

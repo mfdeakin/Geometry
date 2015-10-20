@@ -106,8 +106,7 @@ class Intersection {
       if(tmp < 0.0) {
         /* Opposite signs! */
         return -1.0;
-      }
-      else if(tmp > 0.0) {
+      } else if(tmp > 0.0) {
         /* Same Signs! */
         return 1.0;
       }
@@ -139,13 +138,15 @@ void quicksortInt(Iter start, Iter end) {
     if(bot == top) break;
     std::iter_swap(bot, top);
   }
-  /* Now rearrange the part larger than the pivot */
-  quicksortInt(bot, end);
+  if(bot != end) {
+    /* Now rearrange the part larger than the pivot */
+    quicksortInt(bot, end);
+  }
   /* Put the pivot into the correct place,
    * and then rearrange the part smaller than the pivot */
   bot--;
   std::iter_swap(start, bot);
-  quicksortInt(start, bot);
+  if(start != bot) quicksortInt(start, bot);
 }
 
 template <int dim, typename fptype>
