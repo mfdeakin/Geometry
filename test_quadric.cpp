@@ -12,13 +12,14 @@ TEST(Quadric, LineIntersection) {
   using fptype = float;
   constexpr const int dim = 3;
   constexpr const unsigned numCoeffs =
-      (dim + 2) * (dim + 1) / 2;
+      Geometry::Quadric<dim, fptype>::numCoeffs;
+  constexpr const int numRoots = 2;
   constexpr const fptype eps = 1e-3;
   struct teststruct {
     std::array<fptype, numCoeffs> coeffs;
     std::array<fptype, dim> lineDir;
     std::array<fptype, dim> lineInt;
-    std::array<fptype, dim> roots[2];
+    std::array<fptype, dim> roots[numRoots];
   } tests[] = {
       /* Hyperboloid of One Sheet */
       {{1.0, 1.0, -3.0, -16.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -32,7 +33,6 @@ TEST(Quadric, LineIntersection) {
        {1.0, 0.0, 0.0},
        {10.0, 0.0, 1.0},
        {{0.0, 0.0, 1.0}, {NAN, NAN, NAN}}},
-
       /* Elliptic Paraboloid */
       {{1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0},
        {1.0, 0.0, 0.0},

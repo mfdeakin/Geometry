@@ -55,9 +55,9 @@ class Intersection {
        * to compute the coefficients accurately,
        * so set that first
        */
-      const unsigned machPrec =
+      constexpr const unsigned machPrec =
           GenericFP::fpconvert<fptype>::precision;
-      const unsigned coeffPrec = 3 * machPrec;
+      constexpr const unsigned coeffPrec = 3 * machPrec;
       mpfr::mpreal::set_default_prec(coeffPrec);
       /* Compute the coefficients */
       Quadric<dim, mpfr::mpreal> q1(*q);
@@ -161,7 +161,8 @@ sortIntersections(const Line<dim, fptype> &line,
     for(int k = 0; k < 2; k++) {
       if(!std::isnan(intPos[k])) {
         struct Intersection<dim, fptype> i(
-            q, line, intPos[k], intPos[!k], absErrMargin);
+            q, line, intPos[k], intPos[1 - k],
+            absErrMargin);
         inter->push_back(i);
       }
     }

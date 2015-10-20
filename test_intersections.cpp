@@ -24,8 +24,8 @@ TEST(QLIntersect, LineIntersection) {
   P intercept(o, V({1.0, 0.0, -1.0}));
   L l(intercept, V({1.0, 1.0, 1.0}));
   fptype quadCoeffs[numQuadrics][Q::numCoeffs] = {
-      {1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.0},
-      {1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.001}};
+      {1.0, 1.0, 1.0, -3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+      {1.0, 1.0, 1.0, -3.001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
   std::list<Q> quadrics;
   for(int i = 0; i < numQuadrics; i++) {
     Q q(o);

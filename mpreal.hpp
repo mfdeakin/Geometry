@@ -817,7 +817,10 @@ class conversion_overflow : public std::exception {
 // Constructors & converters
 // Default constructor: creates mp number and initializes it
 // to 0.
-inline mpreal::mpreal(mp_prec_t prec) {
+inline mpreal::mpreal(
+    mp_prec_t prec) {
+  if(prec < MPFR_PREC_MIN)
+    prec = get_default_prec();
   mpfr_init2(mpfr_ptr(), prec);
   mpfr_set_zero_fast(mpfr_ptr());
 
@@ -3609,6 +3612,8 @@ inline const mpreal grandom(unsigned int seed = 0) {
 //////////////////////////////////////////////////////////////////////////
 // Set/Get global properties
 inline void mpreal::set_default_prec(mp_prec_t prec) {
+  assert(prec >= MPFR_PREC_MIN);
+  assert(prec < MPFR_PREC_MAX);
   mpfr_set_default_prec(prec);
 }
 

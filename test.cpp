@@ -6,6 +6,8 @@
 #include "accurate_math.hpp"
 #include "polynomial.hpp"
 
+#include "mpreal.hpp"
+
 #include <iostream>
 
 #include <array>
@@ -25,6 +27,9 @@ int main(int argc, char **argv) {
   Geometry::Quadric<dim, fptype> q(o);
   Geometry::Polynomial<dim, fptype> p1, p2;
   Geometry::Polynomial<2 * dim, fptype> prod = p1.product(p2);
+  mpfr::mpreal::set_default_prec(72);
+  mpfr::mpreal mt;
+  Geometry::Quadric<dim, mpfr::mpreal> qmp(o);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
