@@ -155,7 +155,7 @@ class Vector : public GeometryBase<dim, fptype> {
      */
     fptype n = MathFuncs::MathFuncs<fptype>::copysign(
         norm(), offset[0]);
-    assert(n > 0.0);
+    assert(n != 0.0);
     Vector<dim, fptype> w(*this);
     w.set(0, n + offset[0]);
     const fptype wNormSq = w.dot(w);

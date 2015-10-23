@@ -14,6 +14,9 @@ class Origin : public GeometryBase<dim, fptype> {
  public:
   Origin() {}
 
+  Origin(const Origin<dim, fptype> &src)
+      : globalCoords(src.globalCoords) {}
+
   template <typename srctype>
   Origin(const Origin<dim, srctype> &src)
       : globalCoords(src.globalCoords) {}
@@ -37,6 +40,11 @@ class Origin : public GeometryBase<dim, fptype> {
 
   template <int d, typename f>
   friend class Origin;
+
+  static const Origin<dim, fptype> &uOrigin() {
+    static const Origin<dim, fptype> universeOrigin;
+    return universeOrigin;
+  }
 
  private:
   Vector<dim, fptype> globalCoords;

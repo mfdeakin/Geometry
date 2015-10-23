@@ -7,6 +7,7 @@
 
 #include <ostream>
 #include <iostream>
+#include <array>
 #include <memory>
 
 #include "geometry.hpp"
@@ -25,10 +26,15 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Quadric : public Solid<dim, fptype> {
  public:
+  Quadric()
+      : Solid<dim, fptype>(),
+        coeffs(new std::array<fptype, numCoeffs>()) {
+    for(int i = 0; i < numCoeffs; i++) setCoeff(i, 0.0);
+  }
+
   Quadric(const Origin<dim, fptype> &origin)
       : Solid<dim, fptype>(origin),
-        coeffs(new fptype[numCoeffs],
-               std::default_delete<fptype[]>()) {
+        coeffs(new std::array<fptype, numCoeffs>()) {
     for(int i = 0; i < numCoeffs; i++) setCoeff(i, 0.0);
   }
 
@@ -39,8 +45,7 @@ class Quadric : public Solid<dim, fptype> {
   template <typename srctype>
   Quadric(const Quadric<dim, srctype> &src)
       : Solid<dim, fptype>(src.origin),
-        coeffs(new fptype[numCoeffs],
-               std::default_delete<fptype[]>()) {
+        coeffs(new std::array<fptype, numCoeffs>()) {
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, src.coeff(i));
   }
@@ -53,7 +58,7 @@ class Quadric : public Solid<dim, fptype> {
    */
   fptype coeff(int d1, int d2) const {
     int coeffNum = getCoeffPos(d1, d2);
-    return coeffs.get()[coeffNum];
+    return (*coeffs.get())[coeffNum];
   }
 
   fptype setCoeff(int d1, int d2, fptype val) {
@@ -72,21 +77,21 @@ class Quadric : public Solid<dim, fptype> {
   fptype coeff(int pos) const {
     assert(pos >= 0);
     assert(pos < numCoeffs);
-    return coeffs.get()[pos];
+    return (*coeffs.get())[pos];
   }
 
   fptype setCoeff(int pos, fptype val) {
     assert(pos >= 0);
     assert(pos < numCoeffs);
     if(coeffs.unique() == false) {
-      fptype *newCoeffs = new fptype[numCoeffs];
+      std::array<fptype, numCoeffs> *newCoeffs =
+          new std::array<fptype, numCoeffs>();
       for(int i = 0; i < numCoeffs; i++)
-        newCoeffs[i] = coeff(i);
-      coeffs.reset(newCoeffs,
-                   std::default_delete<fptype[]>());
+        (*newCoeffs)[i] = coeff(i);
+      coeffs.reset(newCoeffs);
     }
-    coeffs.get()[pos] = val;
-    return coeffs.get()[pos];
+    (*coeffs.get())[pos] = val;
+    return (*coeffs.get())[pos];
   }
 
   template <typename outtype>
@@ -103,8 +108,7 @@ class Quadric : public Solid<dim, fptype> {
     for(int i = 0; i < dim; i++) {
       for(int j = 0; j < dim; j++) {
         int coeffNum = getCoeffPos(i, j);
-        outtype product = coeffs.get()[coeffNum] *
-                              quadOffset(i) *
+        outtype product = coeff(coeffNum) * quadOffset(i) *
                               quadOffset(j) -
                           extra;
         outtype tmp = ret + product;
@@ -232,7 +236,7 @@ class Quadric : public Solid<dim, fptype> {
     }
   }
 
-  std::shared_ptr<fptype> coeffs;
+  std::shared_ptr<std::array<fptype, numCoeffs>> coeffs;
 };
 };
 

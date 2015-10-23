@@ -10,6 +10,7 @@
 
 #include <iostream>
 
+#include <list>
 #include <array>
 #include <cmath>
 
@@ -30,6 +31,7 @@ int main(int argc, char **argv) {
   mpfr::mpreal::set_default_prec(72);
   mpfr::mpreal mt;
   Geometry::Quadric<dim, mpfr::mpreal> qmp(o);
+  std::list<Geometry::Quadric<dim, mpfr::mpreal>> qmplist;
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

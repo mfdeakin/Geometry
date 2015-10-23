@@ -20,6 +20,10 @@ class Point : public Solid<dim, fptype>,
               public Origin<dim, fptype> {
  public:
   template <typename srctype>
+  Point(const Vector<dim, srctype> &offset)
+      : Solid<dim, fptype>(), offset(offset) {}
+
+  template <typename srctype>
   Point(const Origin<dim, srctype> &origin,
         const Vector<dim, srctype> &offset)
       : Solid<dim, fptype>(origin), offset(offset) {}
@@ -86,8 +90,7 @@ class Point : public Solid<dim, fptype>,
     auto pos = p.globalOffset();
     os << "<";
     if(p.dim > 0) os << pos(0);
-    for(unsigned i = 1; i < dim; i++)
-      os << ", " << pos(i);
+    for(unsigned i = 1; i < dim; i++) os << ", " << pos(i);
     os << ">";
     return os;
   }

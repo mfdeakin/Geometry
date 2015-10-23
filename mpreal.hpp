@@ -199,28 +199,37 @@ class mpreal {
   }
 
   // Constructors && type conversions
-  mpreal(mp_prec_t prec = mpreal::get_default_prec());
+  mpreal();
   mpreal(const mpreal &u);
   mpreal(const mpf_t u);
-  mpreal(const mpz_t u, mp_prec_t prec,
+  mpreal(const mpz_t u, mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const mpq_t u, mp_prec_t prec,
+  mpreal(const mpq_t u, mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const double u, mp_prec_t prec,
+  mpreal(const float u, mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const long double u, mp_prec_t prec,
+  mpreal(const double u,
+         mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const unsigned long long int u, mp_prec_t prec,
+  mpreal(const long double u,
+         mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const long long int u, mp_prec_t prec,
+  mpreal(const unsigned long long int u,
+         mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const unsigned long int u, mp_prec_t prec,
+  mpreal(const long long int u,
+         mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const unsigned int u, mp_prec_t prec,
+  mpreal(const unsigned long int u,
+         mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const long int u, mp_prec_t prec,
+  mpreal(const unsigned int u,
+         mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
-  mpreal(const int u, mp_prec_t prec,
+  mpreal(const long int u,
+         mp_prec_t prec = get_default_prec(),
+         mp_rnd_t mode = mpreal::get_default_rnd());
+  mpreal(const int u, mp_prec_t prec = get_default_prec(),
          mp_rnd_t mode = mpreal::get_default_rnd());
 
   // Construct mpreal from mpfr_t structure.
@@ -817,10 +826,8 @@ class conversion_overflow : public std::exception {
 // Constructors & converters
 // Default constructor: creates mp number and initializes it
 // to 0.
-inline mpreal::mpreal(
-    mp_prec_t prec) {
-  if(prec < MPFR_PREC_MIN)
-    prec = get_default_prec();
+inline mpreal::mpreal() {
+  mp_prec_t prec = get_default_prec();
   mpfr_init2(mpfr_ptr(), prec);
   mpfr_set_zero_fast(mpfr_ptr());
 
@@ -889,6 +896,10 @@ inline mpreal::mpreal(const mpq_t u, mp_prec_t prec,
 
   MPREAL_MSVC_DEBUGVIEW_CODE;
 }
+
+inline mpreal::mpreal(const float u, mp_prec_t prec,
+                      mp_rnd_t mode)
+    : mpreal(static_cast<const double>(u), prec, mode) {}
 
 inline mpreal::mpreal(const double u, mp_prec_t prec,
                       mp_rnd_t mode) {

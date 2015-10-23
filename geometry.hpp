@@ -10,8 +10,6 @@ enum PointLocation {
   PT_OUTSIDE = 1
 };
 
-constexpr float defAbsPrecision = 9.5367431640625e-7;
-
 template <int, typename>
 class Origin;
 
@@ -29,6 +27,8 @@ class Line;
 
 template <int dim, typename fptype>
 class Quadric;
+
+constexpr float defAbsPrecision = 9.5367431640625e-7;
 
 template <int _dim, typename fptype>
 class GeometryBase {
@@ -49,9 +49,12 @@ class GeometryBase {
 template <int dim, typename fptype>
 class Solid : public GeometryBase<dim, fptype> {
  public:
+  Solid() : origin(Origin<dim, fptype>::uOrigin()) {}
+
   template <typename srctype>
   Solid(const Solid<dim, srctype> &s)
       : origin(s.origin) {}
+
   template <typename srctype>
   Solid(const Origin<dim, srctype> &o)
       : origin(o) {}
