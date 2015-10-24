@@ -37,6 +37,7 @@ class Intersection {
         absErrMargin(absErrMargin) {}
   Intersection(const Intersection<dim, fptype> &i)
       : q(i.q),
+				l(i.l),
         intPos(i.intPos),
         otherIntPos(i.otherIntPos),
         absErrMargin(i.absErrMargin) {}
@@ -44,6 +45,7 @@ class Intersection {
   Intersection<dim, fptype> operator=(
       const Intersection<dim, fptype> &i) {
     q = i.q;
+		l = i.l;
     intPos = i.intPos;
     otherIntPos = i.otherIntPos;
     absErrMargin = i.absErrMargin;
