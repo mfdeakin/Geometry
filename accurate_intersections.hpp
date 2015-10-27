@@ -15,37 +15,41 @@
 
 namespace Geometry {
 
+template <int dim, typename fptype, bool isMachPrec>
+class IntersectionBase;
+
 template <int dim, typename fptype>
-class Intersection {
+class IntersectionBase<dim, fptype, true> {
  public:
   const Quadric<dim, fptype> *q;
   const Line<dim, fptype> *l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
 
-  Intersection() {}
+  IntersectionBase() {}
 
-  Intersection(const Quadric<dim, fptype> &quad,
-               const Line<dim, fptype> &line,
-               fptype intPos = NAN,
-               fptype otherIntPos = NAN,
-               fptype absErrMargin = defAbsPrecision)
+  IntersectionBase(const Quadric<dim, fptype> &quad,
+                   const Line<dim, fptype> &line,
+                   fptype intPos = NAN,
+                   fptype otherIntPos = NAN,
+                   fptype absErrMargin = defAbsPrecision)
       : q(&quad),
         l(&line),
         intPos(intPos),
         otherIntPos(otherIntPos),
         absErrMargin(absErrMargin) {}
-  Intersection(const Intersection<dim, fptype> &i)
+  IntersectionBase(
+      const IntersectionBase<dim, fptype, true> &i)
       : q(i.q),
-				l(i.l),
+        l(i.l),
         intPos(i.intPos),
         otherIntPos(i.otherIntPos),
         absErrMargin(i.absErrMargin) {}
 
-  Intersection<dim, fptype> operator=(
-      const Intersection<dim, fptype> &i) {
+  IntersectionBase<dim, fptype, true> operator=(
+      const IntersectionBase<dim, fptype, true> &i) {
     q = i.q;
-		l = i.l;
+    l = i.l;
     intPos = i.intPos;
     otherIntPos = i.otherIntPos;
     absErrMargin = i.absErrMargin;
@@ -53,8 +57,11 @@ class Intersection {
   }
 
   fptype accurateCompare(
-      const Intersection<dim, fptype> &i) const {
-    /* Compute the coefficients for the determinant
+      const IntersectionBase<dim, fptype, true> &i) const {
+    /* Only works when there are two roots for both quadrics
+     * Also requires the differences of roots to be
+     * greater than the minimum precision.
+     * Compute the coefficients for the determinant
      * We need a precision of 3 times machine precision
      * to compute the coefficients accurately,
      * so set that first
@@ -118,20 +125,121 @@ class Intersection {
     return 0.0;
   }
 
-  fptype compare(const Intersection<dim, fptype> &i) const {
+  fptype compare(
+      const IntersectionBase<dim, fptype, true> &i) const {
     fptype delta = intPos - i.intPos;
-    if(std::abs(delta) < absErrMargin)
+    if(MathFuncs::MathFuncs<fptype>::fabs(delta) <
+           absErrMargin &&
+       !MathFuncs::MathFuncs<fptype>::isnan(otherIntPos) &&
+       !MathFuncs::MathFuncs<fptype>::isnan(i.otherIntPos))
       return accurateCompare(i);
     else
       return delta;
   }
 
-  static bool cmp(const Intersection<dim, fptype> &lhs,
-                  const Intersection<dim, fptype> &rhs) {
+  static bool cmp(
+      const IntersectionBase<dim, fptype, true> &lhs,
+      const IntersectionBase<dim, fptype, true> &rhs) {
     fptype diff = lhs.compare(rhs);
     if(diff < 0) return true;
     return false;
   }
+};
+
+template <int dim, typename fptype>
+class IntersectionBase<dim, fptype, false> {
+ public:
+  const Quadric<dim, fptype> *q;
+  const Line<dim, fptype> *l;
+  fptype intPos, otherIntPos;
+  fptype absErrMargin;
+
+  IntersectionBase() {}
+
+  IntersectionBase(const Quadric<dim, fptype> &quad,
+                   const Line<dim, fptype> &line,
+                   fptype intPos = NAN,
+                   fptype otherIntPos = NAN,
+                   fptype absErrMargin = defAbsPrecision)
+      : q(&quad),
+        l(&line),
+        intPos(intPos),
+        otherIntPos(otherIntPos),
+        absErrMargin(absErrMargin) {}
+  IntersectionBase(
+      const IntersectionBase<dim, fptype, false> &i)
+      : q(i.q),
+        l(i.l),
+        intPos(i.intPos),
+        otherIntPos(i.otherIntPos),
+        absErrMargin(i.absErrMargin) {}
+
+  IntersectionBase<dim, fptype, false> operator=(
+      const IntersectionBase<dim, fptype, false> &i) {
+    q = i.q;
+    l = i.l;
+    intPos = i.intPos;
+    otherIntPos = i.otherIntPos;
+    absErrMargin = i.absErrMargin;
+    return *this;
+  }
+
+  fptype compare(
+      const IntersectionBase<dim, fptype, false> &i) const {
+    fptype delta = intPos - i.intPos;
+    return delta;
+  }
+
+  static bool cmp(
+      const IntersectionBase<dim, fptype, false> &lhs,
+      const IntersectionBase<dim, fptype, false> &rhs) {
+    fptype diff = lhs.compare(rhs);
+    if(diff < 0) return true;
+    return false;
+  }
+};
+
+template <int dim, typename fptype>
+class Intersection
+    : public IntersectionBase<
+          dim, fptype,
+          !std::is_same<fptype, mpfr::mpreal>::value> {
+ public:
+  Intersection()
+      : IntersectionBase<dim, fptype, !this->isMPFR>() {}
+
+  Intersection(const Quadric<dim, fptype> &quad,
+               const Line<dim, fptype> &line,
+               fptype intPos = NAN,
+               fptype otherIntPos = NAN,
+               fptype absErrMargin = defAbsPrecision)
+      : IntersectionBase<
+            dim, fptype,
+            !std::is_same<fptype, mpfr::mpreal>::value>(
+            quad, line, intPos, otherIntPos, absErrMargin) {
+  }
+
+  Intersection(
+      const IntersectionBase<
+          dim, fptype,
+          !std::is_same<fptype, mpfr::mpreal>::value> &i)
+      : IntersectionBase<
+            dim, fptype,
+            !std::is_same<fptype, mpfr::mpreal>::value>(i) {
+  }
+
+  Intersection(const Intersection<dim, fptype> &i)
+      : IntersectionBase<
+            dim, fptype,
+            !std::is_same<fptype, mpfr::mpreal>::value>(
+            static_cast<IntersectionBase<
+                dim, fptype,
+                !std::is_same<fptype,
+                              mpfr::mpreal>::value>>(i)) {}
+
+ private:
+  static constexpr const bool isMPFR =
+      std::is_same<fptype, mpfr::mpreal>::value;
 };
 
 template <typename Iter>
@@ -176,12 +284,10 @@ sortIntersections(const Line<dim, fptype> &line,
   for(auto q : quads) {
     auto intPos = q.calcLineDistToIntersect(line);
     for(int k = 0; k < 2; k++) {
-      if(!std::isnan(intPos[k])) {
+      if(!MathFuncs::MathFuncs<fptype>::isnan(intPos[k])) {
         struct Intersection<dim, fptype> i(
             q, line, intPos[k], intPos[1 - k],
             absErrMargin);
-        std::cout << "Adding Intersection at " << intPos[k]
-                  << " for Quadric\n" << q << "\n";
         inter->push_back(i);
       }
     }
@@ -189,6 +295,7 @@ sortIntersections(const Line<dim, fptype> &line,
   inter->sort([](const IP &lhs, const IP &rhs) {
     return lhs.compare(rhs) < 0.0;
   });
+  /* TODO: Fix this */
   // quicksortInt(inter->begin(), inter->end());
   return inter;
 }

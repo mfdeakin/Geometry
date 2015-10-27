@@ -192,6 +192,17 @@ class Quadric : public Solid<dim, fptype> {
     return *this;
   }
 
+  template <typename srctype>
+  bool operator==(const Quadric<dim, srctype> &q) {
+    if(coeffs.get() != q.coeffs.get()) {
+      for(int i = 0; i < numCoeffs; i++) {
+        if(coeff(i) != q.coeff(i))
+          return false;
+      }
+    }
+    return true;
+  }
+
   friend std::ostream &operator<<(
       std::ostream &os, const Quadric<dim, fptype> &q) {
     bool once = false;

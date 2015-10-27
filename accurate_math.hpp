@@ -3,12 +3,12 @@
 #define _ACCURATE_MATH_HPP_
 
 #include <array>
-#include <cmath>
 #include <typeinfo>
 
 #include <string.h>
 #include <limits.h>
 
+#include "mathfuncs.hpp"
 #include "genericfp.hpp"
 
 namespace AccurateMath {
@@ -74,7 +74,8 @@ static fptype kahanSum(const fptype *summands) {
 template <typename fptype>
 static fptype twoNormSum(const fptype *summands, unsigned i,
                          fptype curSum) {
-  return std::fma(summands[i], summands[i], curSum);
+  return MathFuncs::MathFuncs<fptype>::fma(
+      summands[i], summands[i], curSum);
 }
 
 template <typename fptype>
@@ -95,7 +96,8 @@ template <typename fptype>
 static std::array<fptype, 2> twoProd(fptype lhs,
                                      fptype rhs) {
   fptype prod = lhs * rhs;
-  fptype err = std::fma(lhs, rhs, -prod);
+  fptype err =
+      MathFuncs::MathFuncs<fptype>::fma(lhs, rhs, -prod);
   std::array<fptype, 2> products = {{prod, err}};
   return products;
 }
@@ -103,7 +105,7 @@ static std::array<fptype, 2> twoProd(fptype lhs,
 template <typename fptype>
 static std::array<fptype, 3> threeFMA(fptype a, fptype b,
                                       fptype c) {
-  fptype r1 = std::fma(a, b, c);
+  fptype r1 = MathFuncs::MathFuncs<fptype>::fma(a, b, c);
   std::array<fptype, 2> mult = twoProd(a, b);
   std::array<fptype, 2> sum1 = twoSum(c, mult[1]);
   std::array<fptype, 2> sum2 = twoSum(mult[0], sum1[0]);
@@ -156,8 +158,10 @@ static std::array<fptype, 2> kahanQuadratic(
   fptype disc =
       kahanDiscriminant(sqCoeff, linCoeff, constant);
   if(disc < 0) return std::array<fptype, 2>({{NAN, NAN}});
-  fptype fracPart = -std::copysign(
-      std::abs(linCoeff / 2.0) + std::sqrt(disc), linCoeff);
+  fptype fracPart = -MathFuncs::MathFuncs<fptype>::copysign(
+      MathFuncs::MathFuncs<fptype>::fabs(linCoeff / 2.0) +
+          MathFuncs::MathFuncs<fptype>::sqrt(disc),
+      linCoeff);
   std::array<fptype, 2> roots = {
       {fracPart / sqCoeff, constant / fracPart}};
   return roots;
@@ -170,16 +174,20 @@ static fptype newtonsQuadratic(
     fptype maxRelErr =
         4 * GenericFP::fpconvert<fptype>::epsilon) {
   fptype estimate = guess;
-  fptype eval =
-      std::fma(std::fma(sqCoeff, estimate, linCoeff),
-               estimate, constant);
-  while(std::abs(eval) > maxRelErr * eval) {
-    fptype delta =
-        std::fma(2 * sqCoeff, estimate, linCoeff);
+  fptype eval = MathFuncs::MathFuncs<fptype>::fma(
+      MathFuncs::MathFuncs<fptype>::fma(sqCoeff, estimate,
+                                        linCoeff),
+      estimate, constant);
+  while(MathFuncs::MathFuncs<fptype>::fabs(eval) >
+        maxRelErr * eval) {
+    fptype delta = MathFuncs::MathFuncs<fptype>::fma(
+        2 * sqCoeff, estimate, linCoeff);
     if(delta == 0.0 || eval / delta == 0.0) break;
     estimate -= eval / delta;
-    eval = std::fma(std::fma(sqCoeff, estimate, linCoeff),
-                    estimate, constant);
+    eval = MathFuncs::MathFuncs<fptype>::fma(
+        MathFuncs::MathFuncs<fptype>::fma(sqCoeff, estimate,
+                                          linCoeff),
+        estimate, constant);
   }
   return estimate;
 }

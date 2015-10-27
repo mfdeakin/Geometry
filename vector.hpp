@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <array>
+#include <memory>
 #include <ostream>
 
 #include "mathfuncs.hpp"

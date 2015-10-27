@@ -16,6 +16,8 @@
 
 #include <gtest/gtest.h>
 
+void intersectionTest(const int numTests = 1e6);
+
 int main(int argc, char **argv) {
   static constexpr const int dim = 3;
   using fptype = float;
@@ -32,6 +34,7 @@ int main(int argc, char **argv) {
   mpfr::mpreal mt;
   Geometry::Quadric<dim, mpfr::mpreal> qmp(o);
   std::list<Geometry::Quadric<dim, mpfr::mpreal>> qmplist;
+  intersectionTest();
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
