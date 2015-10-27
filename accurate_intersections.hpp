@@ -21,7 +21,7 @@ class IntersectionBase;
 template <int dim, typename fptype>
 class IntersectionBase<dim, fptype, true> {
  public:
-  const Quadric<dim, fptype> *q;
+  const Quadric<dim, fptype> q;
   const Line<dim, fptype> *l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
@@ -33,7 +33,7 @@ class IntersectionBase<dim, fptype, true> {
                    fptype intPos = NAN,
                    fptype otherIntPos = NAN,
                    fptype absErrMargin = defAbsPrecision)
-      : q(&quad),
+      : q(quad),
         l(&line),
         intPos(intPos),
         otherIntPos(otherIntPos),
@@ -71,10 +71,10 @@ class IntersectionBase<dim, fptype, true> {
     constexpr const unsigned coeffPrec = 3 * machPrec;
     mpfr::mpreal::set_default_prec(coeffPrec);
     /* Compute the coefficients */
-    Quadric<dim, mpfr::mpreal> q1(*q);
-    Quadric<dim, mpfr::mpreal> q2(*i.q);
+    Quadric<dim, mpfr::mpreal> q1(q);
+    Quadric<dim, mpfr::mpreal> q2(i.q);
     Line<dim, mpfr::mpreal> line(*l);
-    line.shiftOrigin(q->getOrigin());
+    line.shiftOrigin(q.getOrigin());
     Polynomial<2, mpfr::mpreal> p1 =
         q1.calcLineDistPoly(line);
     Polynomial<2, mpfr::mpreal> p2 =
@@ -149,7 +149,7 @@ class IntersectionBase<dim, fptype, true> {
 template <int dim, typename fptype>
 class IntersectionBase<dim, fptype, false> {
  public:
-  const Quadric<dim, fptype> *q;
+  const Quadric<dim, fptype> q;
   const Line<dim, fptype> *l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
@@ -161,7 +161,7 @@ class IntersectionBase<dim, fptype, false> {
                    fptype intPos = NAN,
                    fptype otherIntPos = NAN,
                    fptype absErrMargin = defAbsPrecision)
-      : q(&quad),
+      : q(quad),
         l(&line),
         intPos(intPos),
         otherIntPos(otherIntPos),

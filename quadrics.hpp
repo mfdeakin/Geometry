@@ -192,15 +192,31 @@ class Quadric : public Solid<dim, fptype> {
     return *this;
   }
 
-  template <typename srctype>
-  bool operator==(const Quadric<dim, srctype> &q) {
+  bool operator==(const Quadric<dim, fptype> &q) const {
     if(coeffs.get() != q.coeffs.get()) {
       for(int i = 0; i < numCoeffs; i++) {
-        if(coeff(i) != q.coeff(i))
-          return false;
+        if(coeff(i) != q.coeff(i)) return false;
       }
     }
     return true;
+  }
+
+  template <typename srctype>
+  bool operator==(const Quadric<dim, srctype> &q) const {
+    using hPrec =
+        typename Typecast::typecast<fptype,
+                                    srctype>::higherPrec;
+    for(int i = 0; i < numCoeffs; i++) {
+      if(static_cast<hPrec>(coeff(i)) !=
+         static_cast<hPrec>(q.coeff(i)))
+        return false;
+    }
+    return true;
+  }
+
+  template <typename srctype>
+  bool operator!=(const Quadric<dim, srctype> &q) const {
+    return !((*this) == q);
   }
 
   friend std::ostream &operator<<(

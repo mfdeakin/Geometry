@@ -1,6 +1,7 @@
 
 #include <array>
 #include <list>
+#include <fstream>
 
 #include <gtest/gtest.h>
 
@@ -70,6 +71,7 @@ void intersectionTest(const int numTests) {
   std::mt19937_64 engine(rd());
   std::uniform_real_distribution<fptype> rgenf(-maxMag,
                                                maxMag);
+  std::ofstream results("results");
   for(int t = 0; t < numTests; t++) {
     Vf lineDir;
     Vf lineInt;
@@ -86,6 +88,27 @@ void intersectionTest(const int numTests) {
     auto truth =
         Geometry::sortIntersections<dim, mpfr::mpreal>(
             truthLine, truthQuads, eps);
+    auto j = truth->begin();
+    results << "Test " << t << "\n";
+    for(auto i = inter->begin();
+        i != inter->end() || j != truth->end();) {
+      if(i != inter->end()) {
+        if(j != truth->end()) {
+          if(i->q == j->q)
+            results << "Correct Result\n";
+          else
+            results << "Incorrect Result\n";
+        }
+        results << "Estimated: " << i->q
+                << "\n";
+        i++;
+      }
+      if(j != truth->end()) {
+        results << "Correct: " << j->q << "\n";
+        j++;
+      }
+    }
+    results << "\n\n";
   }
 }
 

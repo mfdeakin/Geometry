@@ -2,6 +2,8 @@
 #ifndef _TYPECAST_HPP_
 #define _TYPECAST_HPP_
 
+#include "mpreal.hpp"
+
 namespace Typecast {
 
 template <typename t1, typename t2>
@@ -14,7 +16,13 @@ struct typecast<float, float> {
 };
 
 template <>
-struct typecast<double, double> {
+struct typecast<float, double> {
+  typedef double higherPrec;
+  typedef double lowerPrec;
+};
+
+template <>
+struct typecast<double, float> {
   typedef double higherPrec;
   typedef double lowerPrec;
 };
@@ -32,6 +40,24 @@ struct typecast<long double, float> {
 };
 
 template <>
+struct typecast<float, mpfr::mpreal> {
+  typedef mpfr::mpreal higherPrec;
+  typedef float lowerPrec;
+};
+
+template <>
+struct typecast<mpfr::mpreal, float> {
+  typedef mpfr::mpreal higherPrec;
+  typedef float lowerPrec;
+};
+
+template <>
+struct typecast<double, double> {
+  typedef double higherPrec;
+  typedef double lowerPrec;
+};
+
+template <>
 struct typecast<double, long double> {
   typedef long double higherPrec;
   typedef double lowerPrec;
@@ -44,9 +70,39 @@ struct typecast<long double, double> {
 };
 
 template <>
+struct typecast<double, mpfr::mpreal> {
+  typedef mpfr::mpreal higherPrec;
+  typedef double lowerPrec;
+};
+
+template <>
+struct typecast<mpfr::mpreal, double> {
+  typedef mpfr::mpreal higherPrec;
+  typedef double lowerPrec;
+};
+
+template <>
 struct typecast<long double, long double> {
   typedef long double higherPrec;
   typedef long double lowerPrec;
+};
+
+template <>
+struct typecast<long double, mpfr::mpreal> {
+  typedef mpfr::mpreal higherPrec;
+  typedef long double lowerPrec;
+};
+
+template <>
+struct typecast<mpfr::mpreal, long double> {
+  typedef mpfr::mpreal higherPrec;
+  typedef long double lowerPrec;
+};
+
+template <>
+struct typecast<mpfr::mpreal, mpfr::mpreal> {
+  typedef mpfr::mpreal higherPrec;
+  typedef mpfr::mpreal lowerPrec;
 };
 
 template <>

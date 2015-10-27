@@ -29,12 +29,13 @@ int main(int argc, char **argv) {
   Geometry::Line<dim, fptype> line(pt, dir);
   Geometry::Quadric<dim, fptype> q(o);
   Geometry::Polynomial<dim, fptype> p1, p2;
-  Geometry::Polynomial<2 * dim, fptype> prod = p1.product(p2);
+  Geometry::Polynomial<2 * dim, fptype> prod =
+      p1.product(p2);
   mpfr::mpreal::set_default_prec(72);
   mpfr::mpreal mt;
   Geometry::Quadric<dim, mpfr::mpreal> qmp(o);
   std::list<Geometry::Quadric<dim, mpfr::mpreal>> qmplist;
-  intersectionTest();
+  intersectionTest(1e4);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
