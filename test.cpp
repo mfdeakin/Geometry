@@ -1,4 +1,6 @@
 
+#include <cstddef>
+
 #include "origin.hpp"
 #include "quadrics.hpp"
 #include "line.hpp"
