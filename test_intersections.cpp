@@ -9,6 +9,7 @@
 #include "origin.hpp"
 #include "accurate_intersections.hpp"
 #include "accurate_math.hpp"
+#include "timer.hpp"
 #include "genericfp.hpp"
 
 void intersectionTest(const int numTests) {
@@ -72,6 +73,7 @@ void intersectionTest(const int numTests) {
   std::uniform_real_distribution<fptype> rgenf(-maxMag,
                                                maxMag);
   std::ofstream results("results");
+  Timer::Timer fp_time, mp_time;
   for(int t = 0; t < numTests; t++) {
     Vf lineDir;
     Vf lineInt;
@@ -83,28 +85,49 @@ void intersectionTest(const int numTests) {
     Lf line(intercept, lineDir);
     Lm truthLine(line);
     constexpr const fptype eps = 1e-3;
+    fp_time.startTimer();
     auto inter =
         Geometry::sortIntersections(line, quads, eps);
+    fp_time.stopTimer();
+    mp_time.startTimer();
     auto truth =
         Geometry::sortIntersections<dim, mpfr::mpreal>(
             truthLine, truthQuads, eps);
+    mp_time.stopTimer();
     auto j = truth->begin();
     results << "Test " << t << "\n";
+    results << "FP Time:\n" << fp_time << "\n";
+    results << "MP Time:\n" << mp_time << "\n";
     for(auto i = inter->begin();
         i != inter->end() || j != truth->end();) {
+      bool printQ = false;
       if(i != inter->end()) {
         if(j != truth->end()) {
-          if(i->q == j->q)
-            results << "Correct Result\n";
-          else
+          if(i->q != j->q) {
             results << "Incorrect Result\n";
+            printQ = true;
+          }
+        } else {
+          printQ = true;
         }
-        results << "Estimated: " << i->q
-                << "\n";
-        i++;
       }
-      if(j != truth->end()) {
-        results << "Correct: " << j->q << "\n";
+      if(printQ) {
+        if(i != inter->end()) {
+          results << "Estimated: " << i->q << "\n";
+          i++;
+        } else {
+          results << "Computed intersections ended "
+                     "prematurely\n";
+        }
+        if(j != truth->end()) {
+          results << "Correct: " << j->q << "\n";
+          j++;
+        } else {
+          results
+              << "Computed intersections ended too late\n";
+        }
+      } else {
+        i++;
         j++;
       }
     }

@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
   mpfr::mpreal mt;
   Geometry::Quadric<dim, mpfr::mpreal> qmp(o);
   std::list<Geometry::Quadric<dim, mpfr::mpreal>> qmplist;
-  intersectionTest(1e4);
+  intersectionTest(1e9);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
