@@ -7,8 +7,25 @@
 
 #include <list>
 #include <fstream>
+#include <iomanip>
+
+template <int dim, typename fptype>
+std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
+    const char *fname) {
+  ifstream file(fname);
+  using Qf = Geometry::Quadric<dim, fptype>;
+  std::list<Qf> quads;
+  return quads;
+}
 
 void intersectionTest(const int numTests) {
+  /* TODO: Split this up into readable pieces */
+  /* First build a scene of quadrics.
+   * Then generate random lines on a disk centered at the
+   * intersection of the cylinders.
+   * Then sort the intersections
+   * Finally validate them with a higher precision sort
+   */
   constexpr const int dim = 3;
   using fptype = float;
   using Qf = Geometry::Quadric<dim, fptype>;
@@ -21,12 +38,13 @@ void intersectionTest(const int numTests) {
       GenericFP::fpconvert<fptype>::precision;
   constexpr const int truthPrec = 96 * machPrec;
   mpfr::mpreal::set_default_prec(truthPrec);
-  constexpr const fptype maxMag = 100000.0;
+  /* The default scene: Two intersecting cylinders in a box
+   */
+  constexpr const fptype maxMag = 1000.0;
   constexpr const fptype radius = 50.0;
-  constexpr const fptype cyl1XOff = 50.0;
-  constexpr const fptype cyl1YOff = 50.0;
-  constexpr const fptype cyl2XOff = cyl1XOff;
-  constexpr const fptype cyl2ZOff = 50.0;
+  constexpr const fptype cylXOff = 0.0;
+  constexpr const fptype cylYOff = 50.0;
+  constexpr const fptype cylZOff = 50.0;
   constexpr const fptype quadCoeffs[][Qf::numCoeffs] = {
       /* Exterior planes */
       {0, 0, 0, maxMag, 0, 0, 1.0, 0, 0, 0},
@@ -36,21 +54,22 @@ void intersectionTest(const int numTests) {
       {0, 0, 0, maxMag, 0, 0, 0, 0, 0, 1.0},
       {0, 0, 0, -maxMag, 0, 0, 0, 0, 0, 1.0},
       /* Cylinder 1 */
-      {1.0, 1.0, 0, -radius * radius + cyl1XOff * cyl1XOff +
-                        cyl1YOff * cyl1YOff,
-       0, 0, -2 * cyl1XOff, 0, -2 * cyl1YOff, 0},
+      {1.0, 1.0, 0, -radius * radius + cylXOff * cylXOff +
+                        cylYOff * cylYOff,
+       0, 0, -2 * cylXOff, 0, -2 * cylYOff, 0},
       /* Cylinder 2 */
-      {1.0, 0, 1.0, -radius * radius + cyl2XOff * cyl2XOff +
-                        cyl2ZOff * cyl2ZOff,
-       0, 0, -2 * cyl2XOff, 0, 0, -2 * cyl2ZOff},
+      {1.0, 0, 1.0, -radius * radius + cylXOff * cylXOff +
+                        cylZOff * cylZOff,
+       0, 0, -2 * cylXOff, 0, 0, -2 * cylZOff},
       /* Intersection Plane 1 */
-      {0, 0, 0, cyl1XOff + cyl2ZOff, 0, 0, 0, 0, 1, -1},
+      {0, 0, 0, -cylXOff + cylZOff, 0, 0, 0, 0, 1, -1},
       /* Intersection Plane 1 */
-      {0, 0, 0, -cyl1XOff - cyl2ZOff, 0, 0, 0, 0, -1, 1}};
+      {0, 0, 0, cylXOff - cylZOff, 0, 0, 0, 0, -1, 1}};
   constexpr const int numQuads =
       sizeof(quadCoeffs) / sizeof(quadCoeffs[0]);
   std::list<Qf> quads;
   std::list<Qm> truthQuads;
+  /* Generate the quadrics */
   for(int i = 0; i < numQuads; i++) {
     Qf quadFP;
     Qm quadMP;
@@ -67,25 +86,28 @@ void intersectionTest(const int numTests) {
   std::uniform_real_distribution<fptype> genTheta(-maxTheta,
                                                   maxTheta);
   constexpr fptype maxDisp = std::max(
-      std::max(std::fabs(cyl1XOff), std::fabs(cyl1YOff)),
-      std::fabs(cyl2ZOff));
+      std::max(std::fabs(cylXOff), std::fabs(cylYOff)),
+      std::fabs(cylZOff));
   std::uniform_real_distribution<fptype> genDist(
-      -maxMag - maxDisp, maxMag - maxDisp);
+      -maxMag + maxDisp, maxMag - maxDisp);
   std::ofstream results("results");
   Timer::Timer fp_time, mp_time;
+  /* Run the tests */
   for(int t = 0; t < numTests; t++) {
+    /* First build the line */
     fptype theta = genTheta(engine);
     fptype dist = genDist(engine);
     fptype xDisp = dist * std::sin(theta);
     fptype yDisp = dist * std::cos(theta);
     fptype zDisp = yDisp;
-    Vf lineDir({xDisp, yDisp, zDisp});
-    Vf lineInt({xDisp - cyl1XOff, yDisp - cyl1YOff,
-                zDisp - cyl2ZOff});
+    Vf lineDir({-xDisp, -yDisp, -zDisp});
+    Vf lineInt({xDisp - cylXOff, yDisp - cylYOff,
+                zDisp - cylZOff});
     Pf intercept(lineInt);
     Lf line(intercept, lineDir);
     Lm truthLine(line);
     constexpr const fptype eps = 1e-3;
+    /* Then sort the intersections */
     fp_time.startTimer();
     auto inter =
         Geometry::sortIntersections(line, quads, eps);
@@ -99,6 +121,7 @@ void intersectionTest(const int numTests) {
     results << "Test " << t << "\n";
     results << "FP Time:\n" << fp_time << "\n";
     results << "MP Time:\n" << mp_time << "\n";
+    /* Now validate them */
     for(auto i = inter->begin();
         i != inter->end() || j != truth->end();) {
       bool printQ = false;
@@ -106,12 +129,19 @@ void intersectionTest(const int numTests) {
         if(j != truth->end()) {
           if(i->q != j->q) {
             results << "Incorrect Result\n";
+            results << "Expected: " << std::setprecision(20)
+                    << j->intPos
+                    << "; Got: " << std::setprecision(20)
+                    << i->intPos
+                    << "\nDelta: " << std::setprecision(20)
+                    << j->intPos - i->intPos << "\n";
             printQ = true;
           }
         } else {
           printQ = true;
         }
       }
+      /* And output the result */
       if(printQ) {
         if(i != inter->end()) {
           results << "Estimated: " << i->q << "\n";
@@ -137,6 +167,6 @@ void intersectionTest(const int numTests) {
 }
 
 int main(int argc, char **argv) {
-  intersectionTest(5e6);
+  intersectionTest(1e5);
   return 0;
 }

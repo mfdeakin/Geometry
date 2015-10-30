@@ -1,5 +1,5 @@
 
-CXXFLAGS=-std=c++14 -O3 -floop-interchange -floop-strip-mine -floop-block -Wall
+CXXFLAGS=-std=c++14 -g -Wall
 LDLIBS=-lmpfr
 TESTLIBS=-lgtest
 
