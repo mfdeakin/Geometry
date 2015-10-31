@@ -23,11 +23,62 @@ std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
   return quads;
 }
 
+void validateResults(std::ostream &results, auto &inter,
+                     auto &truth) {
+  /* TODO: Implement better validation.
+   * Use a heuristic on truth to determine whether adjacent
+   * intersections occur at the same place.
+	 * This will basically be a threshold on the largest
+	 * different bit in the mantissa.
+   */
+  auto j = truth->begin();
+  for(auto i = inter->begin();
+      i != inter->end() || j != truth->end();) {
+    bool printQ = false;
+    if(i != inter->end()) {
+      if(j != truth->end()) {
+        if(i->q != j->q) {
+          results << "Incorrect Result\n";
+          results << "Expected: " << std::setprecision(20)
+                  << j->intPos
+                  << "; Got: " << std::setprecision(20)
+                  << i->intPos
+                  << "\nDelta: " << std::setprecision(20)
+                  << j->intPos - i->intPos << "\n";
+          printQ = true;
+        }
+      } else {
+        printQ = true;
+      }
+    }
+    /* And output the result */
+    if(printQ) {
+      if(i != inter->end()) {
+        results << "Estimated: " << i->q << "\n";
+        i++;
+      } else {
+        results << "Computed intersections ended "
+                   "prematurely\n";
+      }
+      if(j != truth->end()) {
+        results << "Correct: " << j->q << "\n";
+        j++;
+      } else {
+        results
+            << "Computed intersections ended too late\n";
+      }
+    } else {
+      i++;
+      j++;
+    }
+  }
+  results << "\n";
+}
+
 template <int dim, typename fptype>
 void intersectionTest(
     std::list<Geometry::Quadric<dim, fptype>> &quads,
     const int numTests) {
-  /* TODO: Split this up into readable pieces */
   /* First build a scene of quadrics.
    * Then generate random lines on a disk centered at the
    * intersection of the cylinders.
@@ -64,9 +115,9 @@ void intersectionTest(
     Vf lineInt;
     for(int i = 0; i < dim; i++) {
       fptype tmp = genPos(engine);
-			lineInt.set(i, tmp);
-			tmp = genDir(engine);
-			lineDir.set(i, tmp);
+      lineInt.set(i, tmp);
+      tmp = genDir(engine);
+      lineDir.set(i, tmp);
     }
     Lf line(Pf(lineInt), lineDir);
     Lm truthLine(line);
@@ -81,63 +132,21 @@ void intersectionTest(
         Geometry::sortIntersections<dim, mpfr::mpreal>(
             truthLine, truthQuads, eps);
     mp_time.stopTimer();
-    auto j = truth->begin();
     results << "Test " << t << "\n";
     results << "FP Time:\n" << fp_time << "\n";
     results << "MP Time:\n" << mp_time << "\n";
-    /* Now validate them */
-    for(auto i = inter->begin();
-        i != inter->end() || j != truth->end();) {
-      bool printQ = false;
-      if(i != inter->end()) {
-        if(j != truth->end()) {
-          if(i->q != j->q) {
-            results << "Incorrect Result\n";
-            results << "Expected: " << std::setprecision(20)
-                    << j->intPos
-                    << "; Got: " << std::setprecision(20)
-                    << i->intPos
-                    << "\nDelta: " << std::setprecision(20)
-                    << j->intPos - i->intPos << "\n";
-            printQ = true;
-          }
-        } else {
-          printQ = true;
-        }
-      }
-      /* And output the result */
-      if(printQ) {
-        if(i != inter->end()) {
-          results << "Estimated: " << i->q << "\n";
-          i++;
-        } else {
-          results << "Computed intersections ended "
-                     "prematurely\n";
-        }
-        if(j != truth->end()) {
-          results << "Correct: " << j->q << "\n";
-          j++;
-        } else {
-          results
-              << "Computed intersections ended too late\n";
-        }
-      } else {
-        i++;
-        j++;
-      }
-    }
-    results << "\n";
+    validateResults(results, inter, truth);
   }
 }
 
 int main(int argc, char **argv) {
-	using fptype = float;
-	constexpr const int dim = 3;
-	std::list<Geometry::Quadric<dim, fptype>> quads;
-	if(argc > 1)
-		quads = parseQuadrics<dim, fptype>(argv[1]);
-	else
-		quads = parseQuadrics<dim, fptype>("cylinders.csg");
+  using fptype = float;
+  constexpr const int dim = 3;
+  std::list<Geometry::Quadric<dim, fptype>> quads;
+  if(argc > 1)
+    quads = parseQuadrics<dim, fptype>(argv[1]);
+  else
+    quads = parseQuadrics<dim, fptype>("cylinders.csg");
   intersectionTest(quads, 1e5);
   return 0;
 }
