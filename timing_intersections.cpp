@@ -23,36 +23,69 @@ std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
   return quads;
 }
 
+bool isSameInt(mpfr::mpreal int1, mpfr::mpreal int2) {
+  /* Use a heuristic on truth to determine whether adjacent
+   * intersections occur at the same place.
+   * This will basically be a threshold on the largest
+   * different bit in the mantissa.
+   */
+  mpfr::mpreal largest =
+      mpfr::max(mpfr::fabs(int1), mpfr::fabs(int2));
+  mp_exp_t largestExp = largest.get_exp();
+  mpfr::mpreal diff = mpfr::fabs(int1 - int2);
+  int p1 = int1.getPrecision(), p2 = int2.getPrecision();
+  int minPrec = std::min(p1, p2);
+  mp_exp_t deltaExp =
+      largestExp - minPrec / 4 - diff.get_exp();
+  return deltaExp > 0;
+}
+
 void validateResults(std::ostream &results, auto &inter,
                      auto &truth) {
-  /* TODO: Implement better validation.
-   * Use a heuristic on truth to determine whether adjacent
-   * intersections occur at the same place.
-	 * This will basically be a threshold on the largest
-	 * different bit in the mantissa.
-   */
   auto j = truth->begin();
   for(auto i = inter->begin();
       i != inter->end() || j != truth->end();) {
     bool printQ = false;
-    if(i != inter->end()) {
-      if(j != truth->end()) {
-        if(i->q != j->q) {
-          results << "Incorrect Result\n";
-          results << "Expected: " << std::setprecision(20)
-                  << j->intPos
-                  << "; Got: " << std::setprecision(20)
-                  << i->intPos
-                  << "\nDelta: " << std::setprecision(20)
-                  << j->intPos - i->intPos << "\n";
-          printQ = true;
+    if(j != truth->end()) {
+      /* Create the region boundaries [sameBeg, sameEnd).
+       * These are intersections which are probably the same
+       */
+      auto sameBeg = j;
+      auto sameEnd = j;
+      int regLen = 0;
+      while(sameEnd != truth->end() &&
+            isSameInt(j->intPos, sameEnd->intPos)) {
+        sameEnd++;
+        regLen++;
+      }
+      /* Increment i until it's not found in the region */
+      int numInRegion = 0;
+      bool isInRegion = true;
+      while(i != inter->end() && isInRegion) {
+        j = sameBeg;
+        while(j != sameEnd && i->q != j->q) j++;
+        if(j == sameEnd) {
+          isInRegion = false;
+        } else {
+          i++;
+          numInRegion--;
         }
-      } else {
+      }
+      /* i isn't in the region.
+       * Verify all elements in the region were used */
+      if(regLen != numInRegion) {
         printQ = true;
       }
     }
     /* And output the result */
     if(printQ) {
+      results << "Incorrect Result\n";
+      results << "Expected: " << std::setprecision(20)
+              << j->intPos
+              << "; Got: " << std::setprecision(20)
+              << i->intPos
+              << "\nDelta: " << std::setprecision(20)
+              << j->intPos - i->intPos << "\n";
       if(i != inter->end()) {
         results << "Estimated: " << i->q << "\n";
         i++;
@@ -61,7 +94,7 @@ void validateResults(std::ostream &results, auto &inter,
                    "prematurely\n";
       }
       if(j != truth->end()) {
-        results << "Correct: " << j->q << "\n";
+        results << "Correct:   " << j->q << "\n";
         j++;
       } else {
         results
@@ -92,7 +125,7 @@ void intersectionTest(
   using Lm = Geometry::Line<dim, mpfr::mpreal>;
   constexpr const int machPrec =
       GenericFP::fpconvert<fptype>::precision;
-  constexpr const int truthPrec = 96 * machPrec;
+  constexpr const int truthPrec = 48 * machPrec;
   mpfr::mpreal::set_default_prec(truthPrec);
   std::list<Qm> truthQuads;
   /* Generate the quadrics */
