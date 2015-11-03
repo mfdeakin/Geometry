@@ -36,7 +36,7 @@ bool isSameInt(mpfr::mpreal int1, mpfr::mpreal int2) {
   int p1 = int1.getPrecision(), p2 = int2.getPrecision();
   int minPrec = std::min(p1, p2);
   mp_exp_t deltaExp =
-      largestExp - minPrec / 4 - diff.get_exp();
+      largestExp - minPrec * 3 / 4 - diff.get_exp();
   return deltaExp > 0;
 }
 
@@ -46,6 +46,14 @@ void validateResults(std::ostream &results, auto &inter,
   for(auto i = inter->begin();
       i != inter->end() || j != truth->end();) {
     bool printQ = false;
+    /* First determine the length of the region of equal
+     * intersections.
+     * Then verify there's an equal number of
+     * intersections in the approximately equal range and
+     * that they correspond to the correct intersections.
+     * If not, then print the intersection
+     */
+    auto expected = j;
     if(j != truth->end()) {
       /* Create the region boundaries [sameBeg, sameEnd).
        * These are intersections which are probably the same
@@ -68,7 +76,7 @@ void validateResults(std::ostream &results, auto &inter,
           isInRegion = false;
         } else {
           i++;
-          numInRegion--;
+          numInRegion++;
         }
       }
       /* i isn't in the region.
@@ -76,33 +84,17 @@ void validateResults(std::ostream &results, auto &inter,
       if(regLen != numInRegion) {
         printQ = true;
       }
+      j = sameEnd;
     }
     /* And output the result */
-    if(printQ) {
+    if(printQ && i != inter->end() && j != truth->end()) {
       results << "Incorrect Result\n";
       results << "Expected: " << std::setprecision(20)
-              << j->intPos
+              << expected->intPos
               << "; Got: " << std::setprecision(20)
               << i->intPos
               << "\nDelta: " << std::setprecision(20)
-              << j->intPos - i->intPos << "\n";
-      if(i != inter->end()) {
-        results << "Estimated: " << i->q << "\n";
-        i++;
-      } else {
-        results << "Computed intersections ended "
-                   "prematurely\n";
-      }
-      if(j != truth->end()) {
-        results << "Correct:   " << j->q << "\n";
-        j++;
-      } else {
-        results
-            << "Computed intersections ended too late\n";
-      }
-    } else {
-      i++;
-      j++;
+              << expected->intPos - i->intPos << "\n";
     }
   }
   results << "\n";
