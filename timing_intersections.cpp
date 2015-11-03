@@ -43,6 +43,7 @@ bool isSameInt(mpfr::mpreal int1, mpfr::mpreal int2) {
 void validateResults(std::ostream &results, auto &inter,
                      auto &truth) {
   auto j = truth->begin();
+  bool printAll = false;
   for(auto i = inter->begin();
       i != inter->end() || j != truth->end();) {
     bool printQ = false;
@@ -69,7 +70,8 @@ void validateResults(std::ostream &results, auto &inter,
       /* Increment i until it's not found in the region */
       int numInRegion = 0;
       bool isInRegion = true;
-      while(i != inter->end() && isInRegion) {
+      while(i != inter->end() && isInRegion &&
+            numInRegion < regLen) {
         j = sameBeg;
         while(j != sameEnd && i->q != j->q) j++;
         if(j == sameEnd) {
@@ -88,6 +90,7 @@ void validateResults(std::ostream &results, auto &inter,
     }
     /* And output the result */
     if(printQ && i != inter->end() && j != truth->end()) {
+      printAll = true;
       results << "Incorrect Result\n";
       results << "Expected: " << std::setprecision(20)
               << expected->intPos
@@ -96,6 +99,30 @@ void validateResults(std::ostream &results, auto &inter,
               << "\nDelta: " << std::setprecision(20)
               << expected->intPos - i->intPos << "\n";
     }
+  }
+  if(printAll) {
+    j = truth->begin();
+    auto i = inter->begin();
+    do {
+      if(i != inter->end() && j != truth->end() &&
+         i->q == j->q) {
+        results << "Correct Order " << i->intPos << " vs "
+                << j->intPos << "\n";
+        i++;
+        j++;
+      } else {
+        if(i != inter->end()) {
+          results << "FP Quadric: " << i->q
+                  << "\nPosition: " << i->intPos << "\n";
+          i++;
+        }
+        if(j != truth->end()) {
+          results << "MP Quadric: " << j->q
+                  << "\nPosition: " << j->intPos << "\n";
+          j++;
+        }
+      }
+    } while(i != inter->end() || j != truth->end());
   }
   results << "\n";
 }
