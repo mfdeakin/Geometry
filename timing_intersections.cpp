@@ -87,6 +87,13 @@ void validateResults(std::ostream &results, auto &inter,
         printQ = true;
       }
       j = sameEnd;
+    } else {
+      results << "Extra elements in the computed list\n"
+              << "Expected " << truth->size()
+              << " elements, got " << inter->size() << "\n"
+              << "Computed Intersection " << i->intPos
+              << " for " << i->q << "\n";
+      i++;
     }
     /* And output the result */
     if(printQ && i != inter->end() && j != truth->end()) {
@@ -130,7 +137,7 @@ void validateResults(std::ostream &results, auto &inter,
 template <int dim, typename fptype>
 void intersectionTest(
     std::list<Geometry::Quadric<dim, fptype>> &quads,
-    const int numTests) {
+    std::ostream &results, const int numTests) {
   /* First build a scene of quadrics.
    * Then generate random lines on a disk centered at the
    * intersection of the cylinders.
@@ -158,7 +165,6 @@ void intersectionTest(
   std::uniform_real_distribution<fptype> genPos(-maxPos,
                                                 maxPos);
   std::uniform_real_distribution<fptype> genDir(-1.0, 1.0);
-  std::ofstream results("results");
   Timer::Timer fp_time, mp_time;
   /* Run the tests */
   for(int t = 0; t < numTests; t++) {
@@ -195,10 +201,17 @@ int main(int argc, char **argv) {
   using fptype = float;
   constexpr const int dim = 3;
   std::list<Geometry::Quadric<dim, fptype>> quads;
-  if(argc > 1)
+  const char *outFName = "results";
+  int numTests = 1e5;
+  if(argc > 1) {
     quads = parseQuadrics<dim, fptype>(argv[1]);
-  else
+    if(argc > 2) {
+      outFName = argv[2];
+      if(argc > 3) numTests = atoi(argv[3]);
+    }
+  } else
     quads = parseQuadrics<dim, fptype>("cylinders.csg");
-  intersectionTest(quads, 1e5);
+  std::ofstream results(outFName);
+  intersectionTest(quads, results, numTests);
   return 0;
 }
