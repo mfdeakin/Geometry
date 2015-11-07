@@ -295,7 +295,7 @@ class Quadric : public Solid<dim, fptype> {
       (dim + 2) * (dim + 1) / 2;
 
  private:
-  static constexpr int getCoeffPos(int d1, int d2) {
+  static int getCoeffPos(int d1, int d2) {
     assert(0 <= d1);
     assert(d1 < dim + 1);
     assert(0 <= d2);
