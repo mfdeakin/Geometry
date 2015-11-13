@@ -1,0 +1,18 @@
+
+./timing_intersections packedEll.csg packedEll.results1 $1 &
+TI_PID=$!
+
+echo "Testing for page faults over ${1} tests for ${TI_PID}"
+
+trap "kill -sINT ${TI_PID} 2> /dev/null" EXIT
+
+echo "Timing Intersection Page Faults over ${1} tests" > tiFaults.csv
+echo "Time (10 ms), Major Faults, Minor Faults" >> tiFaults.csv
+
+let i=0
+
+while kill -0 "${TI_PID}" 2> /dev/null; do
+      echo "${i}, " `ps -omaj_flt "${TI_PID}" | tail -n +2` ", " `ps -omin_flt "${TI_PID}" | tail -n +2` >> tiFaults.csv
+      sleep 0.01
+      let i=i+1
+done
