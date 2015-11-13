@@ -46,20 +46,30 @@ enum QuadType {
 constexpr const char *const QuadTypeNames[] = {
     "Quadratic Classification Error",
 
-    "Coincident Planes", "Intersecting Planes",
+    "Coincident Planes",
+    "Intersecting Planes",
     "Imaginary Intersecting Planes",
-    "Real Intersecting Planes", "Parallel Planes",
-    "Imaginary Parallel Planes", "Real Parallel Planes",
+    "Real Intersecting Planes",
+    "Parallel Planes",
+    "Imaginary Parallel Planes",
+    "Real Parallel Planes",
 
-    "Ellipsoid", "Imaginary Ellipsoid", "Real Ellipsoid",
+    "Ellipsoid",
+    "Imaginary Ellipsoid",
+    "Real Ellipsoid",
 
-    "Cone", "Imaginary Cone", "Real Cone",
+    "Cone",
+    "Imaginary Cone",
+    "Real Cone",
 
-    "Elliptic Cylinder", "Imaginary Elliptic Cylinder",
-    "Real Elliptic Cylinder", "Hyperbolic Cylinder",
+    "Elliptic Cylinder",
+    "Imaginary Elliptic Cylinder",
+    "Real Elliptic Cylinder",
+    "Hyperbolic Cylinder",
     "Parabolic Cylinder",
 
-    "Elliptic Paraboloid", "Hyperbolic Paraboloid",
+    "Elliptic Paraboloid",
+    "Hyperbolic Paraboloid",
 
     "Hyperboloid of one sheet",
     "Hyperboloid of two sheets"};
@@ -87,23 +97,12 @@ static int classifyCalcDetSign(
       1 / 16.0, 1 / 4.0,  -1 / 8.0, -1 / 8.0, 1 / 4.0,
       -1 / 4.0, 1 / 16.0};
   constexpr const int detProds[numDetTerms][numDetProds] = {
-      {0, 1, 2, 3},
-      {2, 3, 4, 4},
-      {1, 3, 5, 5},
-      {1, 2, 6, 6},
-      {3, 4, 5, 7},
-      {0, 3, 7, 7},
-      {6, 6, 7, 7},
-      {2, 4, 6, 8},
-      {5, 6, 7, 8},
-      {0, 2, 8, 8},
-      {5, 5, 8, 8},
-      {1, 5, 6, 9},
-      {4, 6, 7, 9},
-      {4, 5, 8, 9},
-      {0, 7, 8, 9},
-      {0, 1, 9, 9},
-      {4, 4, 9, 9}};
+      {0, 1, 2, 3}, {2, 3, 4, 4}, {1, 3, 5, 5},
+      {1, 2, 6, 6}, {3, 4, 5, 7}, {0, 3, 7, 7},
+      {6, 6, 7, 7}, {2, 4, 6, 8}, {5, 6, 7, 8},
+      {0, 2, 8, 8}, {5, 5, 8, 8}, {1, 5, 6, 9},
+      {4, 6, 7, 9}, {4, 5, 8, 9}, {0, 7, 8, 9},
+      {0, 1, 9, 9}, {4, 4, 9, 9}};
   constexpr const int precision =
       GenericFP::fpconvert<fptype>::precision;
   constexpr const int detTermPrec = precision * numDetProds;
@@ -519,6 +518,19 @@ QuadType classifyRank_3_4(
   }
 }
 
+static bool isImaginary(QuadType qt) {
+  switch(qt) {
+    case QUADT_INTERSECTPLANES_IM:
+    case QUADT_PARALLELPLANES_IM:
+    case QUADT_ELLIPSOID_IM:
+    case QUADT_CONE_IM:
+    case QUADT_CYLINDER_ELL_IM:
+      return true;
+    default:
+      return false;
+  }
+}
+
 /* Warning: Requires fptype to be recognized by genericfp
  */
 template <typename fptype>
@@ -529,19 +541,13 @@ static QuadType classifyQuadric(
   int eigenSign = classifyCalcEigenSign(quad);
   constexpr const int max4Ranks = 4;
   constexpr const int max3Ranks = 3;
-  printf(
-      "\nSmall Matrix Rank: %d\n"
-      "Large Matrix Rank: %d\n"
-      "Determinant Sign: %d\n"
-      "Eigenvalue Sign: %d\n",
-      mtxRanks[0], mtxRanks[1], detSign, eigenSign);
   assert(mtxRanks[0] <= max3Ranks);
   assert(mtxRanks[1] <= max4Ranks);
   /* The array of function pointers maps the two rank values
    * to functions specific to that rank */
   using classFunc = QuadType (
-      *)(int detSign, int eigenSign,
-         const Geometry::Quadric<3, fptype> &quad);
+          *)(int detSign, int eigenSign,
+             const Geometry::Quadric<3, fptype> &quad);
   constexpr const classFunc classifiers[max3Ranks +
                                         1][max4Ranks +
                                            1] = {

@@ -25,8 +25,15 @@ class IntersectionBase<dim, fptype, true> {
   const Line<dim, fptype> *l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
+  int numIP;
 
-  IntersectionBase() {}
+  IntersectionBase()
+      : q(),
+        l(),
+        intPos(NAN),
+        otherIntPos(NAN),
+        absErrMargin(defAbsPrecision),
+        numIP(0) {}
 
   IntersectionBase(const Quadric<dim, fptype> &quad,
                    const Line<dim, fptype> &line,
@@ -37,14 +44,16 @@ class IntersectionBase<dim, fptype, true> {
         l(&line),
         intPos(intPos),
         otherIntPos(otherIntPos),
-        absErrMargin(absErrMargin) {}
+        absErrMargin(absErrMargin),
+        numIP(0) {}
   IntersectionBase(
       const IntersectionBase<dim, fptype, true> &i)
       : q(i.q),
         l(i.l),
         intPos(i.intPos),
         otherIntPos(i.otherIntPos),
-        absErrMargin(i.absErrMargin) {}
+        absErrMargin(i.absErrMargin),
+        numIP(i.numIP) {}
 
   IntersectionBase<dim, fptype, true> operator=(
       const IntersectionBase<dim, fptype, true> &i) {
@@ -57,7 +66,8 @@ class IntersectionBase<dim, fptype, true> {
   }
 
   fptype accurateCompare(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<dim, fptype, true> &i) {
+    numIP++;
     /* Only works when there are two roots for both quadrics
      * Also requires the differences of roots to be
      * greater than the minimum precision.
@@ -126,7 +136,7 @@ class IntersectionBase<dim, fptype, true> {
   }
 
   fptype compare(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<dim, fptype, true> &i) {
     fptype delta = intPos - i.intPos;
     if(MathFuncs::MathFuncs<fptype>::fabs(delta) <
            absErrMargin &&
@@ -135,6 +145,10 @@ class IntersectionBase<dim, fptype, true> {
       return accurateCompare(i);
     else
       return delta;
+  }
+
+  int incPrecCount() {
+    return numIP;
   }
 
   static bool cmp(
@@ -188,6 +202,10 @@ class IntersectionBase<dim, fptype, false> {
       const IntersectionBase<dim, fptype, false> &i) const {
     fptype delta = intPos - i.intPos;
     return delta;
+  }
+
+  int incPrecCount() {
+    return 0;
   }
 
   static bool cmp(
@@ -292,7 +310,7 @@ sortIntersections(const Line<dim, fptype> &line,
       }
     }
   }
-  inter->sort([](const IP &lhs, const IP &rhs) {
+  inter->sort([](IP &lhs, const IP &rhs) {
     return lhs.compare(rhs) < 0.0;
   });
   /* TODO: Fix this */

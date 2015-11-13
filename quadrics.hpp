@@ -220,52 +220,50 @@ class Quadric : public Solid<dim, fptype> {
     return !((*this) == q);
   }
 
-	bool readFileMatrix(std::istream &is) {
-		for(int i = 0; i < dim + 1; i++) {
-			for(int j = 0; j < dim + 1; j++) {
-				if(is.eof())
-					return false;
-				fptype val;
-				is >> val;
-				val += coeff(i, j);
-				setCoeff(i, j, val);
-			}
-		}
-		return true;
-	}
+  bool readFileMatrix(std::istream &is) {
+    for(int i = 0; i < dim + 1; i++) {
+      for(int j = 0; j < dim + 1; j++) {
+        if(is.eof()) return false;
+        fptype val;
+        is >> val;
+        val += coeff(i, j);
+        setCoeff(i, j, val);
+      }
+    }
+    return true;
+  }
 
-	bool readFilePolynomial(std::istream &is) {
-		for(int i = 0; i < numCoeffs; i++) {
-			if(is.eof())
-				return false;
-			fptype val;
-			is >> val;
-			setCoeff(i, val);
-		}
-		return true;
-	}
-	
+  bool readFilePolynomial(std::istream &is) {
+    for(int i = 0; i < numCoeffs; i++) {
+      if(is.eof()) return false;
+      fptype val;
+      is >> val;
+      setCoeff(i, val);
+    }
+    return true;
+  }
+
   bool readFile(std::istream &is) {
-		enum QuadricFormats {
-			FMT_MATRIX = 'm',
-			FMT_POLY = 'p',
-		};
-		char qFormat;
-		is >> qFormat;
-		switch(qFormat) {
-		case FMT_MATRIX:
-			return readFileMatrix(is);
-		case FMT_POLY:
-			return readFilePolynomial(is);
-		default:
-			return false;
-		}
-	}
+    enum QuadricFormats {
+      FMT_MATRIX = 'm',
+      FMT_POLY = 'p',
+    };
+    char qFormat;
+    is >> qFormat;
+    switch(qFormat) {
+      case FMT_MATRIX:
+        return readFileMatrix(is);
+      case FMT_POLY:
+        return readFilePolynomial(is);
+      default:
+        return false;
+    }
+  }
 
   friend std::istream &operator>>(std::istream &is,
                                   Quadric<dim, fptype> &q) {
     q.readFile(is);
-		return is;
+    return is;
   }
 
   friend std::ostream &operator<<(

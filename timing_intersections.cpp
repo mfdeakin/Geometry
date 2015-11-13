@@ -3,6 +3,7 @@
 #include "quadrics.hpp"
 #include "line.hpp"
 #include "accurate_intersections.hpp"
+#include "quadric_classify.hpp"
 #include "timer.hpp"
 
 #include <list>
@@ -10,6 +11,7 @@
 #include <iomanip>
 
 #include <signal.h>
+#include <unistd.h>
 
 struct GlobalVars {
   bool run = true;
@@ -23,11 +25,19 @@ std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
   std::ifstream file(fname);
   using Qf = Geometry::Quadric<dim, fptype>;
   std::list<Qf> quads;
+  int imQuads = 0;
   while(!file.eof()) {
     Qf q;
     file >> q;
-    quads.push_back(q);
+    QuadricClassify::QuadType type =
+        QuadricClassify::classifyQuadric(q);
+    if(!QuadricClassify::isImaginary(type))
+      quads.push_back(q);
+    else
+      imQuads++;
   }
+  std::cout << imQuads << " imaginary quadrics, "
+            << quads.size() << " real quadrics.\n";
   return quads;
 }
 
@@ -48,7 +58,8 @@ bool isSameInt(mpfr::mpreal int1, mpfr::mpreal int2) {
   return deltaExp > 0;
 }
 
-bool validateResults(auto &inter, auto &truth) {
+template <typename ListFP, typename ListMP>
+bool validateResults(ListFP &inter, ListMP &truth) {
   auto j = truth->begin();
   for(auto i = inter->begin();
       i != inter->end() || j != truth->end();) {
@@ -97,6 +108,13 @@ bool validateResults(auto &inter, auto &truth) {
   return true;
 }
 
+template <typename List>
+int countIP(List inter) {
+  int numIP = 0;
+  for(auto i : *inter) numIP += i.incPrecCount();
+  return numIP;
+}
+
 template <int dim, typename fptype>
 void intersectionTest(
     std::list<Geometry::Quadric<dim, fptype>> &quads,
@@ -124,8 +142,8 @@ void intersectionTest(
   }
   std::random_device rd;
   std::mt19937_64 engine(rd());
-  constexpr const fptype maxPos = 10000;
-  std::uniform_real_distribution<fptype> genPos(-maxPos,
+  constexpr const fptype minPos = 0, maxPos = 2;
+  std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
   std::uniform_real_distribution<fptype> genDir(-1.0, 1.0);
   Timer::Timer fp_time, mp_time;
@@ -133,6 +151,7 @@ void intersectionTest(
     int fpns;
     int mpns;
     bool correct;
+    int numIP;
   } *times = new struct TimeArr[numTests];
   /* Run the tests */
   int t;
@@ -148,7 +167,7 @@ void intersectionTest(
     }
     Lf line(Pf(lineInt), lineDir);
     Lm truthLine(line);
-    constexpr const fptype eps = 1e-3;
+    constexpr const fptype eps = 1e255;
     /* Then sort the intersections */
     fp_time.startTimer();
     auto inter =
@@ -162,14 +181,18 @@ void intersectionTest(
     times[t].fpns = fp_time.instant_ns();
     times[t].mpns = mp_time.instant_ns();
     times[t].correct = validateResults(inter, truth);
+    times[t].numIP = countIP(inter);
   }
   /* Output all of the results */
-  results
-      << "Test #, FP Time (ns), MP Time (ns), Correct\n";
-  for(int i = 0; i < t; i++)
+  results << "Test #, FP Time (ns), MP Time (ns), Correct, "
+             "Precision Increases\n";
+  int totIP = 0;
+  for(int i = 0; i < t; i++) {
     results << i + 1 << ", " << times[i].fpns << ", "
             << times[i].mpns << ", " << times[i].correct
-            << "\n";
+            << ", " << times[i].numIP << "\n";
+    totIP += times[i].numIP;
+  }
   results << "\n"
           << "Total FP Time (s): " << fp_time.elapsed_s()
           << "." << std::setw(9) << std::setfill('0')
@@ -177,12 +200,27 @@ void intersectionTest(
           << "Total MP Time (s): " << mp_time.elapsed_s()
           << "." << std::setw(9) << std::setfill('0')
           << mp_time.elapsed_ns() << "\n";
+  results << "Total precision increases: " << totIP << "\n";
   delete[] times;
+}
+
+void lockCPU() {
+  const int numCPUs = sysconf(_SC_NPROCESSORS_ONLN);
+  const int cpuSets =
+      numCPUs / CPU_SETSIZE + ((numCPUs % CPU_SETSIZE) > 0);
+  cpu_set_t *cpus = new cpu_set_t[cpuSets];
+  const size_t cpuSize = sizeof(cpu_set_t[cpuSets]);
+  sched_getaffinity(0, cpuSize, cpus);
+  for(int i = 1; i < numCPUs; i++) CPU_CLR(i, cpus);
+  CPU_SET(0, cpus);
+  sched_setaffinity(0, cpuSize, cpus);
+  delete[] cpus;
 }
 
 int main(int argc, char **argv) {
   using fptype = float;
   constexpr const int dim = 3;
+  lockCPU();
   std::list<Geometry::Quadric<dim, fptype>> quads;
   const char *outFName = "results";
   int numTests = 1e5;
