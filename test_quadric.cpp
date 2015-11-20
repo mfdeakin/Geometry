@@ -135,15 +135,11 @@ TEST(Quadric, LineIntersection) {
     Geometry::Quadric<dim, fptype> q(o);
     for(unsigned i = 0; i < numCoeffs; i++)
       q.setCoeff(i, t.coeffs[i]);
-    std::cout << "\nQuadric: " << q << "\n";
-    std::cout << "Line: " << l << "\n";
     auto intersects = q.calcLineIntersect(l);
     for(unsigned i = 0; i < 2; i++) {
       Geometry::Point<dim, fptype> expected(
           o, Geometry::Vector<dim, fptype>(t.roots[i]));
       Geometry::Point<dim, fptype> p(intersects[i]);
-      std::cout << "Expected: " << expected << " vs. " << p
-                << "\n";
       /* Either none or all coordinates are NAN */
       if(std::isnan(t.roots[i][0])) {
         for(unsigned j = 0; j < dim; j++)

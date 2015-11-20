@@ -8,13 +8,16 @@
 #include <string.h>
 #include <limits.h>
 
+#include "cudadef.h"
+
 #include "mathfuncs.hpp"
 #include "genericfp.hpp"
 
 namespace AccurateMath {
 
 template <unsigned size, typename fptype>
-static fptype kahanSum(const fptype(&summands)[size]) {
+CUDA_CALLABLE static fptype kahanSum(
+    const fptype (&summands)[size]) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -27,8 +30,8 @@ static fptype kahanSum(const fptype(&summands)[size]) {
 }
 
 template <typename fptype>
-static fptype kahanSum(const fptype *summands,
-                       unsigned size) {
+CUDA_CALLABLE static fptype kahanSum(const fptype *summands,
+                                     unsigned size) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -43,8 +46,8 @@ static fptype kahanSum(const fptype *summands,
 template <typename fptype,
           fptype (*sumFunc)(const fptype *summands,
                             unsigned i, fptype curSum)>
-static fptype kahanSum(const fptype *summands,
-                       unsigned size) {
+CUDA_CALLABLE static fptype kahanSum(const fptype *summands,
+                                     unsigned size) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -59,7 +62,8 @@ static fptype kahanSum(const fptype *summands,
 template <typename fptype, unsigned size,
           fptype (*sumFunc)(const fptype *summands,
                             unsigned i, fptype curSum)>
-static fptype kahanSum(const fptype *summands) {
+CUDA_CALLABLE static fptype kahanSum(
+    const fptype *summands) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -72,14 +76,15 @@ static fptype kahanSum(const fptype *summands) {
 }
 
 template <typename fptype>
-static fptype twoNormSum(const fptype *summands, unsigned i,
-                         fptype curSum) {
+CUDA_CALLABLE static fptype twoNormSum(
+    const fptype *summands, unsigned i, fptype curSum) {
   return MathFuncs::MathFuncs<fptype>::fma(
       summands[i], summands[i], curSum);
 }
 
 template <typename fptype>
-static std::array<fptype, 2> twoSum(fptype a, fptype b) {
+CUDA_CALLABLE static std::array<fptype, 2> twoSum(
+    fptype a, fptype b) {
   if(a < b) {
     fptype tmp = b;
     b = a;
@@ -93,8 +98,8 @@ static std::array<fptype, 2> twoSum(fptype a, fptype b) {
 }
 
 template <typename fptype>
-static std::array<fptype, 2> twoProd(fptype lhs,
-                                     fptype rhs) {
+CUDA_CALLABLE static std::array<fptype, 2> twoProd(
+    fptype lhs, fptype rhs) {
   fptype prod = lhs * rhs;
   fptype err =
       MathFuncs::MathFuncs<fptype>::fma(lhs, rhs, -prod);
@@ -103,8 +108,8 @@ static std::array<fptype, 2> twoProd(fptype lhs,
 }
 
 template <typename fptype>
-static std::array<fptype, 3> threeFMA(fptype a, fptype b,
-                                      fptype c) {
+CUDA_CALLABLE static std::array<fptype, 3> threeFMA(
+    fptype a, fptype b, fptype c) {
   fptype r1 = MathFuncs::MathFuncs<fptype>::fma(a, b, c);
   std::array<fptype, 2> mult = twoProd(a, b);
   std::array<fptype, 2> sum1 = twoSum(c, mult[1]);
@@ -116,9 +121,8 @@ static std::array<fptype, 3> threeFMA(fptype a, fptype b,
 }
 
 template <typename fptype>
-static fptype compensatedDotProd(const fptype *vec1,
-                                 const fptype *vec2,
-                                 unsigned dim) {
+CUDA_CALLABLE static fptype compensatedDotProd(
+    const fptype *vec1, const fptype *vec2, unsigned dim) {
   std::array<fptype, 2> prod = twoProd(vec1[0], vec2[0]);
   fptype s = prod[0];
   fptype c = prod[1];
@@ -132,15 +136,14 @@ static fptype compensatedDotProd(const fptype *vec1,
 }
 
 template <typename fptype>
-static fptype solveLinear(fptype linCoeff,
-                          fptype constant) {
+CUDA_CALLABLE static fptype solveLinear(fptype linCoeff,
+                                        fptype constant) {
   return -constant / linCoeff;
 }
 
 template <typename fptype>
-static fptype kahanDiscriminant(fptype sqCoeff,
-                                fptype linCoeff,
-                                fptype constant) {
+CUDA_CALLABLE static fptype kahanDiscriminant(
+    fptype sqCoeff, fptype linCoeff, fptype constant) {
   std::array<fptype, 2> prod = twoProd(sqCoeff, constant);
   std::array<fptype, 2> sqr =
       twoProd(linCoeff, linCoeff / (fptype)4.0);
@@ -150,7 +153,7 @@ static fptype kahanDiscriminant(fptype sqCoeff,
 }
 
 template <typename fptype>
-static std::array<fptype, 2> kahanQuadratic(
+CUDA_CALLABLE static std::array<fptype, 2> kahanQuadratic(
     fptype sqCoeff, fptype linCoeff, fptype constant) {
   if(sqCoeff == 0.0) {
     return {solveLinear(linCoeff, constant), NAN};
@@ -158,17 +161,19 @@ static std::array<fptype, 2> kahanQuadratic(
   fptype disc =
       kahanDiscriminant(sqCoeff, linCoeff, constant);
   if(disc < 0) return std::array<fptype, 2>({{NAN, NAN}});
-  fptype fracPart = -MathFuncs::MathFuncs<fptype>::copysign(
-      MathFuncs::MathFuncs<fptype>::fabs(linCoeff / 2.0) +
-          MathFuncs::MathFuncs<fptype>::sqrt(disc),
-      linCoeff);
+  fptype fracPart =
+      -MathFuncs::MathFuncs<fptype>::copysign(
+          MathFuncs::MathFuncs<fptype>::fabs(linCoeff /
+                                             2.0) +
+              MathFuncs::MathFuncs<fptype>::sqrt(disc),
+          linCoeff);
   std::array<fptype, 2> roots = {
       {fracPart / sqCoeff, constant / fracPart}};
   return roots;
 }
 
 template <typename fptype>
-static fptype newtonsQuadratic(
+CUDA_CALLABLE static fptype newtonsQuadratic(
     fptype sqCoeff, fptype linCoeff, fptype constant,
     fptype guess,
     fptype maxRelErr =

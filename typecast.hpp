@@ -195,7 +195,6 @@ struct typecast<long long int, long int> {
   typedef long int lowerPrec;
 };
 
-
 template <>
 struct typecast<short unsigned int, short unsigned int> {
   typedef short unsigned int higherPrec;
@@ -215,7 +214,8 @@ struct typecast<short unsigned int, long unsigned int> {
 };
 
 template <>
-struct typecast<short unsigned int, long long unsigned int> {
+struct typecast<short unsigned int,
+                long long unsigned int> {
   typedef long long unsigned int higherPrec;
   typedef short unsigned int lowerPrec;
 };
@@ -233,7 +233,8 @@ struct typecast<long unsigned int, short unsigned int> {
 };
 
 template <>
-struct typecast<long long unsigned int, short unsigned int> {
+struct typecast<long long unsigned int,
+                short unsigned int> {
   typedef long long unsigned int higherPrec;
   typedef short unsigned int lowerPrec;
 };
@@ -285,7 +286,6 @@ struct typecast<long long unsigned int, long unsigned int> {
   typedef long long unsigned int higherPrec;
   typedef long unsigned int lowerPrec;
 };
-
 }
 
 #endif

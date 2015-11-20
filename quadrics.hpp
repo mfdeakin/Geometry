@@ -27,42 +27,35 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Quadric : public Solid<dim, fptype> {
  public:
-  Quadric()
-      : Solid<dim, fptype>(),
-        coeffs(new std::array<fptype, numCoeffs>()) {
-    for(int i = 0; i < numCoeffs; i++) setCoeff(i, 0.0);
+  CUDA_CALLABLE Quadric() : Solid<dim, fptype>() {
+    for(int i = 0; i < numCoeffs; i++) setCoeff(i, NAN);
   }
 
-  Quadric(const Origin<dim, fptype> &origin)
-      : Solid<dim, fptype>(origin),
-        coeffs(new std::array<fptype, numCoeffs>()) {
-    for(int i = 0; i < numCoeffs; i++) setCoeff(i, 0.0);
+  CUDA_CALLABLE Quadric(const Origin<dim, fptype> &origin)
+      : Solid<dim, fptype>(origin) {
+    for(int i = 0; i < numCoeffs; i++) setCoeff(i, NAN);
   }
-
-  Quadric(const Quadric<dim, fptype> &src)
-      : Solid<dim, fptype>(src.origin),
-        coeffs(src.coeffs) {}
 
   template <typename srctype>
-  Quadric(const Quadric<dim, srctype> &src)
-      : Solid<dim, fptype>(src.origin),
-        coeffs(new std::array<fptype, numCoeffs>()) {
+  CUDA_CALLABLE Quadric(const Quadric<dim, srctype> &src)
+      : Solid<dim, fptype>(src.origin) {
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, src.coeff(i));
   }
 
-  virtual ~Quadric() {}
+  CUDA_CALLABLE virtual ~Quadric() {}
 
   /* d=0 corresponds to the first dimension,
    * d=1 the second, ...
    * d=dim the constant coefficient
    */
-  fptype coeff(int d1, int d2) const {
+  CUDA_CALLABLE fptype coeff(int d1, int d2) const {
     int coeffNum = getCoeffPos(d1, d2);
-    return (*coeffs.get())[coeffNum];
+    return coeffs[coeffNum];
   }
 
-  fptype setCoeff(int d1, int d2, fptype val) {
+  CUDA_CALLABLE fptype
+      setCoeff(int d1, int d2, fptype val) {
     int coeffNum = getCoeffPos(d1, d2);
     return setCoeff(coeffNum, val);
   }
@@ -75,28 +68,21 @@ class Quadric : public Solid<dim, fptype> {
    * ...
    * pos=(dim+2)*(dim+1)/2-1 is the last dim linear term
    */
-  fptype coeff(int pos) const {
+  CUDA_CALLABLE fptype coeff(int pos) const {
     assert(pos >= 0);
     assert(pos < numCoeffs);
-    return (*coeffs.get())[pos];
+    return coeffs[pos];
   }
 
-  fptype setCoeff(int pos, fptype val) {
+  CUDA_CALLABLE fptype setCoeff(int pos, fptype val) {
     assert(pos >= 0);
     assert(pos < numCoeffs);
-    if(coeffs.unique() == false) {
-      std::array<fptype, numCoeffs> *newCoeffs =
-          new std::array<fptype, numCoeffs>();
-      for(int i = 0; i < numCoeffs; i++)
-        (*newCoeffs)[i] = coeff(i);
-      coeffs.reset(newCoeffs);
-    }
-    (*coeffs.get())[pos] = val;
-    return (*coeffs.get())[pos];
+    coeffs[pos] = val;
+    return coeffs[pos];
   }
 
   template <typename outtype>
-  outtype evaluatePoint(
+  CUDA_CALLABLE outtype evaluatePoint(
       const Point<dim, fptype> &pt,
       fptype absPrecision = defAbsPrecision) const {
     /* Use Kahan summation to evaluate this more correctly
@@ -120,7 +106,7 @@ class Quadric : public Solid<dim, fptype> {
     return ret;
   }
 
-  Polynomial<2, fptype> calcLineDistPoly(
+  CUDA_CALLABLE Polynomial<2, fptype> calcLineDistPoly(
       const Line<dim, fptype> &line,
       fptype absPrecision = defAbsPrecision) const {
     auto lDir = line.getDirection();
@@ -148,7 +134,8 @@ class Quadric : public Solid<dim, fptype> {
     return poly;
   }
 
-  std::array<fptype, 2> calcLineDistToIntersect(
+  CUDA_CALLABLE std::array<fptype, 2>
+  calcLineDistToIntersect(
       Line<dim, fptype> line,
       fptype absPrecision = defAbsPrecision) const {
     fptype shiftDist =
@@ -162,7 +149,8 @@ class Quadric : public Solid<dim, fptype> {
     return roots;
   }
 
-  std::array<Point<dim, fptype>, 2> calcLineIntersect(
+  CUDA_CALLABLE std::array<Point<dim, fptype>, 2>
+  calcLineIntersect(
       const Line<dim, fptype> &line,
       fptype absPrecision = defAbsPrecision) const {
     std::array<fptype, 2> roots =
@@ -172,7 +160,7 @@ class Quadric : public Solid<dim, fptype> {
          line.getPosAtDist(roots[1])});
   }
 
-  PointLocation ptLocation(
+  CUDA_CALLABLE PointLocation ptLocation(
       const Point<dim, fptype> &pt,
       fptype absPrecision = defAbsPrecision) const {
     assert(absPrecision >= 0.0);
@@ -186,27 +174,27 @@ class Quadric : public Solid<dim, fptype> {
       return PT_OUTSIDE;
   }
 
-  Quadric<dim, fptype> operator=(
+  CUDA_CALLABLE Quadric<dim, fptype> operator=(
       const Quadric<dim, fptype> &q) {
     Solid<dim, fptype>::operator=(q);
-    coeffs = q.coeffs;
+    for(int i = 0; i < numCoeffs; i++)
+      setCoeff(i, q.coeff(i));
     return *this;
   }
 
-  bool operator==(const Quadric<dim, fptype> &q) const {
-    if(coeffs.get() != q.coeffs.get()) {
-      for(int i = 0; i < numCoeffs; i++) {
-        if(coeff(i) != q.coeff(i)) return false;
-      }
+  CUDA_CALLABLE bool operator==(
+      const Quadric<dim, fptype> &q) const {
+    for(int i = 0; i < numCoeffs; i++) {
+      if(coeff(i) != q.coeff(i)) return false;
     }
     return true;
   }
 
   template <typename srctype>
-  bool operator==(const Quadric<dim, srctype> &q) const {
-    using hPrec =
-        typename Typecast::typecast<fptype,
-                                    srctype>::higherPrec;
+  CUDA_CALLABLE bool operator==(
+      const Quadric<dim, srctype> &q) const {
+    using hPrec = typename Typecast::typecast<
+        fptype, srctype>::higherPrec;
     for(int i = 0; i < numCoeffs; i++) {
       if(static_cast<hPrec>(coeff(i)) !=
          static_cast<hPrec>(q.coeff(i)))
@@ -216,9 +204,19 @@ class Quadric : public Solid<dim, fptype> {
   }
 
   template <typename srctype>
-  bool operator!=(const Quadric<dim, srctype> &q) const {
+  CUDA_CALLABLE bool operator!=(
+      const Quadric<dim, srctype> &q) const {
     return !((*this) == q);
   }
+
+#ifdef __CUDACC__
+  static std::shared_ptr<Quadric<dim, fptype>> cudaCopy(
+      const Quadric<dim, fptype> &q) {
+    Quadric<dim, fptype> *cudaMem = NULL;
+    cudaMalloc(&cudaMem, sizeof(*cudaMem));
+    return std::shared_ptr<Quadric<dim, fptype>>(*cudaMem);
+  }
+#endif
 
   bool readFileMatrix(std::istream &is) {
     for(int i = 0; i < dim + 1; i++) {
@@ -293,7 +291,7 @@ class Quadric : public Solid<dim, fptype> {
       (dim + 2) * (dim + 1) / 2;
 
  private:
-  static int getCoeffPos(int d1, int d2) {
+  CUDA_CALLABLE static int getCoeffPos(int d1, int d2) {
     assert(0 <= d1);
     assert(d1 < dim + 1);
     assert(0 <= d2);
@@ -310,7 +308,7 @@ class Quadric : public Solid<dim, fptype> {
     }
   }
 
-  std::shared_ptr<std::array<fptype, numCoeffs>> coeffs;
+  std::array<fptype, numCoeffs> coeffs;
 };
 };
 

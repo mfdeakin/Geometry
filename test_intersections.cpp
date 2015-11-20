@@ -49,12 +49,6 @@ TEST(QLIntersect, LineIntersection) {
       Geometry::sortIntersections(l, quadrics, eps);
   int i = 0;
   for(auto intersects : *inter) {
-    std::cout << "Intersections: (" << std::setprecision(20)
-              << intersects.intPos << ", "
-              << std::setprecision(20)
-              << intersects.otherIntPos
-              << "), vs expected: "
-              << intersects.intPos - expected[i] << "\n";
     EXPECT_EQ(intersects.intPos, expected[i]);
     i++;
   }

@@ -20,37 +20,39 @@ class Point : public Solid<dim, fptype>,
               public Origin<dim, fptype> {
  public:
   template <typename srctype>
-  Point(const Vector<dim, srctype> &offset)
+  CUDA_CALLABLE Point(const Vector<dim, srctype> &offset)
       : Solid<dim, fptype>(), offset(offset) {}
 
   template <typename srctype>
-  Point(const Origin<dim, srctype> &origin,
-        const Vector<dim, srctype> &offset)
+  CUDA_CALLABLE Point(const Origin<dim, srctype> &origin,
+                      const Vector<dim, srctype> &offset)
       : Solid<dim, fptype>(origin), offset(offset) {}
 
   template <typename srctype>
-  Point(const Point<dim, srctype> &src)
+  CUDA_CALLABLE Point(const Point<dim, srctype> &src)
       : Solid<dim, fptype>(src.origin),
         offset(src.offset) {}
 
-  virtual ~Point(){};
+  CUDA_CALLABLE virtual ~Point(){};
 
-  virtual void shiftOrigin(
+  CUDA_CALLABLE virtual void shiftOrigin(
       const Origin<dim, fptype> &newOrigin) {
     Vector<dim, fptype> v =
         this->origin.calcOffset(newOrigin);
     Solid<dim, fptype>::shiftOrigin(newOrigin);
   }
 
-  virtual Origin<dim, fptype> getOrigin() const {
+  CUDA_CALLABLE virtual Origin<dim, fptype> getOrigin()
+      const {
     return this->origin;
   }
 
-  virtual Vector<dim, fptype> getOffset() const {
+  CUDA_CALLABLE virtual Vector<dim, fptype> getOffset()
+      const {
     return offset;
   }
 
-  Point<dim, fptype> addVector(
+  CUDA_CALLABLE Point<dim, fptype> addVector(
       Vector<dim, fptype> v) const {
     Vector<dim, fptype> newOffset;
     for(int i = 0; i < dim; i++) {
@@ -60,14 +62,17 @@ class Point : public Solid<dim, fptype>,
     return Point<dim, fptype>(this->origin, newOffset);
   }
 
-  Vector<dim, fptype> ptDiff(Point<dim, fptype> rhs) {
+  CUDA_CALLABLE Vector<dim, fptype> ptDiff(
+      Point<dim, fptype> rhs) {
     rhs.shiftOrigin(this->origin);
     return offset - rhs.offset;
   }
 
-  fptype distToOrigin() const { return offset.norm(); }
+  CUDA_CALLABLE fptype distToOrigin() const {
+    return offset.norm();
+  }
 
-  PointLocation ptLocation(
+  CUDA_CALLABLE PointLocation ptLocation(
       const Point<dim, fptype> &pt,
       fptype absPrecision = defAbsPrecision) const {
     // We have no knowledge of the precision, so downcast
@@ -79,7 +84,8 @@ class Point : public Solid<dim, fptype>,
       return PT_INSIDE;
   }
 
-  virtual Vector<dim, fptype> globalOffset() const {
+  CUDA_CALLABLE virtual Vector<dim, fptype> globalOffset()
+      const {
     Vector<dim, fptype> o =
         offset + this->origin.globalOffset();
     return o;

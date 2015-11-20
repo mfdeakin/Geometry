@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 
+#include "cudadef.h"
 #include "typecast.hpp"
 
 namespace Geometry {
@@ -16,44 +17,36 @@ class Polynomial;
 template <int order, typename fptype>
 class PolynomialBase {
  public:
-  PolynomialBase()
-      : coeffs(new fptype[numCoeffs],
-               std::default_delete<fptype[]>()) {
-    for(int i = 0; i < order; i++) coeffs.get()[i] = 0.0;
+  CUDA_CALLABLE PolynomialBase() {
+    for(int i = 0; i < order; i++) set(i, NAN);
   }
 
-  PolynomialBase(const std::array<fptype, order> &coeffs)
-      : coeffs(new fptype[numCoeffs],
-               std::default_delete<fptype[]>()) {
-    for(int i = 0; i < order; i++)
-      this->coeffs.get()[i] = coeffs[i];
+  CUDA_CALLABLE PolynomialBase(
+      const std::array<fptype, order> &coeffs) {
+    for(int i = 0; i < order; i++) set(i, coeffs[i]);
   }
 
-  PolynomialBase(const PolynomialBase<order, fptype> &p)
-      : coeffs(p.coeffs) {}
+  template <typename srctype>
+  CUDA_CALLABLE PolynomialBase(
+      const PolynomialBase<order, srctype> &p) {
+    for(int i = 0; i < order; i++) set(i, p.get(i));
+  }
 
-  fptype get(int coeff) const {
+  CUDA_CALLABLE fptype get(int coeff) const {
     assert(coeff >= 0);
     assert(coeff < numCoeffs);
-    return coeffs.get()[coeff];
+    return coeffs[coeff];
   }
 
-  fptype &set(int coeff, fptype val) {
+  CUDA_CALLABLE fptype &set(int coeff, fptype val) {
     assert(coeff >= 0);
     assert(coeff < numCoeffs);
-    if(coeffs.unique() == false) {
-      fptype *newCoeffs = new fptype[numCoeffs];
-      for(int i = 0; i < numCoeffs; i++)
-        newCoeffs[i] = get(i);
-      coeffs.reset(newCoeffs,
-                   std::default_delete<fptype[]>());
-    }
-    coeffs.get()[coeff] = val;
-    return coeffs.get()[coeff];
+    coeffs[coeff] = val;
+    return coeffs[coeff];
   }
 
   template <typename valType>
-  fptype eval(valType v) {
+  CUDA_CALLABLE fptype eval(valType v) {
     fptype sum = 0.0;
     for(int i = numCoeffs - 1; i >= 0; i--) {
       sum = std::fma(v, sum, get(i));
@@ -66,7 +59,7 @@ class PolynomialBase {
   using _fptype = fptype;
 
  protected:
-  std::shared_ptr<fptype> coeffs;
+  std::array<fptype, numCoeffs> coeffs;
 };
 
 template <int order, typename fptype, bool isSolvable>

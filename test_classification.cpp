@@ -73,11 +73,6 @@ TEST(Quadric, SimpleClassify) {
       q.setCoeff(i, t.coeffs[i]);
     }
     auto quadtype = QuadricClassify::classifyQuadric(q);
-    printf(
-        "Expected Quadric Type: %s\n"
-        "Returned Quadric Type: %s\n",
-        QuadricClassify::QuadTypeNames[t.expected],
-        QuadricClassify::QuadTypeNames[quadtype]);
     EXPECT_EQ(t.expected, quadtype);
   }
 }
@@ -120,11 +115,6 @@ TEST(Quadric, HyperboloidClassify) {
       q.setCoeff(i, t.coeffs[i]);
     }
     auto quadtype = QuadricClassify::classifyQuadric(q);
-    printf(
-        "Expected Quadric Type: %s\n"
-        "Returned Quadric Type: %s\n",
-        QuadricClassify::QuadTypeNames[t.expected],
-        QuadricClassify::QuadTypeNames[quadtype]);
     EXPECT_EQ(t.expected, quadtype);
   }
 }

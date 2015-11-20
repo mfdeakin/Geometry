@@ -20,8 +20,8 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Line : public Solid<dim, fptype> {
  public:
-  Line(const Point<dim, fptype> &intercept,
-       const Vector<dim, fptype> &direction)
+  CUDA_CALLABLE Line(const Point<dim, fptype> &intercept,
+                     const Vector<dim, fptype> &direction)
       : Solid<dim, fptype>(intercept.origin),
         intercept(intercept),
         dir(direction.normalize()) {
@@ -29,14 +29,14 @@ class Line : public Solid<dim, fptype> {
   }
 
   template <typename srctype>
-  Line(const Line<dim, srctype> &src)
+  CUDA_CALLABLE Line(const Line<dim, srctype> &src)
       : Solid<dim, fptype>(src.origin),
         intercept(src.intercept),
         dir(src.dir) {}
 
-  virtual ~Line() {}
+  CUDA_CALLABLE virtual ~Line() {}
 
-  virtual void shiftOrigin(
+  CUDA_CALLABLE virtual void shiftOrigin(
       const Origin<dim, fptype> &newOrigin) {
     /* Shift the origin by changing the intercept to be the
      * minimal perpendicular to the direction.
@@ -57,13 +57,13 @@ class Line : public Solid<dim, fptype> {
     Solid<dim, fptype>::shiftOrigin(newOrigin);
   }
 
-  virtual fptype argPointMinDist(
+  CUDA_CALLABLE virtual fptype argPointMinDist(
       const Point<dim, fptype> &pt) {
     Vector<dim, fptype> delta(pt.calcOffset(intercept));
     return delta.dot(dir);
   }
 
-  virtual PointLocation ptLocation(
+  CUDA_CALLABLE virtual PointLocation ptLocation(
       const Point<dim, fptype> &test,
       fptype absPrecision = defAbsPrecision) const {
     Vector<dim, fptype> ptDir(test.calcOffset(intercept));
@@ -79,7 +79,8 @@ class Line : public Solid<dim, fptype> {
       return PT_OUTSIDE;
   }
 
-  Point<dim, fptype> getPosAtDist(fptype dist) const {
+  CUDA_CALLABLE Point<dim, fptype> getPosAtDist(
+      fptype dist) const {
     Vector<dim, fptype> pDist;
     const auto p0 = intercept.getOffset();
     for(int i = 0; i < dim; i++) {
@@ -89,11 +90,13 @@ class Line : public Solid<dim, fptype> {
     return Point<dim, fptype>(this->origin, pDist);
   }
 
-  Point<dim, fptype> getIntercept() const {
+  CUDA_CALLABLE Point<dim, fptype> getIntercept() const {
     return intercept;
   }
 
-  Vector<dim, fptype> getDirection() const { return dir; }
+  CUDA_CALLABLE Vector<dim, fptype> getDirection() const {
+    return dir;
+  }
 
   friend std::ostream &operator<<(
       std::ostream &os, const Line<dim, fptype> &l) {
