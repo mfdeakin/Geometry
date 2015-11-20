@@ -102,7 +102,6 @@ bool validateResults(ListFP &inter, ListMP &truth) {
       j = sameEnd;
     } else {
       return false;
-      i++;
     }
   }
   return true;
@@ -132,7 +131,8 @@ void intersectionTest(
   using Lm = Geometry::Line<dim, mpfr::mpreal>;
   constexpr const int machPrec =
       GenericFP::fpconvert<fptype>::precision;
-  constexpr const int truthPrec = 48 * machPrec;
+  constexpr const int precMult = 24;
+  constexpr const int truthPrec = precMult * machPrec;
   mpfr::mpreal::set_default_prec(truthPrec);
   std::list<Qm> truthQuads;
   /* Generate the quadrics */
@@ -167,7 +167,7 @@ void intersectionTest(
     }
     Lf line(Pf(lineInt), lineDir);
     Lm truthLine(line);
-    constexpr const fptype eps = 1e255;
+    constexpr const fptype eps = 1.0e65536;
     /* Then sort the intersections */
     fp_time.startTimer();
     auto inter =
