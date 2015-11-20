@@ -20,6 +20,11 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Line : public Solid<dim, fptype> {
  public:
+	struct LineData {
+		typename Vector<dim, fptype>::VectorData d;
+		typename Point<dim, fptype>::PointData p;
+	};
+	
   CUDA_CALLABLE Line(const Point<dim, fptype> &intercept,
                      const Vector<dim, fptype> &direction)
       : Solid<dim, fptype>(intercept.origin),

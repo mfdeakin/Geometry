@@ -19,6 +19,11 @@ template <int dim, typename fptype>
 class Point : public Solid<dim, fptype>,
               public Origin<dim, fptype> {
  public:
+	struct PointData {
+		typename Origin<dim, fptype>::OriginData o;
+		typename Vector<dim, fptype>::VectorData v;
+	};
+
   template <typename srctype>
   CUDA_CALLABLE Point(const Vector<dim, srctype> &offset)
       : Solid<dim, fptype>(), offset(offset) {}

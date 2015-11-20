@@ -12,6 +12,10 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Origin : public GeometryBase<dim, fptype> {
  public:
+  struct OriginData {
+    typename Vector<dim, fptype>::VectorData v;
+  };
+
   CUDA_CALLABLE Origin() {}
 
   CUDA_CALLABLE Origin(const Origin<dim, fptype> &src)
@@ -48,6 +52,21 @@ class Origin : public GeometryBase<dim, fptype> {
     static const Origin<dim, fptype> universeOrigin;
     return universeOrigin;
   }
+
+#ifdef __CUDACC__
+  std::shared_ptr<const OriginData> cudaCopy() const {
+    OriginData *cudaMem = NULL;
+    cudaError_t err =
+        cudaMalloc(&cudaMem, sizeof(*cudaMem));
+    err = globalCoords.cudaCopy(&cudaMem->v);
+    return std::shared_ptr<const OriginData>(cudaMem,
+                                             cudaFree);
+  }
+
+  cudaError_t cudaCopy(OriginData *cudaMem) const {
+    return globalCoords.cudaCopy(&cudaMem->v);
+  }
+#endif
 
  private:
   Vector<dim, fptype> globalCoords;

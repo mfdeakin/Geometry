@@ -16,11 +16,13 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Vector : public GeometryBase<dim, fptype> {
  public:
+  typedef std::array<fptype, dim> VectorData;
+
   CUDA_CALLABLE Vector() {
     for(int i = 0; i < dim; i++) offset[i] = 0.0;
   }
 
-  CUDA_CALLABLE Vector(std::array<fptype, dim> v) {
+  CUDA_CALLABLE Vector(const VectorData &v) {
     for(int i = 0; i < dim; i++) offset[i] = v[i];
   }
 
@@ -188,11 +190,28 @@ class Vector : public GeometryBase<dim, fptype> {
     return os;
   }
 
+#ifdef __CUDACC__
+  std::shared_ptr<const VectorData> cudaCopy() const {
+    VectorData *cudaMem = NULL;
+    cudaError_t err =
+        cudaMalloc(&cudaMem, sizeof(*cudaMem));
+    cudaMemcpy(cudaMem, &offset, sizeof(offset),
+               cudaMemcpyHostToDevice);
+    return std::shared_ptr<const VectorData>(cudaMem,
+                                             cudaFree);
+  }
+
+  cudaError_t cudaCopy(VectorData *cudaMem) const {
+    return cudaMemcpy(cudaMem, &offset, sizeof(offset),
+                      cudaMemcpyHostToDevice);
+  }
+#endif
+
   template <int, typename>
   friend class Vector;
 
  private:
-  fptype offset[dim];
+  VectorData offset;
 };
 };
 

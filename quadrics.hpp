@@ -27,6 +27,12 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Quadric : public Solid<dim, fptype> {
  public:
+  struct QuadricData {
+    typename Origin<dim, fptype>::OriginData origin;
+    std::array<fptype, Quadric<dim, fptype>::numCoeffs>
+        coeffs;
+  };
+
   CUDA_CALLABLE Quadric() : Solid<dim, fptype>() {
     for(int i = 0; i < numCoeffs; i++) setCoeff(i, NAN);
   }
@@ -42,6 +48,10 @@ class Quadric : public Solid<dim, fptype> {
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, src.coeff(i));
   }
+
+  CUDA_CALLABLE Quadric(const QuadricData &src)
+      : Solid<dim, fptype>(src.origin),
+        coeffs(src.coeffs) {}
 
   CUDA_CALLABLE virtual ~Quadric() {}
 
@@ -210,11 +220,20 @@ class Quadric : public Solid<dim, fptype> {
   }
 
 #ifdef __CUDACC__
-  static std::shared_ptr<Quadric<dim, fptype>> cudaCopy(
-      const Quadric<dim, fptype> &q) {
-    Quadric<dim, fptype> *cudaMem = NULL;
-    cudaMalloc(&cudaMem, sizeof(*cudaMem));
-    return std::shared_ptr<Quadric<dim, fptype>>(*cudaMem);
+  std::shared_ptr<QuadricData> cudaCopy() const {
+    QuadricData *cudaMem = NULL;
+    cudaError_t err =
+        cudaMalloc(&cudaMem, sizeof(*cudaMem));
+    err = cudaCopy(cudaMem);
+    return std::shared_ptr<QuadricData>(cudaMem, cudaFree);
+  }
+
+  cudaError_t cudaCopy(QuadricData *cudaMem) const {
+    cudaError_t err =
+        cudaMemcpy(&cudaMem->coeffs, &coeffs,
+                   sizeof(coeffs), cudaMemcpyHostToDevice);
+    err = this->origin.cudaCopy(&cudaMem->origin);
+    return err;
   }
 #endif
 
