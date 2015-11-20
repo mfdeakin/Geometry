@@ -209,6 +209,15 @@ class Quadric : public Solid<dim, fptype> {
     return !((*this) == q);
   }
 
+#ifdef __CUDACC__
+  static std::shared_ptr<Quadric<dim, fptype>> cudaCopy(
+      const Quadric<dim, fptype> &q) {
+    Quadric<dim, fptype> *cudaMem = NULL;
+    cudaMalloc(&cudaMem, sizeof(*cudaMem));
+    return std::shared_ptr<Quadric<dim, fptype>>(*cudaMem);
+  }
+#endif
+
   bool readFileMatrix(std::istream &is) {
     for(int i = 0; i < dim + 1; i++) {
       for(int j = 0; j < dim + 1; j++) {
