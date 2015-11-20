@@ -12,29 +12,32 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Origin : public GeometryBase<dim, fptype> {
  public:
-  Origin() {}
+  CUDA_CALLABLE Origin() {}
 
-  Origin(const Origin<dim, fptype> &src)
+  CUDA_CALLABLE Origin(const Origin<dim, fptype> &src)
       : globalCoords(src.globalCoords) {}
 
   template <typename srctype>
-  Origin(const Origin<dim, srctype> &src)
+  CUDA_CALLABLE Origin(const Origin<dim, srctype> &src)
       : globalCoords(src.globalCoords) {}
 
-  Origin(const std::array<fptype, dim> &globalPos)
+  CUDA_CALLABLE Origin(
+      const std::array<fptype, dim> &globalPos)
       : globalCoords(globalPos) {}
 
   template <typename srctype>
-  bool operator==(const Origin<dim, srctype> &other) const {
+  CUDA_CALLABLE bool operator==(
+      const Origin<dim, srctype> &other) const {
     return globalOffset() == other.globalOffset();
   }
 
-  Vector<dim, fptype> calcOffset(
+  CUDA_CALLABLE Vector<dim, fptype> calcOffset(
       const Origin<dim, fptype> &other) const {
     return globalOffset() - other.globalOffset();
   }
 
-  virtual Vector<dim, fptype> globalOffset() const {
+  CUDA_CALLABLE virtual Vector<dim, fptype> globalOffset()
+      const {
     return globalCoords;
   }
 

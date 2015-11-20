@@ -167,7 +167,7 @@ void intersectionTest(
     }
     Lf line(Pf(lineInt), lineDir);
     Lm truthLine(line);
-    constexpr const fptype eps = 1e255;
+    constexpr const fptype eps = 1e65536;
     /* Then sort the intersections */
     fp_time.startTimer();
     auto inter =

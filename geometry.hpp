@@ -2,6 +2,8 @@
 #ifndef _GEOMETRY_HPP_
 #define _GEOMETRY_HPP_
 
+#include "cudadef.h"
+
 namespace Geometry {
 
 enum PointLocation {
@@ -33,7 +35,7 @@ constexpr float defAbsPrecision = 9.5367431640625e-7;
 template <int _dim, typename fptype>
 class GeometryBase {
  public:
-  virtual ~GeometryBase(){};
+  CUDA_CALLABLE virtual ~GeometryBase(){};
 
   static_assert(_dim >= 0,
                 "The dimension of a geometric object "
@@ -49,34 +51,37 @@ class GeometryBase {
 template <int dim, typename fptype>
 class Solid : public GeometryBase<dim, fptype> {
  public:
-  Solid() : origin(Origin<dim, fptype>::uOrigin()) {}
+  CUDA_CALLABLE Solid()
+      : origin(Origin<dim, fptype>::uOrigin()) {}
 
   template <typename srctype>
-  Solid(const Solid<dim, srctype> &s)
+  CUDA_CALLABLE Solid(const Solid<dim, srctype> &s)
       : origin(s.origin) {}
 
   template <typename srctype>
-  Solid(const Origin<dim, srctype> &o)
+  CUDA_CALLABLE Solid(const Origin<dim, srctype> &o)
       : origin(o) {}
 
-  virtual ~Solid(){};
+  CUDA_CALLABLE virtual ~Solid(){};
 
-  Solid<dim, fptype> &operator=(
+  CUDA_CALLABLE Solid<dim, fptype> &operator=(
       const Solid<dim, fptype> &s) {
     origin = s.origin;
     return *this;
   }
 
-  virtual PointLocation ptLocation(
+  CUDA_CALLABLE virtual PointLocation ptLocation(
       const Point<dim, fptype> &test,
       fptype absPrecision = defAbsPrecision) const = 0;
 
-  virtual void shiftOrigin(
+  CUDA_CALLABLE virtual void shiftOrigin(
       const Origin<dim, fptype> &newOrigin) {
     origin = newOrigin;
   }
 
-  Origin<dim, fptype> getOrigin() const { return origin; }
+  CUDA_CALLABLE Origin<dim, fptype> getOrigin() const {
+    return origin;
+  }
 
   template <int, typename>
   friend class Solid;

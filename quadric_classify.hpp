@@ -97,12 +97,23 @@ static int classifyCalcDetSign(
       1 / 16.0, 1 / 4.0,  -1 / 8.0, -1 / 8.0, 1 / 4.0,
       -1 / 4.0, 1 / 16.0};
   constexpr const int detProds[numDetTerms][numDetProds] = {
-      {0, 1, 2, 3}, {2, 3, 4, 4}, {1, 3, 5, 5},
-      {1, 2, 6, 6}, {3, 4, 5, 7}, {0, 3, 7, 7},
-      {6, 6, 7, 7}, {2, 4, 6, 8}, {5, 6, 7, 8},
-      {0, 2, 8, 8}, {5, 5, 8, 8}, {1, 5, 6, 9},
-      {4, 6, 7, 9}, {4, 5, 8, 9}, {0, 7, 8, 9},
-      {0, 1, 9, 9}, {4, 4, 9, 9}};
+      {0, 1, 2, 3},
+      {2, 3, 4, 4},
+      {1, 3, 5, 5},
+      {1, 2, 6, 6},
+      {3, 4, 5, 7},
+      {0, 3, 7, 7},
+      {6, 6, 7, 7},
+      {2, 4, 6, 8},
+      {5, 6, 7, 8},
+      {0, 2, 8, 8},
+      {5, 5, 8, 8},
+      {1, 5, 6, 9},
+      {4, 6, 7, 9},
+      {4, 5, 8, 9},
+      {0, 7, 8, 9},
+      {0, 1, 9, 9},
+      {4, 4, 9, 9}};
   constexpr const int precision =
       GenericFP::fpconvert<fptype>::precision;
   constexpr const int detTermPrec = precision * numDetProds;
@@ -546,8 +557,8 @@ static QuadType classifyQuadric(
   /* The array of function pointers maps the two rank values
    * to functions specific to that rank */
   using classFunc = QuadType (
-          *)(int detSign, int eigenSign,
-             const Geometry::Quadric<3, fptype> &quad);
+      *)(int detSign, int eigenSign,
+         const Geometry::Quadric<3, fptype> &quad);
   constexpr const classFunc classifiers[max3Ranks +
                                         1][max4Ranks +
                                            1] = {

@@ -1,5 +1,6 @@
 
-CXXFLAGS=-std=c++11 -g -Wall
+CXX=nvcc
+CXXFLAGS=-std=c++11 -g
 LDLIBS=-lmpfr
 TESTLIBS=-lgtest -lpthread
 

@@ -16,34 +16,34 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Vector : public GeometryBase<dim, fptype> {
  public:
-  Vector() {
+  CUDA_CALLABLE Vector() {
     for(int i = 0; i < dim; i++) offset[i] = 0.0;
   }
 
-  Vector(std::array<fptype, dim> v) {
+  CUDA_CALLABLE Vector(std::array<fptype, dim> v) {
     for(int i = 0; i < dim; i++) offset[i] = v[i];
   }
 
   template <typename srctype>
-  Vector(const Vector<dim, srctype> &src) {
+  CUDA_CALLABLE Vector(const Vector<dim, srctype> &src) {
     for(int i = 0; i < dim; i++)
       offset[i] = (fptype)src.offset[i];
   }
 
-  fptype get(int dimension) const {
+  CUDA_CALLABLE fptype get(int dimension) const {
     assert(dimension >= 0);
     assert(dimension < dim);
     return offset[dimension];
   }
 
-  fptype set(int dimension, fptype val) {
+  CUDA_CALLABLE fptype set(int dimension, fptype val) {
     assert(dimension >= 0);
     assert(dimension < dim);
     offset[dimension] = val;
     return offset[dimension];
   }
 
-  Vector<dim, fptype> add(
+  CUDA_CALLABLE Vector<dim, fptype> add(
       const Vector<dim, fptype> &rhs) const {
     Vector<dim, fptype> sum;
     for(int i = 0; i < dim; i++)
@@ -51,7 +51,7 @@ class Vector : public GeometryBase<dim, fptype> {
     return sum;
   }
 
-  Vector<dim, fptype> subtract(
+  CUDA_CALLABLE Vector<dim, fptype> subtract(
       const Vector<dim, fptype> &rhs) const {
     Vector<dim, fptype> diff;
     for(int i = 0; i < dim; i++)
@@ -59,49 +59,53 @@ class Vector : public GeometryBase<dim, fptype> {
     return diff;
   }
 
-  fptype operator()(int dimension) const {
+  CUDA_CALLABLE fptype operator()(int dimension) const {
     return get(dimension);
   }
 
-  fptype operator()(int dimension, fptype val) {
+  CUDA_CALLABLE fptype
+  operator()(int dimension, fptype val) {
     return set(dimension, val);
   }
 
-  Vector<dim, fptype> operator*(fptype scale) const {
+  CUDA_CALLABLE Vector<dim, fptype> operator*(
+      fptype scale) const {
     return this->scale(scale);
   }
 
-  Vector<dim, fptype> operator+(
+  CUDA_CALLABLE Vector<dim, fptype> operator+(
       const Vector<dim, fptype> &rhs) const {
     return add(rhs);
   }
 
-  Vector<dim, fptype> operator-(
+  CUDA_CALLABLE Vector<dim, fptype> operator-(
       const Vector<dim, fptype> &rhs) const {
     return subtract(rhs);
   }
 
-  Vector<dim, fptype> operator*=(fptype scale) {
+  CUDA_CALLABLE Vector<dim, fptype> operator*=(
+      fptype scale) {
     for(unsigned i = 0; i < dim; i++)
       set(i, get(i) * scale);
     return *this;
   }
 
-  Vector<dim, fptype> operator+=(
+  CUDA_CALLABLE Vector<dim, fptype> operator+=(
       const Vector<dim, fptype> &rhs) {
     for(unsigned i = 0; i < dim; i++)
       set(i, get(i) + rhs.get(i));
     return *this;
   }
 
-  Vector<dim, fptype> operator-=(
+  CUDA_CALLABLE Vector<dim, fptype> operator-=(
       const Vector<dim, fptype> &rhs) {
     for(unsigned i = 0; i < dim; i++)
       set(i, get(i) - rhs.get(i));
     return *this;
   }
 
-  fptype dot(const Vector<dim, fptype> &rhs) const {
+  CUDA_CALLABLE fptype
+      dot(const Vector<dim, fptype> &rhs) const {
     fptype sum = 0.0;
     for(int i = 0; i < dim; i++)
       sum = MathFuncs::MathFuncs<fptype>::fma(
@@ -110,7 +114,7 @@ class Vector : public GeometryBase<dim, fptype> {
   }
 
   template <int otherDim>
-  Vector<dim + otherDim - 1, fptype> convZPad(
+  CUDA_CALLABLE Vector<dim + otherDim - 1, fptype> convZPad(
       const Vector<otherDim, fptype> &rhs) {
     Vector<dim + otherDim - 1, fptype> convd;
     for(int i = 0; i < dim; i++) {
@@ -123,7 +127,7 @@ class Vector : public GeometryBase<dim, fptype> {
     return convd;
   }
 
-  Vector<dim, fptype> normalize() const {
+  CUDA_CALLABLE Vector<dim, fptype> normalize() const {
     fptype mag = norm();
     Vector<dim, fptype> normalized;
     if(mag == 0.0)
@@ -134,20 +138,21 @@ class Vector : public GeometryBase<dim, fptype> {
     return normalized;
   }
 
-  fptype norm() const {
+  CUDA_CALLABLE fptype norm() const {
     fptype normSq = dot(*this);
     return MathFuncs::MathFuncs<fptype>::sqrt(normSq);
   }
 
-  Vector<dim, fptype> scale(fptype scalar) const {
+  CUDA_CALLABLE Vector<dim, fptype> scale(
+      fptype scalar) const {
     Vector<dim, fptype> scaled;
     for(int i = 0; i < dim; i++)
       scaled.offset[i] = offset[i] * scalar;
     return scaled;
   }
 
-  std::array<Vector<dim, fptype>, dim - 1> calcOrthogonals()
-      const {
+  CUDA_CALLABLE std::array<Vector<dim, fptype>, dim - 1>
+  calcOrthogonals() const {
     /* Use a Householder reflection to compute the
      * orthonormal vectors.
      * This works because the Householder matrix is unitary.
