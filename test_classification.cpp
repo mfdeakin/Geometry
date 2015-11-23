@@ -65,6 +65,10 @@ TEST(Quadric, SimpleClassify) {
 
       {QuadricClassify::QUADT_COINCIDENTPLANES,
        {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
+
+      /* This one should be a real plane */
+      {QuadricClassify::QUADT_ERROR,
+       {0, 0, 0, 1, 0, 0, 0, 0, 0, 1}},
   };
   Geometry::Origin<dim, fptype> o;
   Geometry::Quadric<dim, fptype> q(o);

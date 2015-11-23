@@ -98,7 +98,8 @@ bool validateResults(ListFP &inter, ListMP &truth) {
       }
       /* i isn't in the region.
        * Verify all elements in the region were used */
-      if(regLen != numInRegion) return false;
+      if(regLen != numInRegion)
+        return false;
       j = sameEnd;
     } else {
       return false;
@@ -115,9 +116,14 @@ int countIP(List inter) {
 }
 
 template <int dim, typename fptype>
+using randLineGen =
+    Geometry::Line<dim, fptype> (*)(std::mt19937_64 &rng);
+
+template <int dim, typename fptype>
 void intersectionTest(
     std::list<Geometry::Quadric<dim, fptype>> &quads,
-    std::ostream &results, const int numTests) {
+    std::ostream &results, const int numTests,
+    randLineGen<dim, fptype> rlgf) {
   /* First build a scene of quadrics.
    * Then generate random lines on a disk centered at the
    * intersection of the cylinders.
@@ -142,10 +148,6 @@ void intersectionTest(
   }
   std::random_device rd;
   std::mt19937_64 engine(rd());
-  constexpr const fptype minPos = 0, maxPos = 2;
-  std::uniform_real_distribution<fptype> genPos(minPos,
-                                                maxPos);
-  std::uniform_real_distribution<fptype> genDir(-1.0, 1.0);
   Timer::Timer fp_time, mp_time;
   struct TimeArr {
     int fpns;
@@ -156,16 +158,7 @@ void intersectionTest(
   /* Run the tests */
   int t;
   for(t = 0; t < numTests && globals.run; t++) {
-    /* First build the line */
-    Vf lineDir;
-    Vf lineInt;
-    for(int i = 0; i < dim; i++) {
-      fptype tmp = genPos(engine);
-      lineInt.set(i, tmp);
-      tmp = genDir(engine);
-      lineDir.set(i, tmp);
-    }
-    Lf line(Pf(lineInt), lineDir);
+    Lf line = rlgf(engine);
     Lm truthLine(line);
     constexpr const fptype eps = 1.0e65536;
     /* Then sort the intersections */
@@ -217,6 +210,46 @@ void lockCPU() {
   delete[] cpus;
 }
 
+template <int dim, typename fptype>
+Geometry::Line<dim, fptype> defRandLine(
+    std::mt19937_64 &rng) {
+  constexpr const fptype minPos = 0, maxPos = 2;
+  std::uniform_real_distribution<fptype> genPos(minPos,
+                                                maxPos);
+  std::uniform_real_distribution<fptype> genDir(-1.0, 1.0);
+  /* First build the line */
+  Geometry::Vector<dim, fptype> lineDir;
+  Geometry::Vector<dim, fptype> lineInt;
+  for(int i = 0; i < dim; i++) {
+    fptype tmp = genPos(rng);
+    lineInt.set(i, tmp);
+    tmp = genDir(rng);
+    lineDir.set(i, tmp);
+  }
+  return Geometry::Line<dim, fptype>(
+      Geometry::Point<dim, fptype>(lineInt), lineInt);
+}
+
+template <int dim, typename fptype>
+Geometry::Line<dim, fptype> cylRandLine(
+    std::mt19937_64 &rng) {
+  constexpr const fptype minPos = 0.375, maxPos = 0.625;
+  std::uniform_real_distribution<fptype> genPos(minPos,
+                                                maxPos);
+  std::uniform_real_distribution<fptype> genDir(-1.0, 1.0);
+  /* First build the line */
+  Geometry::Vector<dim, fptype> lineDir;
+  Geometry::Vector<dim, fptype> lineInt;
+  lineInt.set(1, genPos(rng));
+  for(int i = 0; i < dim; i++) {
+    lineInt.set(i, lineInt.get(1));
+    lineDir.set(i, genDir(rng));
+  }
+  lineInt.set(0, genPos(rng));
+  return Geometry::Line<dim, fptype>(
+      Geometry::Point<dim, fptype>(lineInt), lineInt);
+}
+
 int main(int argc, char **argv) {
   using fptype = float;
   constexpr const int dim = 3;
@@ -224,8 +257,10 @@ int main(int argc, char **argv) {
   std::list<Geometry::Quadric<dim, fptype>> quads;
   const char *outFName = "results";
   int numTests = 1e5;
+  randLineGen<dim, fptype> rlg = cylRandLine<dim, fptype>;
   if(argc > 1) {
     quads = parseQuadrics<dim, fptype>(argv[1]);
+    rlg = defRandLine<dim, fptype>;
     if(argc > 2) {
       outFName = argv[2];
       if(argc > 3) numTests = atoi(argv[3]);
@@ -234,6 +269,6 @@ int main(int argc, char **argv) {
     quads = parseQuadrics<dim, fptype>("cylinders.csg");
   std::ofstream results(outFName);
   signal(SIGINT, sigInt);
-  intersectionTest(quads, results, numTests);
+  intersectionTest(quads, results, numTests, defRandLine);
   return 0;
 }
