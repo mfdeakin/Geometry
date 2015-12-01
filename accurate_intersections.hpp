@@ -90,6 +90,8 @@ class IntersectionBase<dim, fptype, true> {
     Polynomial<2, mpfr::mpreal> p2 =
         q2.calcLineDistPoly(line);
     /* And the determinant */
+    const unsigned prevPrec =
+        mpfr::mpreal::get_default_prec();
     const unsigned detPrec = 4 * coeffPrec;
     mpfr::mpreal::set_default_prec(detPrec);
     mpfr::mpreal coeffs[] = {p1.get(2), p1.get(1),
@@ -124,6 +126,7 @@ class IntersectionBase<dim, fptype, true> {
      * otherwise, this intersection occurs before */
     fptype tmp = det;
     tmp *= partialResultant;
+    mpfr::mpreal::set_default_prec(prevPrec);
     if(tmp < 0.0) {
       /* Opposite signs! */
       return -1.0;
