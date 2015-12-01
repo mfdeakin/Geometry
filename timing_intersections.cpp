@@ -98,8 +98,7 @@ bool validateResults(ListFP &inter, ListMP &truth) {
       }
       /* i isn't in the region.
        * Verify all elements in the region were used */
-      if(regLen != numInRegion)
-        return false;
+      if(regLen != numInRegion) return false;
       j = sameEnd;
     } else {
       return false;
@@ -174,6 +173,52 @@ void intersectionTest(
     times[t].fpns = fp_time.instant_ns();
     times[t].mpns = mp_time.instant_ns();
     times[t].correct = validateResults(inter, truth);
+    std::cout << "\nTest " << t + 1 << "\n";
+    std::cout << "Line: " << line << "\n";
+    auto i = inter->begin();
+    auto j = truth->begin();
+    bool redo = false;
+    while(i != inter->end() && j != truth->end()) {
+      std::cout << (i->q == j->q) << "\nDet Poly: " << i->q
+                << " -> t = " << i->intPos << ", "
+                << i->otherIntPos << "\nGT Poly:  " << j->q
+                << " -> t = " << j->intPos << ", "
+                << j->otherIntPos
+                << "\nDelta = " << i->intPos - j->intPos
+                << "\n";
+      if(MathFuncs::MathFuncs<mpfr::mpreal>::abs(
+             i->intPos - j->intPos) > 0.1) {
+        redo = true;
+        std::cout << "Incorrect, finding sort errors\n";
+        for(auto k = inter->begin(); k != inter->end();
+            k++) {
+          fptype order1 = i->accurateCompare(*k),
+                 order2 = k->accurateCompare(*i),
+                 delta = i->intPos - k->intPos;
+          std::cout << k->q << " -> t = " << k->intPos
+                    << ", " << k->otherIntPos
+                    << "\nComputed Orders: " << order1
+                    << ", " << order2
+                    << "\nExpected Order:  " << delta
+                    << "\n";
+          fptype s1 =
+              MathFuncs::MathFuncs<fptype>::copysign(1.0,
+                                                     delta);
+          if(s1 != order1 && order1 != 0.0) {
+            i->accurateCompare(*k);
+          }
+        }
+      }
+      i++;
+      j++;
+    }
+    if(redo) {
+      Geometry::sortIntersections(line, quads, eps);
+    }
+    if(i != inter->end())
+      std::cout << "Too many intersections computed\n";
+    else if(j != truth->end())
+      std::cout << "Too few intersections computed\n";
     times[t].numIP = countIP(inter);
   }
   /* Output all of the results */

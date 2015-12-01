@@ -97,13 +97,10 @@ class IntersectionBase<dim, fptype, true> {
                              p2.get(1), p2.get(0)};
     constexpr const int numTerms = 7;
     constexpr const int numProds = 4;
-    int detTermCoeffs[numTerms][numProds] = {{0, 0, 5, 5},
-                                             {2, 2, 3, 3},
-                                             {1, 1, 3, 5},
-                                             {4, 4, 0, 2},
-                                             {1, 2, 3, 4},
-                                             {0, 1, 4, 5},
-                                             {0, 2, 3, 5}};
+    int detTermCoeffs[numTerms][numProds] = {
+        {0, 0, 5, 5}, {2, 2, 3, 3}, {1, 1, 3, 5},
+        {4, 4, 0, 2}, {1, 2, 3, 4}, {0, 1, 4, 5},
+        {0, 2, 3, 5}};
     fptype termSigns[numTerms] = {1, 1, 1, 1, -1, -1, -1};
     mpfr::mpreal det(0.0);
     for(int i = 0; i < numTerms; i++) {
@@ -143,10 +140,16 @@ class IntersectionBase<dim, fptype, true> {
     fptype delta = intPos - i.intPos;
     if(MathFuncs::MathFuncs<fptype>::fabs(delta) <
            absErrMargin &&
+       i.q != q &&
        !MathFuncs::MathFuncs<fptype>::isnan(otherIntPos) &&
-       !MathFuncs::MathFuncs<fptype>::isnan(i.otherIntPos))
-      return accurateCompare(i);
-    else
+       !MathFuncs::MathFuncs<fptype>::isnan(
+           i.otherIntPos)) {
+      fptype cmp = accurateCompare(i);
+      if(cmp == 0.0)
+        return delta;
+      else
+        return cmp;
+    } else
       return delta;
   }
 
@@ -236,9 +239,10 @@ class Intersection
             quad, line, intPos, otherIntPos, absErrMargin) {
   }
 
-  Intersection(const IntersectionBase<
-      dim, fptype,
-      !std::is_same<fptype, mpfr::mpreal>::value> &i)
+  Intersection(
+      const IntersectionBase<
+          dim, fptype,
+          !std::is_same<fptype, mpfr::mpreal>::value> &i)
       : IntersectionBase<
             dim, fptype,
             !std::is_same<fptype, mpfr::mpreal>::value>(i) {
