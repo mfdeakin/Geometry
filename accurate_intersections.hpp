@@ -101,7 +101,7 @@ class IntersectionBase<dim, fptype, true> {
         {0, 0, 5, 5}, {2, 2, 3, 3}, {1, 1, 3, 5},
         {4, 4, 0, 2}, {1, 2, 3, 4}, {0, 1, 4, 5},
         {0, 2, 3, 5}};
-    fptype termSigns[numTerms] = {1, 1, 1, 1, -1, -1, -1};
+    fptype termSigns[numTerms] = {1, 1, 1, 1, -1, -1, -2};
     mpfr::mpreal det(0.0);
     for(int i = 0; i < numTerms; i++) {
       mpfr::mpreal term(termSigns[i]);
