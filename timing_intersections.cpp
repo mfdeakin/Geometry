@@ -174,7 +174,8 @@ void intersectionTest(
   for(t = 0; t < numTests && globals.run; t++) {
     Lf line = rlgf(engine);
     Lm truthLine(line);
-    constexpr const fptype eps = 1.0e65536;
+    constexpr const fptype eps =
+        std::numeric_limits<fptype>::infinity();
     /* Then sort the intersections */
     fp_time.startTimer();
     auto inter =
