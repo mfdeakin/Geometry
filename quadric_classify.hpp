@@ -11,40 +11,44 @@ namespace QuadricClassify {
 
 enum QuadType {
   QUADT_ERROR = 0,
+  QUADT_DEGENERATE = 1,
 
-  QUADT_COINCIDENTPLANES = 1,
-  QUADT_INTERSECTPLANES = 2,
-  QUADT_INTERSECTPLANES_IM = 3,
-  QUADT_INTERSECTPLANES_RE = 4,
-  QUADT_PARALLELPLANES = 5,
-  QUADT_PARALLELPLANES_IM = 6,
-  QUADT_PARALLELPLANES_RE = 7,
+  QUADT_COINCIDENTPLANES = 2,
+  QUADT_INTERSECTPLANES = 3,
+  QUADT_INTERSECTPLANES_IM = 4,
+  QUADT_INTERSECTPLANES_RE = 5,
+  QUADT_PARALLELPLANES = 6,
+  QUADT_PARALLELPLANES_IM = 7,
+  QUADT_PARALLELPLANES_RE = 8,
 
-  QUADT_ELLIPSOID = 8,
-  QUADT_ELLIPSOID_IM = 9,
-  QUADT_ELLIPSOID_RE = 10,
+  QUADT_ELLIPSOID = 9,
+  QUADT_ELLIPSOID_IM = 10,
+  QUADT_ELLIPSOID_RE = 11,
 
-  QUADT_CONE = 11,
-  QUADT_CONE_IM = 12,
-  QUADT_CONE_RE = 13,
+  QUADT_CONE = 12,
+  QUADT_CONE_IM = 13,
+  QUADT_CONE_RE = 14,
 
-  QUADT_CYLINDER_ELL = 14,
-  QUADT_CYLINDER_ELL_IM = 15,
-  QUADT_CYLINDER_ELL_RE = 16,
-  QUADT_CYLINDER_HYP = 17,
-  QUADT_CYLINDER_PAR = 18,
+  QUADT_CYLINDER_ELL = 15,
+  QUADT_CYLINDER_ELL_IM = 16,
+  QUADT_CYLINDER_ELL_RE = 17,
+  QUADT_CYLINDER_HYP = 18,
+  QUADT_CYLINDER_PAR = 19,
 
-  QUADT_PARABOLOID_ELL = 19,
-  QUADT_PARABOLOID_HYP = 20,
+  QUADT_PARABOLOID_ELL = 20,
+  QUADT_PARABOLOID_HYP = 21,
 
-  QUADT_HYPERBOLOID_ONE = 21,
-  QUADT_HYPERBOLOID_TWO = 22,
+  QUADT_HYPERBOLOID_ONE = 22,
+  QUADT_HYPERBOLOID_TWO = 23,
+
+  QUADT_PLANE = 24,
 
   QUADT_ERRORINVALID
 };
 
 constexpr const char *const QuadTypeNames[] = {
     "Quadratic Classification Error",
+    "Degenerate",
 
     "Coincident Planes",
     "Intersecting Planes",
@@ -72,7 +76,9 @@ constexpr const char *const QuadTypeNames[] = {
     "Hyperbolic Paraboloid",
 
     "Hyperboloid of one sheet",
-    "Hyperboloid of two sheets"};
+    "Hyperboloid of two sheets",
+
+    "Plane"};
 
 template <typename fptype>
 static int classifyCalcDetSign(
@@ -97,23 +103,12 @@ static int classifyCalcDetSign(
       1 / 16.0, 1 / 4.0,  -1 / 8.0, -1 / 8.0, 1 / 4.0,
       -1 / 4.0, 1 / 16.0};
   constexpr const int detProds[numDetTerms][numDetProds] = {
-      {0, 1, 2, 3},
-      {2, 3, 4, 4},
-      {1, 3, 5, 5},
-      {1, 2, 6, 6},
-      {3, 4, 5, 7},
-      {0, 3, 7, 7},
-      {6, 6, 7, 7},
-      {2, 4, 6, 8},
-      {5, 6, 7, 8},
-      {0, 2, 8, 8},
-      {5, 5, 8, 8},
-      {1, 5, 6, 9},
-      {4, 6, 7, 9},
-      {4, 5, 8, 9},
-      {0, 7, 8, 9},
-      {0, 1, 9, 9},
-      {4, 4, 9, 9}};
+      {0, 1, 2, 3}, {2, 3, 4, 4}, {1, 3, 5, 5},
+      {1, 2, 6, 6}, {3, 4, 5, 7}, {0, 3, 7, 7},
+      {6, 6, 7, 7}, {2, 4, 6, 8}, {5, 6, 7, 8},
+      {0, 2, 8, 8}, {5, 5, 8, 8}, {1, 5, 6, 9},
+      {4, 6, 7, 9}, {4, 5, 8, 9}, {0, 7, 8, 9},
+      {0, 1, 9, 9}, {4, 4, 9, 9}};
   constexpr const int precision =
       GenericFP::fpconvert<fptype>::precision;
   constexpr const int detTermPrec = precision * numDetProds;
@@ -415,10 +410,24 @@ static int classifyCalcEigenSign(
 }
 
 template <typename fptype>
-QuadType classifyRank_0(
+QuadType classifyRank_Error(
     int detSign, int eigenSign,
     const Geometry::Quadric<3, fptype> &quad) {
   return QUADT_ERROR;
+}
+
+template <typename fptype>
+QuadType classifyRank_0_0(
+    int detSign, int eigenSign,
+    const Geometry::Quadric<3, fptype> &quad) {
+  return QUADT_DEGENERATE;
+}
+
+template <typename fptype>
+QuadType classifyRank_0_2(
+    int detSign, int eigenSign,
+    const Geometry::Quadric<3, fptype> &quad) {
+  return QUADT_PLANE;
 }
 
 template <typename fptype>
@@ -440,20 +449,6 @@ QuadType classifyRank_1_3(
     int detSign, int eigenSign,
     const Geometry::Quadric<3, fptype> &quad) {
   return QUADT_CYLINDER_PAR;
-}
-
-template <typename fptype>
-QuadType classifyRank_1_4(
-    int detSign, int eigenSign,
-    const Geometry::Quadric<3, fptype> &quad) {
-  return QUADT_ERROR;
-}
-
-template <typename fptype>
-QuadType classifyRank_2_1(
-    int detSign, int eigenSign,
-    const Geometry::Quadric<3, fptype> &quad) {
-  return QUADT_ERROR;
 }
 
 template <typename fptype>
@@ -486,20 +481,6 @@ QuadType classifyRank_2_4(
     return QUADT_PARABOLOID_ELL;
   else
     return QUADT_ERROR;
-}
-
-template <typename fptype>
-QuadType classifyRank_3_1(
-    int detSign, int eigenSign,
-    const Geometry::Quadric<3, fptype> &quad) {
-  return QUADT_ERROR;
-}
-
-template <typename fptype>
-QuadType classifyRank_3_2(
-    int detSign, int eigenSign,
-    const Geometry::Quadric<3, fptype> &quad) {
-  return QUADT_ERROR;
 }
 
 template <typename fptype>
@@ -542,6 +523,34 @@ static bool isImaginary(QuadType qt) {
   }
 }
 
+static bool isReal(QuadType qt) {
+  /* Assume unknown quadric types are real until
+   * better tests are implemented */
+  switch(qt) {
+    case QUADT_COINCIDENTPLANES:
+    case QUADT_INTERSECTPLANES:
+    case QUADT_INTERSECTPLANES_RE:
+    case QUADT_PARALLELPLANES:
+    case QUADT_PARALLELPLANES_RE:
+    case QUADT_ELLIPSOID:
+    case QUADT_ELLIPSOID_RE:
+    case QUADT_CONE:
+    case QUADT_CONE_RE:
+    case QUADT_CYLINDER_ELL:
+    case QUADT_CYLINDER_ELL_RE:
+    case QUADT_CYLINDER_HYP:
+    case QUADT_CYLINDER_PAR:
+    case QUADT_PARABOLOID_ELL:
+    case QUADT_PARABOLOID_HYP:
+    case QUADT_HYPERBOLOID_ONE:
+    case QUADT_HYPERBOLOID_TWO:
+    case QUADT_PLANE:
+      return true;
+    default:
+      return false;
+  }
+}
+
 /* Warning: Requires fptype to be recognized by genericfp
  */
 template <typename fptype>
@@ -557,23 +566,30 @@ static QuadType classifyQuadric(
   /* The array of function pointers maps the two rank values
    * to functions specific to that rank */
   using classFunc = QuadType (
-      *)(int detSign, int eigenSign,
-         const Geometry::Quadric<3, fptype> &quad);
-  constexpr const classFunc classifiers[max3Ranks +
-                                        1][max4Ranks +
-                                           1] = {
-      {&classifyRank_0<fptype>, &classifyRank_0<fptype>,
-       &classifyRank_0<fptype>, &classifyRank_0<fptype>,
-       &classifyRank_0<fptype>},
-      {&classifyRank_0<fptype>, &classifyRank_1_1<fptype>,
-       &classifyRank_1_2<fptype>, &classifyRank_1_3<fptype>,
-       &classifyRank_1_4<fptype>},
-      {&classifyRank_0<fptype>, &classifyRank_2_1<fptype>,
-       &classifyRank_2_2<fptype>, &classifyRank_2_3<fptype>,
-       &classifyRank_2_4<fptype>},
-      {&classifyRank_0<fptype>, &classifyRank_3_1<fptype>,
-       &classifyRank_3_2<fptype>, &classifyRank_3_3<fptype>,
-       &classifyRank_3_4<fptype>}};
+          *)(int detSign, int eigenSign,
+             const Geometry::Quadric<3, fptype> &quad);
+  constexpr const classFunc
+      classifiers[max3Ranks + 1][max4Ranks + 1] = {
+          {&classifyRank_0_0<fptype>,
+           &classifyRank_Error<fptype>,
+           &classifyRank_0_2<fptype>,
+           &classifyRank_Error<fptype>,
+           &classifyRank_Error<fptype>},
+          {&classifyRank_Error<fptype>,
+           &classifyRank_1_1<fptype>,
+           &classifyRank_1_2<fptype>,
+           &classifyRank_1_3<fptype>,
+           &classifyRank_Error<fptype>},
+          {&classifyRank_Error<fptype>,
+           &classifyRank_Error<fptype>,
+           &classifyRank_2_2<fptype>,
+           &classifyRank_2_3<fptype>,
+           &classifyRank_2_4<fptype>},
+          {&classifyRank_Error<fptype>,
+           &classifyRank_Error<fptype>,
+           &classifyRank_Error<fptype>,
+           &classifyRank_3_3<fptype>,
+           &classifyRank_3_4<fptype>}};
   QuadType quadclass =
       classifiers[mtxRanks[0]][mtxRanks[1]](
           detSign, eigenSign, quad);
