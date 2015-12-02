@@ -64,8 +64,8 @@ class Quadric : public Solid<dim, fptype> {
     return coeffs[coeffNum];
   }
 
-  CUDA_CALLABLE fptype
-      setCoeff(int d1, int d2, fptype val) {
+  CUDA_CALLABLE fptype setCoeff(int d1, int d2,
+                                fptype val) {
     int coeffNum = getCoeffPos(d1, d2);
     return setCoeff(coeffNum, val);
   }
@@ -170,9 +170,9 @@ class Quadric : public Solid<dim, fptype> {
          line.getPosAtDist(roots[1])});
   }
 
-  CUDA_CALLABLE PointLocation ptLocation(
-      const Point<dim, fptype> &pt,
-      fptype absPrecision = defAbsPrecision) const {
+  CUDA_CALLABLE PointLocation
+  ptLocation(const Point<dim, fptype> &pt,
+             fptype absPrecision = defAbsPrecision) const {
     assert(absPrecision >= 0.0);
     fptype ptPos = evaluatePoint<fptype>(pt);
     if(ptPos < -absPrecision)
@@ -203,8 +203,9 @@ class Quadric : public Solid<dim, fptype> {
   template <typename srctype>
   CUDA_CALLABLE bool operator==(
       const Quadric<dim, srctype> &q) const {
-    using hPrec = typename Typecast::typecast<
-        fptype, srctype>::higherPrec;
+    using hPrec =
+        typename Typecast::typecast<fptype,
+                                    srctype>::higherPrec;
     for(int i = 0; i < numCoeffs; i++) {
       if(static_cast<hPrec>(coeff(i)) !=
          static_cast<hPrec>(q.coeff(i)))
@@ -243,7 +244,9 @@ class Quadric : public Solid<dim, fptype> {
         if(is.eof()) return false;
         fptype val;
         is >> val;
-        val += coeff(i, j);
+        if(!MathFuncs::MathFuncs<fptype>::isnan(
+               coeff(i, j)))
+          val += coeff(i, j);
         setCoeff(i, j, val);
       }
     }

@@ -31,7 +31,8 @@ std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
     file >> q;
     QuadricClassify::QuadType type =
         QuadricClassify::classifyQuadric(q);
-    if(!QuadricClassify::isImaginary(type))
+    if(!QuadricClassify::isImaginary(type) &&
+       type != QuadricClassify::QUADT_ERROR)
       quads.push_back(q);
     else
       imQuads++;
