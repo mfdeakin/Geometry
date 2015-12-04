@@ -67,7 +67,7 @@ TEST(Quadric, SimpleClassify) {
        {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}},
 
       /* This one should be a real plane */
-      {QuadricClassify::QUADT_ERROR,
+      {QuadricClassify::QUADT_PLANE,
        {0, 0, 0, 1, 0, 0, 0, 0, 0, 1}},
   };
   Geometry::Origin<dim, fptype> o;

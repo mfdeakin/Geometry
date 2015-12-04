@@ -16,11 +16,15 @@
 #include "point.hpp"
 #include "line.hpp"
 
+#include "quadric_classify.hpp"
+
 #include "polynomial.hpp"
 
 #include "accurate_math.hpp"
 
 #include "mathfuncs.hpp"
+
+#include "mpreal.hpp"
 
 namespace Geometry {
 
@@ -29,8 +33,7 @@ class Quadric : public Solid<dim, fptype> {
  public:
   struct QuadricData {
     typename Origin<dim, fptype>::OriginData origin;
-    std::array<fptype, Quadric<dim, fptype>::numCoeffs>
-        coeffs;
+    Array<fptype, Quadric<dim, fptype>::numCoeffs> coeffs;
   };
 
   CUDA_CALLABLE Quadric() : Solid<dim, fptype>() {
@@ -89,6 +92,35 @@ class Quadric : public Solid<dim, fptype> {
     assert(pos < numCoeffs);
     coeffs[pos] = val;
     return coeffs[pos];
+  }
+
+  CUDA_CALLABLE void optimizeOrigin() {
+    auto qt = QuadricClassify::classifyQuadric(*this);
+    switch(qt) {
+      case QuadricClassify::QUADT_ELLIPSOID:
+      case QuadricClassify::QUADT_ELLIPSOID_IM:
+      case QuadricClassify::QUADT_ELLIPSOID_RE:
+        /* Calculate the center of the ellipsoid and use it
+         * as the origin.
+         * This optimizes the average distance and the
+         * minimax distance, so should be optimal for
+         * reducing error. */
+        mpfr::mpreal rad(coeff(dim, dim));
+        Array<fptype, dim> center;
+        for(int i = 0; i < dim; i++) {
+          fptype mult = coeff(i, i);
+          center[i] = -coeff(i, dim) / 2.0 / mult;
+          coeff(i, dim) = 0.0;
+          mpfr::mpreal tmp(center[i]);
+          tmp =
+              MathFuncs::MathFuncs<mpfr::mpreal>::sqr(tmp);
+          rad = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+              -tmp, mult, rad);
+        }
+        coeff(dim, dim) = static_cast<fptype>(rad);
+        this->origin(center);
+        break;
+    }
   }
 
   template <typename outtype>

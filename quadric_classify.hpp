@@ -2,10 +2,12 @@
 #ifndef _QUADRIC_CLASSIFY_HPP_
 #define _QUADRIC_CLASSIFY_HPP_
 
-#include <mpfr.h>
+#include "mpreal.hpp"
 
 #include "geometry.hpp"
 #include "quadrics.hpp"
+
+#include "array.hpp"
 
 namespace QuadricClassify {
 
@@ -109,60 +111,51 @@ static int classifyCalcDetSign(
       {0, 2, 8, 8}, {5, 5, 8, 8}, {1, 5, 6, 9},
       {4, 6, 7, 9}, {4, 5, 8, 9}, {0, 7, 8, 9},
       {0, 1, 9, 9}, {4, 4, 9, 9}};
-  constexpr const int precision =
-      GenericFP::fpconvert<fptype>::precision;
-  constexpr const int detTermPrec = precision * numDetProds;
+  const int precision =
+      MathFuncs::MathFuncs<fptype>::getPrec(fptype(0.0));
+  const int detTermPrec = precision * numDetProds;
   constexpr const int guessedExtraPrec = 2;
-  mpfr_t detTerm, detSum, tmpSum, extra, modAdd;
-  mpfr_init2(detTerm, detTermPrec);
-  mpfr_init2(detSum, guessedExtraPrec * detTermPrec);
-  mpfr_init2(tmpSum, guessedExtraPrec * detTermPrec);
-  mpfr_init2(extra, guessedExtraPrec * detTermPrec);
-  mpfr_init2(modAdd, guessedExtraPrec * detTermPrec);
-  mpfr_set_si(detSum, 0, MPFR_RNDN);
-  mpfr_set_si(extra, 0, MPFR_RNDN);
+  const int prevPrec = mpfr::mpreal::get_default_prec();
+  mpfr::mpreal::set_default_prec(guessedExtraPrec *
+                                 detTermPrec);
+  mpfr::mpreal detTerm, detSum(0.0), tmpSum, extra(0.0),
+      modAdd;
   for(int i = 0; i < numDetTerms; i++) {
-    mpfr_set_d(detTerm, detCoeffs[i], MPFR_RNDN);
+    detTerm = detCoeffs[i];
     for(int j = 0; j < numDetProds; j++) {
       int coeffIdx = detProds[i][j];
-      mpfr_mul_d(detTerm, detTerm, quad.coeff(coeffIdx),
-                 MPFR_RNDN);
+      detTerm *= quad.coeff(coeffIdx);
     }
-    mpfr_sub(modAdd, detTerm, extra, MPFR_RNDN);
-    mpfr_add(tmpSum, modAdd, detSum, MPFR_RNDN);
-    mpfr_sub(extra, tmpSum, detSum, MPFR_RNDN);
-    mpfr_sub(extra, extra, modAdd, MPFR_RNDN);
-    mpfr_set(detSum, tmpSum, MPFR_RNDN);
+    modAdd = detTerm - extra;
+    tmpSum = modAdd + detSum;
+    extra = tmpSum - detSum;
+    extra -= modAdd;
+    detSum = tmpSum;
   }
-  mpfr_clear(detTerm);
-  mpfr_clear(tmpSum);
-  mpfr_clear(extra);
-  mpfr_clear(modAdd);
-  int cmpZero = mpfr_cmp_si(detSum, 0);
-  mpfr_clear(detSum);
+  int cmpZero = 0;
+  if(detSum < 0)
+    cmpZero = -1;
+  else if(detSum > 0)
+    cmpZero = 1;
   return cmpZero;
 }
 
 template <unsigned mtxDim>
-static void eliminateColumn(mpfr_t elems[mtxDim][mtxDim],
-                            int column,
-                            bool rowsDone[mtxDim],
-                            mpfr_t &coeff, mpfr_t &delta) {
+static void eliminateColumn(
+    mpfr::mpreal elems[mtxDim][mtxDim], int column,
+    bool rowsDone[mtxDim], mpfr::mpreal &coeff,
+    mpfr::mpreal &delta) {
   for(unsigned i = 0; i < mtxDim; i++) {
-    int isZero = mpfr_cmp_d(elems[i][column], 0.0);
-    if(isZero != 0 && rowsDone[i] == false) {
+    if(elems[i][column] != 0.0 && rowsDone[i] == false) {
       for(unsigned j = 0; j < mtxDim; j++) {
         if(j == i) continue;
-        isZero = mpfr_cmp_d(elems[j][column], 0.0);
-        if(isZero == 0) continue;
-        mpfr_div(coeff, elems[j][column], elems[i][column],
-                 MPFR_RNDN);
+        if(elems[j][column] == 0.0) continue;
+        coeff = elems[j][column] / elems[i][column];
         for(unsigned k = column + 1; k < mtxDim; k++) {
-          mpfr_mul(delta, elems[i][k], coeff, MPFR_RNDN);
-          mpfr_sub(elems[j][k], elems[j][k], delta,
-                   MPFR_RNDN);
+          delta = elems[i][k] * coeff;
+          elems[j][k] -= delta;
         }
-        mpfr_set_d(elems[j][column], 0.0, MPFR_RNDN);
+        elems[j][column] = 0.0;
       }
       rowsDone[i] = true;
       break;
@@ -171,7 +164,7 @@ static void eliminateColumn(mpfr_t elems[mtxDim][mtxDim],
 }
 
 template <typename fptype>
-static std::array<int, 2> classifyCalcRank(
+static Array<int, 2> classifyCalcRank(
     const Geometry::Quadric<3, fptype> &quad) {
   constexpr const int mtxDim = 4;
   constexpr const int precision = 512;
@@ -180,50 +173,51 @@ static std::array<int, 2> classifyCalcRank(
       {4, 1, 7, 8},
       {5, 7, 2, 9},
       {6, 8, 9, 3}};
-  mpfr_t elems[mtxDim][mtxDim];
+  const int prevPrec = mpfr::mpreal::get_default_prec();
+  mpfr::mpreal::set_default_prec(precision);
+  mpfr::mpreal elems[mtxDim][mtxDim];
   /* Just use Gaussian Elimination with a ridiculous
    * amount of precision */
   for(unsigned i = 0; i < mtxDim; i++) {
     for(unsigned j = 0; j < mtxDim; j++) {
-      mpfr_init2(elems[i][j], precision);
       unsigned coeffNum = mtxVals[i][j];
       fptype factor = (coeffNum < 4) ? 1.0 : 0.5;
-      mpfr_set_d(elems[i][j], quad.coeff(coeffNum) * factor,
-                 MPFR_RNDN);
+      elems[i][j] = quad.coeff(coeffNum);
+      elems[i][j] *= factor;
     }
   }
-  mpfr_t coeff, delta;
-  mpfr_inits2(precision, coeff, delta, (mpfr_ptr)NULL);
+  mpfr::mpreal coeff, delta;
   bool rowsDone[mtxDim];
   memset(rowsDone, false, sizeof(rowsDone));
   for(int numRowsDone = 0; numRowsDone < mtxDim;
       numRowsDone++)
     eliminateColumn<mtxDim>(elems, numRowsDone, rowsDone,
                             coeff, delta);
-  mpfr_clears(coeff, delta, (mpfr_ptr)NULL);
-  std::array<int, 2> ranks;
+  Array<int, 2> ranks;
   ranks[0] = 0;
   ranks[1] = 0;
   bool rowChecked;
   for(int i = 0; i < mtxDim; i++) {
     rowChecked = false;
     for(int j = 0; j < mtxDim; j++) {
-      int isZero = mpfr_cmp_d(elems[i][j], 0.0);
-      if(isZero != 0 && rowChecked == false) {
+      if(elems[i][j] != 0 && rowChecked == false) {
         ranks[1]++;
         if(i < (mtxDim - 1) && j < (mtxDim - 1)) ranks[0]++;
         rowChecked = true;
       }
-      mpfr_clear(elems[i][j]);
+      elems[i][j] = NAN;
     }
   }
+  mpfr::mpreal::set_default_prec(prevPrec);
   return ranks;
 }
 
 template <typename fptype>
-static mpfr_ptr constructCubicCoeffs(
+static mpfr::mpreal *constructCubicCoeffs(
     const Geometry::Quadric<3, fptype> &quad,
     unsigned precision) {
+  const int prevPrec = mpfr::mpreal::get_default_prec();
+  mpfr::mpreal::set_default_prec(precision);
   /* The cubic is of the following form:
    * -x^3 + (c0 + c1 + c2)x^2 +
    * (c4^2/4 + c5^2/4 + c7^2/4 - c0 c1 - c0 c2 - c1 c2)x +
@@ -231,80 +225,60 @@ static mpfr_ptr constructCubicCoeffs(
    * c2 c4^2/4 + c4 c5 c7/4
    */
   constexpr const unsigned numCoeffs = 4;
-  mpfr_ptr coeffs = static_cast<mpfr_ptr>(
-      malloc(sizeof(mpfr_t[numCoeffs])));
-  for(unsigned i = 0; i < numCoeffs; i++)
-    mpfr_init2(&coeffs[i], precision);
+  mpfr::mpreal *coeffs = new mpfr::mpreal[numCoeffs];
   /* Coefficient 3: -1 */
-  mpfr_set_d(&coeffs[3], -1.0, MPFR_RNDN);
+  coeffs[3] = -1.0;
   /* Coefficient 2: c0 + c1 + c2 */
-  mpfr_set_d(&coeffs[2], quad.coeff(0), MPFR_RNDN);
-  mpfr_add_d(&coeffs[2], &coeffs[2], quad.coeff(1),
-             MPFR_RNDN);
-  mpfr_add_d(&coeffs[2], &coeffs[2], quad.coeff(2),
-             MPFR_RNDN);
+  coeffs[2] = quad.coeff(0) + quad.coeff(1) + quad.coeff(2);
   /* Coefficient 1: c4^2/4 + c5^2/4 + c7^2/4 -
    *                c0 c1 - c0 c2 - c1 c2
    */
-  mpfr_set_d(&coeffs[1], quad.coeff(4) / 2.0, MPFR_RNDN);
-  mpfr_sqr(&coeffs[1], &coeffs[1], MPFR_RNDN);
-  mpfr_t buf;
-  mpfr_init2(buf, precision);
-
-  mpfr_set_d(buf, quad.coeff(5) / 2.0, MPFR_RNDN);
-  mpfr_sqr(buf, buf, MPFR_RNDN);
-  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
-
-  mpfr_set_d(buf, quad.coeff(7) / 2.0, MPFR_RNDN);
-  mpfr_sqr(buf, buf, MPFR_RNDN);
-  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
-
-  mpfr_set_d(buf, -quad.coeff(0), MPFR_RNDN);
-  mpfr_mul_d(buf, buf, quad.coeff(1), MPFR_RNDN);
-  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
-
-  mpfr_set_d(buf, -quad.coeff(0), MPFR_RNDN);
-  mpfr_mul_d(buf, buf, quad.coeff(2), MPFR_RNDN);
-  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
-
-  mpfr_set_d(buf, -quad.coeff(1), MPFR_RNDN);
-  mpfr_mul_d(buf, buf, quad.coeff(2), MPFR_RNDN);
-  mpfr_add(&coeffs[1], &coeffs[1], buf, MPFR_RNDN);
+  coeffs[1] = quad.coeff(4) * quad.coeff(4);
+  coeffs[1] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      quad.coeff(5), quad.coeff(5), coeffs[1]);
+  coeffs[1] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      quad.coeff(7), quad.coeff(7), coeffs[1]);
+  coeffs[1] /= 4;
+  coeffs[1] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      -quad.coeff(0), quad.coeff(1), coeffs[1]);
+  coeffs[1] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      -quad.coeff(0), quad.coeff(2), coeffs[1]);
+  coeffs[1] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      -quad.coeff(1), quad.coeff(2), coeffs[1]);
   /* Coefficient 0: c0 c1 c2 + c4 c5 c7/4 - c0 c7^2/4 -
    *                c1 c5^2/4 - c2 c4^2/4
    */
   /* c0 c1 c2 */
-  mpfr_set_d(&coeffs[0], quad.coeff(0), MPFR_RNDN);
-  mpfr_mul_d(&coeffs[0], &coeffs[0], quad.coeff(1),
-             MPFR_RNDN);
-  mpfr_mul_d(&coeffs[0], &coeffs[0], quad.coeff(2),
-             MPFR_RNDN);
+  coeffs[0] = mpfr::mpreal(quad.coeff(0)) * quad.coeff(1) *
+              quad.coeff(2);
   /* c4 c5 c7/4 */
-  mpfr_set_d(buf, quad.coeff(4) / 4.0, MPFR_RNDN);
-  mpfr_mul_d(buf, buf, quad.coeff(5), MPFR_RNDN);
-  mpfr_mul_d(buf, buf, quad.coeff(7), MPFR_RNDN);
-  mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  coeffs[0] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      quad.coeff(4) / 4.0,
+      mpfr::mpreal(quad.coeff(5)) * quad.coeff(7),
+      coeffs[0]);
   /* -c0 c7^2/4 */
-  mpfr_set_d(buf, quad.coeff(7), MPFR_RNDN);
-  mpfr_sqr(buf, buf, MPFR_RNDN);
-  mpfr_mul_d(buf, buf, -quad.coeff(0) / 4.0, MPFR_RNDN);
-  mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  coeffs[0] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      -quad.coeff(0) / 4.0,
+      mpfr::mpreal(quad.coeff(7)) * quad.coeff(7),
+      coeffs[0]);
   /* -c1 c5^2/4 */
-  mpfr_set_d(buf, quad.coeff(5), MPFR_RNDN);
-  mpfr_sqr(buf, buf, MPFR_RNDN);
-  mpfr_mul_d(buf, buf, -quad.coeff(1) / 4.0, MPFR_RNDN);
-  mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
+  coeffs[0] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      -quad.coeff(1) / 4.0,
+      mpfr::mpreal(quad.coeff(5)) * quad.coeff(5),
+      coeffs[0]);
   /* -c2 c4^2/4 */
-  mpfr_set_d(buf, quad.coeff(4), MPFR_RNDN);
-  mpfr_sqr(buf, buf, MPFR_RNDN);
-  mpfr_mul_d(buf, buf, -quad.coeff(2) / 4.0, MPFR_RNDN);
-  mpfr_add(&coeffs[0], &coeffs[0], buf, MPFR_RNDN);
-  mpfr_clear(buf);
+  coeffs[0] = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      -quad.coeff(2) / 4.0,
+      mpfr::mpreal(quad.coeff(4)) * quad.coeff(4),
+      coeffs[0]);
+  mpfr::mpreal::set_default_prec(prevPrec);
   return coeffs;
 }
 
-static inline mpfr_ptr calcInflections(mpfr_ptr cubic,
-                                       unsigned precision) {
+static inline mpfr::mpreal *calcInflections(
+    mpfr::mpreal *cubic, unsigned precision) {
+  const int prevPrec = mpfr::mpreal::get_default_prec();
+  mpfr::mpreal::set_default_prec(precision);
   /* Compute the derivative and it's roots.
    * The input is as follows:
    * c3 x^3 + c2 x^2 + c1 x + c0
@@ -315,41 +289,32 @@ static inline mpfr_ptr calcInflections(mpfr_ptr cubic,
    * The discriminant is as follows:
    * (2 c2)^2 - 4(3 c3 c1)
    */
-  mpfr_t disc;
-  mpfr_init2(disc, precision);
-  mpfr_mul(disc, &cubic[1], &cubic[3], MPFR_RNDN);
-  mpfr_mul_d(disc, disc, -12.0, MPFR_RNDN);
-  mpfr_t buf;
-  mpfr_init2(buf, precision);
-  mpfr_sqr(buf, &cubic[2], MPFR_RNDN);
-  mpfr_mul_d(buf, buf, 4.0, MPFR_RNDN);
-  mpfr_add(disc, disc, buf, MPFR_RNDN);
+  mpfr::mpreal disc = -12.0 * cubic[1] * cubic[3];
+  disc = MathFuncs::MathFuncs<mpfr::mpreal>::fma(
+      4.0 * cubic[2], cubic[2], disc);
+  mpfr::mpreal width =
+      MathFuncs::MathFuncs<mpfr::mpreal>::sqrt(disc);
   /* Now compute the roots.
    * The roots are as follows:
    * -sign(c2) (|2 c2|+sqrt(disc)) / (3 c3)
    * -sign(c2) c1 / (|2 c2|+sqrt(disc))
    */
-  mpfr_sqrt(disc, disc, MPFR_RNDN);
   constexpr const int numRoots = 2;
-  mpfr_ptr roots = static_cast<mpfr_ptr>(
-      malloc(sizeof(mpfr_t[numRoots])));
-  for(int i = 0; i < numRoots; i++)
-    mpfr_init2(&roots[i], precision);
+  mpfr::mpreal *roots = new mpfr::mpreal[numRoots];
 
-  int c2Sign = mpfr_signbit(&cubic[2]);
-  mpfr_abs(buf, &cubic[2], MPFR_RNDN);
-  mpfr_mul_d(buf, buf, 2.0, MPFR_RNDN);
-  mpfr_add(buf, buf, disc, MPFR_RNDN);
-  if(c2Sign == 0) {
-    mpfr_mul_d(buf, buf, -0.5, MPFR_RNDN);
-  } else {
-    mpfr_mul_d(buf, buf, 0.5, MPFR_RNDN);
-  }
-  mpfr_div(&roots[0], buf, &cubic[3], MPFR_RNDN);
-  mpfr_div_d(&roots[0], &roots[0], 3.0, MPFR_RNDN);
-  mpfr_div(&roots[1], &cubic[1], buf, MPFR_RNDN);
-  mpfr_clear(disc);
-  mpfr_clear(buf);
+  bool c2Sign =
+      MathFuncs::MathFuncs<mpfr::mpreal>::signbit(cubic[2]);
+  roots[0] = MathFuncs::MathFuncs<mpfr::mpreal>::abs(
+      2.0 * cubic[2]);
+  roots[0] += width;
+  if(c2Sign == 0)
+    roots[0] /= -2.0;
+  else
+    roots[0] /= 2.0;
+  roots[1] = cubic[1] / roots[0];
+  roots[0] /= (3.0 * cubic[3]);
+
+  mpfr::mpreal::set_default_prec(prevPrec);
   return roots;
 }
 
@@ -373,14 +338,14 @@ static int classifyCalcEigenSign(
    * -3 x^2 + 2(c0 + c1 + c2)x +
    * ((c4^2 + c5^2 + c7^2)/4 - c0 c1 - c0 c2 - c1 c2)
    */
-  constexpr const int precision =
-      GenericFP::fpconvert<fptype>::precision;
+  const int precision =
+      MathFuncs::MathFuncs<fptype>::getPrec(fptype(0.0));
   constexpr const int numCubeProds = 3;
   constexpr const int guessedExtraPrec = 2;
-  constexpr const int cubeTermPrec =
+  const int cubeTermPrec =
       guessedExtraPrec * precision * numCubeProds;
   constexpr const int numCubeCoeffs = 4;
-  mpfr_ptr cubicCoeffs =
+  mpfr::mpreal *cubicCoeffs =
       constructCubicCoeffs(quad, cubeTermPrec);
   /* We have the coefficients of the derivative,
    * now find the roots.
@@ -388,16 +353,16 @@ static int classifyCalcEigenSign(
    * eigenvalues.
    */
   constexpr const int numRoots = 2;
-  mpfr_ptr roots =
+  mpfr::mpreal *roots =
       calcInflections(cubicCoeffs, cubeTermPrec);
-  const int zeroVal = mpfr_cmp_d(&cubicCoeffs[0], 0.0);
-  const int drootSigns[] = {mpfr_cmp_d(&roots[0], 0.0),
-                            mpfr_cmp_d(&roots[1], 0.0)};
-  for(int i = 0; i < numCubeCoeffs; i++)
-    mpfr_clear(&cubicCoeffs[i]);
-  free(cubicCoeffs);
-  for(int i = 0; i < numRoots; i++) mpfr_clear(&roots[i]);
-  free(roots);
+  const int zeroVal = (cubicCoeffs[0] == 0.0);
+  const float drootSigns[] = {
+      MathFuncs::MathFuncs<float>::copysign(
+          1.0, float(roots[0])),
+      MathFuncs::MathFuncs<float>::copysign(
+          1.0, float(roots[1]))};
+  delete[] cubicCoeffs;
+  delete[] roots;
 
   bool drootsPlus =
       (drootSigns[0] >= 0) && (drootSigns[1] >= 0);
@@ -551,8 +516,6 @@ static bool isReal(QuadType qt) {
   }
 }
 
-/* Warning: Requires fptype to be recognized by genericfp
- */
 template <typename fptype>
 static QuadType classifyQuadric(
     const Geometry::Quadric<3, fptype> &quad) {
