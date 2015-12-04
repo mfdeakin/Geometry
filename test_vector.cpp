@@ -2,16 +2,16 @@
 #include <gtest/gtest.h>
 
 #include <iostream>
-#include <array>
 
 #include "geometry.hpp"
 #include "vector.hpp"
+#include "array.hpp"
 
 TEST(Vector, OrthogonalBasis) {
   constexpr const int dim = 3;
   using fptype = float;
   const fptype eps = 1e-4;
-  std::array<fptype, dim> tests[] = {
+  Array<fptype, dim> tests[] = {
       {{1.0, 0.0, 0.0}},
       {{0.0, 1.0, 0.0}},
       {{0.0, 0.0, 1.0}},

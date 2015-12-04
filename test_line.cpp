@@ -2,22 +2,22 @@
 #include <gtest/gtest.h>
 
 #include <iostream>
-#include <array>
 
 #include "geometry.hpp"
 #include "origin.hpp"
 #include "point.hpp"
 #include "vector.hpp"
+#include "array.hpp"
 
 TEST(Line, ShiftOrigin) {
   static constexpr const int dim = 3;
   using fptype = float;
   const fptype eps = 1e-4;
   struct TestCase {
-    std::array<fptype, dim> newOrigin;
-    std::array<fptype, dim> origOffset;
-    std::array<fptype, dim> dir;
-    std::array<fptype, dim> expectedOffset;
+    Array<fptype, dim> newOrigin;
+    Array<fptype, dim> origOffset;
+    Array<fptype, dim> dir;
+    Array<fptype, dim> expectedOffset;
   };
   struct TestCase tests[] = {
       {{{0.0, 0.0, 0.0}},
@@ -69,9 +69,9 @@ TEST(Line, CalcPointAtDistance) {
   const fptype eps = 1e-6;
   struct TestCase {
     fptype distance;
-    std::array<fptype, dim> offset;
-    std::array<fptype, dim> dir;
-    std::array<fptype, dim> expected;
+    Array<fptype, dim> offset;
+    Array<fptype, dim> dir;
+    Array<fptype, dim> expected;
   };
   static const fptype pi =
       (fptype)std::atan((fptype)1) * 4.0;

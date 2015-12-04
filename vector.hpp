@@ -9,6 +9,7 @@
 #include <memory>
 #include <ostream>
 
+#include "array.hpp"
 #include "mathfuncs.hpp"
 
 namespace Geometry {
@@ -16,7 +17,7 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Vector : public GeometryBase<dim, fptype> {
  public:
-  typedef std::array<fptype, dim> VectorData;
+  typedef Array<fptype, dim> VectorData;
 
   CUDA_CALLABLE Vector() {
     for(int i = 0; i < dim; i++) offset[i] = 0.0;

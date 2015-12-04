@@ -5,7 +5,7 @@
 #include "geometry.hpp"
 #include "vector.hpp"
 
-#include <array>
+#include "array.hpp"
 
 namespace Geometry {
 
@@ -26,7 +26,7 @@ class Origin : public GeometryBase<dim, fptype> {
       : globalCoords(src.globalCoords) {}
 
   CUDA_CALLABLE Origin(
-      const std::array<fptype, dim> &globalPos)
+      const Array<fptype, dim> &globalPos)
       : globalCoords(globalPos) {}
 
   template <typename srctype>

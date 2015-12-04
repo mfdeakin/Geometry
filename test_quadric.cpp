@@ -1,5 +1,4 @@
 
-#include <array>
 
 #include <gtest/gtest.h>
 
@@ -7,6 +6,7 @@
 #include "origin.hpp"
 #include "quadric_classify.hpp"
 #include "accurate_math.hpp"
+#include "array.hpp"
 
 TEST(Quadric, LineIntersection) {
   using fptype = float;
@@ -16,10 +16,10 @@ TEST(Quadric, LineIntersection) {
   constexpr const int numRoots = 2;
   constexpr const fptype eps = 1e-3;
   struct teststruct {
-    std::array<fptype, numCoeffs> coeffs;
-    std::array<fptype, dim> lineDir;
-    std::array<fptype, dim> lineInt;
-    std::array<fptype, dim> roots[numRoots];
+    Array<fptype, numCoeffs> coeffs;
+    Array<fptype, dim> lineDir;
+    Array<fptype, dim> lineInt;
+    Array<fptype, dim> roots[numRoots];
   } tests[] = {
       /* Hyperboloid of One Sheet */
       {{1.0, 1.0, -3.0, -16.0, 0.0, 0.0, 0.0, 0.0, 0.0,

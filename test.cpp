@@ -7,13 +7,13 @@
 #include "bsgtree.hpp"
 #include "accurate_math.hpp"
 #include "polynomial.hpp"
+#include "array.hpp"
 
 #include "mpreal.hpp"
 
 #include <iostream>
 
 #include <list>
-#include <array>
 #include <cmath>
 
 #include <gtest/gtest.h>
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   Geometry::Vector<dim, fptype> ptOffset;
   Geometry::Point<dim, fptype> pt(o, ptOffset);
   Geometry::Vector<dim, fptype> dir(
-      std::array<fptype, dim>({{1.0, 1.0, 1.0}}));
+      Array<fptype, dim>({1.0, 1.0, 1.0}));
   Geometry::Line<dim, fptype> line(pt, dir);
   Geometry::Quadric<dim, fptype> q(o);
   Geometry::Polynomial<dim, fptype> p1, p2;
