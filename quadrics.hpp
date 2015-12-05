@@ -55,7 +55,7 @@ class Quadric : public Solid<dim, fptype> {
   }
 
   CUDA_CALLABLE Quadric(const QuadricData &src)
-      : Solid<dim, fptype>(src.origin),
+      : Solid<dim, fptype>(Origin<dim, fptype>(src.origin)),
         coeffs(src.coeffs) {}
 
   CUDA_CALLABLE virtual ~Quadric() {}
@@ -259,16 +259,29 @@ class Quadric : public Solid<dim, fptype> {
     QuadricData *cudaMem = NULL;
     cudaError_t err =
         cudaMalloc(&cudaMem, sizeof(*cudaMem));
-    err = cudaCopy(cudaMem);
-    return std::shared_ptr<QuadricData>(cudaMem, cudaFree);
+    auto safeMem =
+        std::shared_ptr<QuadricData>(cudaMem, cudaFree);
+    err = cudaCopy(safeMem);
+    return safeMem;
   }
 
-  cudaError_t cudaCopy(QuadricData *cudaMem) const {
+  cudaError_t cudaCopy(
+      std::shared_ptr<QuadricData> cudaMem) const {
     cudaError_t err =
-        cudaMemcpy(&cudaMem->coeffs, &coeffs,
+        cudaMemcpy(&cudaMem.get()->coeffs, &coeffs,
                    sizeof(coeffs), cudaMemcpyHostToDevice);
     err = this->origin.cudaCopy(&cudaMem->origin);
     return err;
+  }
+
+  cudaError_t cudaRetrieve(
+      std::shared_ptr<QuadricData> cudaMem) {
+    QuadricData buffer;
+    cudaError_t err = cudaMemcpy(
+        &buffer.coeffs, &cudaMem.get()->coeffs,
+        sizeof(buffer.coeffs), cudaMemcpyDeviceToHost);
+    for(int i = 0; i < numCoeffs; i++)
+      setCoeff(i, buffer.coeffs[i]);
   }
 #endif
 
