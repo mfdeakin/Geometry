@@ -25,8 +25,7 @@ class Origin : public GeometryBase<dim, fptype> {
   CUDA_CALLABLE Origin(const Origin<dim, srctype> &src)
       : globalCoords(src.globalCoords) {}
 
-  CUDA_CALLABLE Origin(
-      const Array<fptype, dim> &globalPos)
+  CUDA_CALLABLE Origin(const Array<fptype, dim> &globalPos)
       : globalCoords(globalPos) {}
 
   template <typename srctype>
@@ -48,8 +47,14 @@ class Origin : public GeometryBase<dim, fptype> {
   template <int d, typename f>
   friend class Origin;
 
-  static const Origin<dim, fptype> &uOrigin() {
+  CUDA_CALLABLE static const Origin<dim, fptype> &
+  uOrigin() {
+#ifdef __CUDA_ARCH__
+    CUDA_SHARED static const Origin<dim, fptype>
+        universeOrigin;
+#else
     static const Origin<dim, fptype> universeOrigin;
+#endif
     return universeOrigin;
   }
 

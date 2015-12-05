@@ -7,6 +7,8 @@
 
 #include "genericfp.hpp"
 
+#include "cudadef.h"
+
 /* A stupid solution to an annoying limitation of C++
  * But a better one than giving up all the fast hardware
  * math functionality.
@@ -26,33 +28,83 @@ struct IsMPFRMathFuncs;
 
 template <typename fptype>
 struct IsStdMathFuncs<fptype, true> {
-  static int getPrec(fptype v) {
+  CUDA_CALLABLE static int getPrec(fptype v) {
     return GenericFP::fpconvert<fptype>::precision;
   }
-  static fptype abs(fptype v) { return std::abs(v); }
-  static fptype fabs(fptype v) { return std::fabs(v); }
-  static fptype min(fptype v1, fptype v2) {
+  CUDA_CALLABLE static fptype abs(fptype v) {
+#ifdef __CUDA_ARCH__
+    return abs(v);
+#else
+    return std::abs(v);
+#endif
+  }
+  CUDA_CALLABLE static fptype fabs(fptype v) {
+#ifdef __CUDA_ARCH__
+    return fabs(v);
+#else
+    return std::fabs(v);
+#endif
+  }
+  CUDA_CALLABLE static fptype min(fptype v1, fptype v2) {
+#ifdef __CUDA_ARCH__
+    return min(v1, v2);
+#else
     return std::min(v1, v2);
+#endif
   }
-  static fptype max(fptype v1, fptype v2) {
+  CUDA_CALLABLE static fptype max(fptype v1, fptype v2) {
+#ifdef __CUDA_ARCH__
+    return max(v1, v2);
+#else
     return std::max(v1, v2);
+#endif
   }
-  static fptype fma(fptype m1, fptype m2, fptype a) {
+  CUDA_CALLABLE static fptype fma(fptype m1, fptype m2,
+                                  fptype a) {
+#ifdef __CUDA_ARCH__
+    return fma(m1, m2, a);
+#else
     return std::fma(m1, m2, a);
+#endif
   }
-  static bool signbit(fptype val) {
+  CUDA_CALLABLE static bool signbit(fptype val) {
+#ifdef __CUDA_ARCH__
+    return signbit(val);
+#else
     return std::signbit(val);
+#endif
   }
-  static fptype copysign(fptype val, fptype sign) {
+  CUDA_CALLABLE static fptype copysign(fptype val,
+                                       fptype sign) {
+#ifdef __CUDA_ARCH__
+    return copysign(val, sign);
+#else
     return std::copysign(val, sign);
+#endif
   }
-  static fptype sqr(fptype val) { return val * val; }
-  static fptype sqrt(fptype val) { return std::sqrt(val); }
-  static fptype isinf(fptype val) {
+  CUDA_CALLABLE static fptype sqr(fptype val) {
+    return val * val;
+  }
+  CUDA_CALLABLE static fptype sqrt(fptype val) {
+#ifdef __CUDA_ARCH__
+    return sqrt(val);
+#else
+    return std::sqrt(val);
+#endif
+  }
+  CUDA_CALLABLE static fptype isinf(fptype val) {
+#ifdef __CUDA_ARCH__
+    return isinf(val);
+#else
     return std::isinf(val);
+#endif
   }
-  static fptype isnan(fptype val) {
+  CUDA_CALLABLE static fptype isnan(fptype val) {
+#ifdef __CUDA_ARCH__
+    return isnan(val);
+#else
     return std::isnan(val);
+#endif
   }
 };
 

@@ -18,6 +18,8 @@
 
 #include "quadric_classify.hpp"
 
+#include "array.hpp"
+
 #include "polynomial.hpp"
 
 #include "accurate_math.hpp"
@@ -362,7 +364,7 @@ class Quadric : public Solid<dim, fptype> {
     }
   }
 
-  std::array<fptype, numCoeffs> coeffs;
+  Array<fptype, numCoeffs> coeffs;
 };
 };
 
