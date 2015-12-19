@@ -368,9 +368,8 @@ class Quadric : public Solid<dim, fptype> {
     if(d1 == d2) {
       return d1;
     } else {
-      int first = MathFuncs::MathFuncs<fptype>::min(d1, d2);
-      int second =
-          MathFuncs::MathFuncs<fptype>::max(d1, d2);
+      int first = std::min(d1, d2);
+      int second = std::max(d1, d2);
       int offset =
           first * dim - (first * (first - 1)) / 2 + dim + 1;
       return offset + second - first - 1;

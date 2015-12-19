@@ -11,15 +11,19 @@
 TEST(Quadric, LineIntersection) {
   using fptype = float;
   constexpr const int dim = 3;
-  constexpr const unsigned numCoeffs =
-      Geometry::Quadric<dim, fptype>::numCoeffs;
+  using Q = Geometry::Quadric<dim, fptype>;
+  using L = Geometry::Line<dim, fptype>;
+  using P = Geometry::Point<dim, fptype>;
+  using V = Geometry::Vector<dim, fptype>;
+  using O = Geometry::Origin<dim, fptype>;
+  constexpr const unsigned numCoeffs = Q::numCoeffs;
   constexpr const int numRoots = 2;
   constexpr const fptype eps = 1e-3;
   struct teststruct {
-    Array<fptype, numCoeffs> coeffs;
-    Array<fptype, dim> lineDir;
-    Array<fptype, dim> lineInt;
-    Array<fptype, dim> roots[numRoots];
+    Array<fptype, Q::numCoeffs> coeffs;
+    Array<fptype, Q::dim> lineDir;
+    Array<fptype, Q::dim> lineInt;
+    Array<fptype, Q::dim> roots[numRoots];
   } tests[] = {
       /* Hyperboloid of One Sheet */
       {{1.0, 1.0, -3.0, -16.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -128,11 +132,11 @@ TEST(Quadric, LineIntersection) {
   };
   Geometry::Origin<dim, fptype> o;
   for(auto t : tests) {
-    Geometry::Vector<dim, fptype> offset(t.lineInt);
-    Geometry::Point<dim, fptype> intercept(o, offset);
-    Geometry::Vector<dim, fptype> dir(t.lineDir);
-    Geometry::Line<dim, fptype> l(intercept, dir);
-    Geometry::Quadric<dim, fptype> q(o);
+    V offset(t.lineInt);
+    P intercept(o, offset);
+    V dir(t.lineDir);
+    L l(intercept, dir);
+    Q q(o);
     for(unsigned i = 0; i < numCoeffs; i++)
       q.setCoeff(i, t.coeffs[i]);
     auto intersects = q.calcLineIntersect(l);

@@ -124,7 +124,7 @@ class IntersectionBase<dim, fptype, true> {
     /* If the sign of this matches the determinants sign,
      * then this intersection occurs after the other one,
      * otherwise, this intersection occurs before */
-    fptype tmp = det;
+    fptype tmp = static_cast<fptype>(det);
     tmp *= partialResultant;
     mpfr::mpreal::set_default_prec(prevPrec);
     if(tmp < 0.0) {
