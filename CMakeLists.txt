@@ -19,4 +19,6 @@ add_executable(geomtest ${TEST_SRC})
 add_executable(sorttime ${TIMING_INTERSECTIONS_SRC} ${TIMER_SRC})
 
 set(CMAKE_CXX_COMPILER "nvcc")
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
 add_executable(cudatest ${CUDATEST_SRC} ${TIMER_SRC})
