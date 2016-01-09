@@ -1,24 +1,35 @@
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
+project(geometry)
+
+find_package(CUDA QUIET REQUIRED)
 
 project (Geometry)
 
-set(TIMER_SRC "src/timer/timer.cpp")
+file(GLOB TIMER_SRC "src/timer/*.cpp")
 file(GLOB TEST_SRC "src/tests/*.cpp")
 file(GLOB TIMING_INTERSECTIONS_SRC "src/timing_intersections/*.cpp")
 file(GLOB CUDATEST_SRC "src/cudatest/*.cu")
 
-set(CXX_COMPILE_FLAGS "-std=c++11 -I./include/geometry -I./include/timer -g")
+file(GLOB TIMER_INC "include/timer" "*.h" "*.hpp")
+file(GLOB GEOMETRY_INC "include/geometry" "*.h" "*.hpp")
+
+include_directories(./include/geometry ./include/timer)
+
+set(CXX_COMPILE_FLAGS "-std=c++11")
+
+set(CMAKE_C_FLAGS "${CXX_COMPILE_FLAGS}")
 
 set(CMAKE_CXX_FLAGS "${CXX_COMPILE_FLAGS}")
 
-set(LD_LIBRARIES "-lmpfr -lgtest")
-set(CMAKE_EXE_LINKER_FLAGS "${LD_LIBRARIES}")
+set(CMAKE_EXE_LINKER_FLAGS "-lmpfr")
+
+set(CUDA_64_BIT_DEVICE_CODE ON)
+
+cuda_add_executable(cudatest ${CUDATEST_SRC} ${TIMER_SRC})
+add_executable(timing_intersections ${TIMING_INTERSECTIONS_SRC} ${TIMER_SRC})
 add_executable(geomtest ${TEST_SRC})
 
-add_executable(sorttime ${TIMING_INTERSECTIONS_SRC} ${TIMER_SRC})
+set_target_properties(geomtest PROPERTIES
+  LINK_FLAGS "-lgtest")
 
-set(CMAKE_CXX_COMPILER "nvcc")
-set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
-set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
-add_executable(cudatest ${CUDATEST_SRC} ${TIMER_SRC})
