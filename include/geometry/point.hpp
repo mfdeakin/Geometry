@@ -96,6 +96,46 @@ class Point : public Solid<dim, fptype>,
     return o;
   }
 
+#ifdef __CUDACC__
+  std::shared_ptr<PointData> cudaCopy() const {
+    PointData *cudaMem = NULL;
+    cudaError_t err =
+        cudaMalloc(&cudaMem, sizeof(*cudaMem));
+    auto safeMem =
+        std::shared_ptr<PointData>(cudaMem, cudaFree);
+    err = cudaCopy(safeMem);
+    return safeMem;
+  }
+
+  cudaError_t cudaCopy(
+      std::shared_ptr<PointData> cudaMem) const {
+    cudaError_t err = this->origin.cudaCopy(&cudaMem->o);
+    err = this->offset.cudaCopy(&cudaMem->p);
+    return err;
+  }
+
+  cudaError_t cudaCopy(
+      PointData *cudaMem) const {
+    cudaError_t err = this->origin.cudaCopy(&cudaMem->o);
+    err = this->offset.cudaCopy(&cudaMem->v);
+    return err;
+  }
+
+  cudaError_t cudaRetrieve(
+      std::shared_ptr<PointData> cudaMem) {
+		cudaError_t err = this->origin.cudaRetrieve(&cudaMem->o);
+		err = this->offset.cudaRetrieve(&cudaMem->v);
+		return err;
+  }
+
+  cudaError_t cudaRetrieve(
+      PointData *cudaMem) {
+		cudaError_t err = this->origin.cudaRetrieve(&cudaMem->o);
+		err = this->offset.cudaRetrieve(&cudaMem->v);
+		return err;
+  }
+#endif
+
   friend std::ostream &operator<<(
       std::ostream &os, const Point<dim, fptype> &p) {
     auto pos = p.globalOffset();

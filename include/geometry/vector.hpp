@@ -206,6 +206,24 @@ class Vector : public GeometryBase<dim, fptype> {
     return cudaMemcpy(cudaMem, &offset, sizeof(offset),
                       cudaMemcpyHostToDevice);
   }
+
+  cudaError_t cudaCopy(
+											 std::shared_ptr<VectorData> cudaMem) const {
+    return cudaMemcpy(cudaMem.get(), &offset, sizeof(offset),
+											cudaMemcpyHostToDevice);
+  }
+
+  cudaError_t cudaRetrieve(
+      std::shared_ptr<VectorData> cudaMem) {
+		return cudaMemcpy(&offset, cudaMem.get(), sizeof(offset),
+											cudaMemcpyDeviceToHost);
+  }
+
+  cudaError_t cudaRetrieve(
+      VectorData *cudaMem) {
+		return cudaMemcpy(&offset, cudaMem, sizeof(offset),
+											cudaMemcpyDeviceToHost);
+  }
 #endif
 
   template <int, typename>

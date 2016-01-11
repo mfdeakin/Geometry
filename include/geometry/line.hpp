@@ -103,6 +103,46 @@ class Line : public Solid<dim, fptype> {
     return dir;
   }
 
+#ifdef __CUDACC__
+  std::shared_ptr<LineData> cudaCopy() const {
+    LineData *cudaMem = NULL;
+    cudaError_t err =
+        cudaMalloc(&cudaMem, sizeof(*cudaMem));
+    auto safeMem =
+        std::shared_ptr<LineData>(cudaMem, cudaFree);
+    err = cudaCopy(safeMem);
+    return safeMem;
+  }
+
+  cudaError_t cudaCopy(
+      std::shared_ptr<LineData> cudaMem) const {
+    cudaError_t err = dir.cudaCopy(&cudaMem->v);
+    err = this->intercept.cudaCopy(&cudaMem->p);
+    return err;
+  }
+
+  cudaError_t cudaCopy(
+      LineData *cudaMem) const {
+    cudaError_t err = dir.cudaCopy(&cudaMem->v);
+    err = this->intercept.cudaCopy(&cudaMem->p);
+    return err;
+  }
+
+  cudaError_t cudaRetrieve(
+      std::shared_ptr<LineData> cudaMem) {
+		cudaError_t err = this->intercept.cudaRetrieve(&cudaMem->p);
+		err = this->dir.cudaRetrieve(&cudaMem->v);
+		return err;
+  }
+
+  cudaError_t cudaRetrieve(
+      LineData *cudaMem) {
+		cudaError_t err = this->intercept.cudaRetrieve(&cudaMem->p);
+		err = this->dir.cudaRetrieve(&cudaMem->v);
+		return err;
+  }
+#endif
+
   friend std::ostream &operator<<(
       std::ostream &os, const Line<dim, fptype> &l) {
     os << l.dir << " * t + " << l.intercept;

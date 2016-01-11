@@ -3,6 +3,7 @@
 
 #include "line.hpp"
 #include "quadrics.hpp"
+#include "accurate_intersections.hpp"
 
 template <typename Q>
 __global__ void CMTest(typename Q::QuadricData *qIn,
@@ -17,7 +18,12 @@ __global__ void CMTest(typename Q::QuadricData *qIn,
 int main(int argc, char **argv) {
   constexpr const int dim = 3;
   using fptype = float;
+	using O = Geometry::Origin<dim, fptype>;
+	using V = Geometry::Vector<dim, fptype>;
+	using P = Geometry::Point<dim, fptype>;
+	using L = Geometry::Line<dim, fptype>;
   using Q = Geometry::Quadric<dim, fptype>;
+	using I = Geometry::Intersection<dim, fptype>;
   Geometry::Vector<dim, fptype> v;
   Geometry::Point<dim, fptype> p(v);
   Q src;
@@ -40,5 +46,14 @@ int main(int argc, char **argv) {
                                        newMem.get(), 1);
   dest.cudaRetrieve(newMem);
   std::cout << src << "\n" << dest << "\n";
+	V lineOff;
+	P lineInt(lineOff);
+	V lineDir;
+	lineDir.set(0, 1.0);
+	L line(lineInt, lineDir);
+	I iSrc(src, line, 0.23426, 539.234);
+	auto icudamem = src.cudaCopy();
+	I iDest;
+	iDest.cudaRetrieve(icudamem);
   return 0;
 }

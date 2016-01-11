@@ -268,7 +268,16 @@ class Quadric : public Solid<dim, fptype> {
   cudaError_t cudaCopy(
       std::shared_ptr<QuadricData> cudaMem) const {
     cudaError_t err =
-        cudaMemcpy(&cudaMem.get()->coeffs, &coeffs,
+        cudaMemcpy(&cudaMem->coeffs, &coeffs,
+                   sizeof(coeffs), cudaMemcpyHostToDevice);
+    err = this->origin.cudaCopy(&cudaMem->origin);
+    return err;
+  }
+
+  cudaError_t cudaCopy(
+      QuadricData *cudaMem) const {
+    cudaError_t err =
+        cudaMemcpy(&cudaMem->coeffs, &coeffs,
                    sizeof(coeffs), cudaMemcpyHostToDevice);
     err = this->origin.cudaCopy(&cudaMem->origin);
     return err;
@@ -278,7 +287,17 @@ class Quadric : public Solid<dim, fptype> {
       std::shared_ptr<QuadricData> cudaMem) {
     QuadricData buffer;
     cudaError_t err = cudaMemcpy(
-        &buffer.coeffs, &cudaMem.get()->coeffs,
+        &buffer.coeffs, &cudaMem->coeffs,
+        sizeof(buffer.coeffs), cudaMemcpyDeviceToHost);
+    for(int i = 0; i < numCoeffs; i++)
+      setCoeff(i, buffer.coeffs[i]);
+  }
+
+  cudaError_t cudaRetrieve(
+      QuadricData *cudaMem) {
+    QuadricData buffer;
+    cudaError_t err = cudaMemcpy(
+        &buffer.coeffs, &cudaMem->coeffs,
         sizeof(buffer.coeffs), cudaMemcpyDeviceToHost);
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, buffer.coeffs[i]);
