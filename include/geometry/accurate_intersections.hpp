@@ -22,14 +22,14 @@ template <int dim, typename fptype>
 class IntersectionBase<dim, fptype, true> {
  public:
   const Quadric<dim, fptype> q;
-  const Line<dim, fptype> *l;
+  const Line<dim, fptype> l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
   int numIP;
 
   IntersectionBase()
       : q(),
-        l(),
+        l(Point<dim, fptype>(), Vector<dim, fptype>()),
         intPos(NAN),
         otherIntPos(NAN),
         absErrMargin(defAbsPrecision),
@@ -41,7 +41,7 @@ class IntersectionBase<dim, fptype, true> {
                    fptype otherIntPos = NAN,
                    fptype absErrMargin = defAbsPrecision)
       : q(quad),
-        l(&line),
+        l(line),
         intPos(intPos),
         otherIntPos(otherIntPos),
         absErrMargin(absErrMargin),
@@ -83,7 +83,7 @@ class IntersectionBase<dim, fptype, true> {
     /* Compute the coefficients */
     Quadric<dim, mpfr::mpreal> q1(q);
     Quadric<dim, mpfr::mpreal> q2(i.q);
-    Line<dim, mpfr::mpreal> line(*l);
+    Line<dim, mpfr::mpreal> line(l);
     line.shiftOrigin(q.getOrigin());
     Polynomial<2, mpfr::mpreal> p1 =
         q1.calcLineDistPoly(line);
@@ -171,7 +171,7 @@ template <int dim, typename fptype>
 class IntersectionBase<dim, fptype, false> {
  public:
   const Quadric<dim, fptype> q;
-  const Line<dim, fptype> *l;
+  const Line<dim, fptype> l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
 
@@ -183,7 +183,7 @@ class IntersectionBase<dim, fptype, false> {
                    fptype otherIntPos = NAN,
                    fptype absErrMargin = defAbsPrecision)
       : q(quad),
-        l(&line),
+        l(line),
         intPos(intPos),
         otherIntPos(otherIntPos),
         absErrMargin(absErrMargin) {}
@@ -322,6 +322,7 @@ class Intersection
 		err = cudaMemcpy(
         &buffer.absErrMargin, &cudaMem->absErrMargin,
         sizeof(buffer.absErrMargin), cudaMemcpyDeviceToHost);
+		return err;
   }
 
   cudaError_t cudaRetrieve(
@@ -336,8 +337,15 @@ class Intersection
 		err = cudaMemcpy(
         &buffer.absErrMargin, &cudaMem->absErrMargin,
         sizeof(buffer.absErrMargin), cudaMemcpyDeviceToHost);
+		return err;
   }
 	#endif
+
+	friend std::ostream &operator<<(std::ostream &os,
+																	const Intersection<dim, fptype> &i) {
+		os << i.q << "\n" << i.l << "\n(" << i.intPos << ", " << i.otherIntPos << ")";
+		return os;
+	}
 
  private:
   static constexpr const bool isMPFR =

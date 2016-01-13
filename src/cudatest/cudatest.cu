@@ -52,8 +52,9 @@ int main(int argc, char **argv) {
 	lineDir.set(0, 1.0);
 	L line(lineInt, lineDir);
 	I iSrc(src, line, 0.23426, 539.234);
-	auto icudamem = src.cudaCopy();
+	auto icudamem = iSrc.cudaCopy();
 	I iDest;
 	iDest.cudaRetrieve(icudamem);
+	std::cout << iSrc << "\n" << iDest << "\n";
   return 0;
 }

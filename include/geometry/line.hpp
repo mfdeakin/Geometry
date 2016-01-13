@@ -116,14 +116,14 @@ class Line : public Solid<dim, fptype> {
 
   cudaError_t cudaCopy(
       std::shared_ptr<LineData> cudaMem) const {
-    cudaError_t err = dir.cudaCopy(&cudaMem->v);
+    cudaError_t err = dir.cudaCopy(&cudaMem->d);
     err = this->intercept.cudaCopy(&cudaMem->p);
     return err;
   }
 
   cudaError_t cudaCopy(
       LineData *cudaMem) const {
-    cudaError_t err = dir.cudaCopy(&cudaMem->v);
+    cudaError_t err = dir.cudaCopy(&cudaMem->d);
     err = this->intercept.cudaCopy(&cudaMem->p);
     return err;
   }
@@ -131,14 +131,14 @@ class Line : public Solid<dim, fptype> {
   cudaError_t cudaRetrieve(
       std::shared_ptr<LineData> cudaMem) {
 		cudaError_t err = this->intercept.cudaRetrieve(&cudaMem->p);
-		err = this->dir.cudaRetrieve(&cudaMem->v);
+		err = this->dir.cudaRetrieve(&cudaMem->d);
 		return err;
   }
 
   cudaError_t cudaRetrieve(
       LineData *cudaMem) {
 		cudaError_t err = this->intercept.cudaRetrieve(&cudaMem->p);
-		err = this->dir.cudaRetrieve(&cudaMem->v);
+		err = this->dir.cudaRetrieve(&cudaMem->d);
 		return err;
   }
 #endif
