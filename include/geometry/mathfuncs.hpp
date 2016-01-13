@@ -106,6 +106,13 @@ struct IsStdMathFuncs<fptype, true> {
     return std::isnan(val);
 #endif
   }
+	CUDA_CALLABLE static fptype sin(fptype val) {
+#ifdef __CUDA_ARCH__
+		return sin(val);
+#else
+		return std::sin(val);
+#endif
+	}
 };
 
 template <typename fptype>
@@ -139,6 +146,9 @@ struct IsMPFRMathFuncs<fptype, true> {
   static fptype isnan(fptype val) {
     return mpfr::isnan(val);
   }
+	static fptype sin(fptype val) {
+		return mpfr::sin(val);
+	}
 };
 
 template <typename fptype>

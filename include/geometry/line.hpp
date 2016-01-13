@@ -25,6 +25,11 @@ class Line : public Solid<dim, fptype> {
 		typename Point<dim, fptype>::PointData p;
 	};
 	
+	CUDA_CALLABLE Line() : Solid<dim, fptype>(), intercept() {
+		for(int i = 0; i < dim; i++)
+			dir.set(i, NAN);
+	}
+	
   CUDA_CALLABLE Line(const Point<dim, fptype> &intercept,
                      const Vector<dim, fptype> &direction)
       : Solid<dim, fptype>(intercept.origin),

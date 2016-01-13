@@ -46,6 +46,7 @@ class IntersectionBase<dim, fptype, true> {
         otherIntPos(otherIntPos),
         absErrMargin(absErrMargin),
         numIP(0) {}
+	
   IntersectionBase(
       const IntersectionBase<dim, fptype, true> &i)
       : q(i.q),

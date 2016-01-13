@@ -192,13 +192,13 @@ class Vector : public GeometryBase<dim, fptype> {
   }
 
 #ifdef __CUDACC__
-  std::shared_ptr<const VectorData> cudaCopy() const {
+  std::shared_ptr<VectorData> cudaCopy() const {
     VectorData *cudaMem = NULL;
     cudaError_t err =
         cudaMalloc(&cudaMem, sizeof(*cudaMem));
     cudaMemcpy(cudaMem, &offset, sizeof(offset),
                cudaMemcpyHostToDevice);
-    return std::shared_ptr<const VectorData>(cudaMem,
+    return std::shared_ptr<VectorData>(cudaMem,
                                              cudaFree);
   }
 

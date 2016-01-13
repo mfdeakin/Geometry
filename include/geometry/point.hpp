@@ -23,7 +23,12 @@ class Point : public Solid<dim, fptype>,
 		typename Origin<dim, fptype>::OriginData o;
 		typename Vector<dim, fptype>::VectorData v;
 	};
-
+	
+	CUDA_CALLABLE Point() : Solid<dim, fptype>() {
+		for(int i = 0; i < dim; i++)
+			offset.set(i, NAN);
+	}
+	
   template <typename srctype>
   CUDA_CALLABLE Point(const Vector<dim, srctype> &offset)
       : Solid<dim, fptype>(), offset(offset) {}

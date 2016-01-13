@@ -291,6 +291,7 @@ class Quadric : public Solid<dim, fptype> {
         sizeof(buffer.coeffs), cudaMemcpyDeviceToHost);
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, buffer.coeffs[i]);
+		return err;
   }
 
   cudaError_t cudaRetrieve(
@@ -301,6 +302,7 @@ class Quadric : public Solid<dim, fptype> {
         sizeof(buffer.coeffs), cudaMemcpyDeviceToHost);
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, buffer.coeffs[i]);
+		return err;
   }
 #endif
 

@@ -45,16 +45,22 @@ int main(int argc, char **argv) {
   CMTest<Q><<<numBlocks, thrdPerBlk>>>(spCudaMem.get(),
                                        newMem.get(), 1);
   dest.cudaRetrieve(newMem);
-  std::cout << src << "\n" << dest << "\n";
+  std::cout << "Copied Quadrics:\n" << src << "\n" << dest << "\n";
 	V lineOff;
 	P lineInt(lineOff);
 	V lineDir;
-	lineDir.set(0, 1.0);
+	for(int i = 0; i < dim; i++)
+		lineDir.set(i, MathFuncs::MathFuncs<fptype>::sin(static_cast<fptype>(i + 0.2345)));
+	lineDir.normalize();
+	std::shared_ptr<V::VectorData> vcudamem = lineDir.cudaCopy();
+	V lineDirDest;
+	lineDirDest.cudaRetrieve(vcudamem);
+	std::cout << "\nCopied Vectors:\n" << lineDir << "\n\n" << lineDirDest << "\n";
 	L line(lineInt, lineDir);
 	I iSrc(src, line, 0.23426, 539.234);
 	auto icudamem = iSrc.cudaCopy();
 	I iDest;
 	iDest.cudaRetrieve(icudamem);
-	std::cout << iSrc << "\n" << iDest << "\n";
+	std::cout << "\nCopied Intersections:\n" << iSrc << "\n\n" << iDest << "\n";
   return 0;
 }
