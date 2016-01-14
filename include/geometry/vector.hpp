@@ -106,6 +106,19 @@ class Vector : public GeometryBase<dim, fptype> {
       set(i, get(i) - rhs.get(i));
     return *this;
   }
+	
+	CUDA_CALLABLE bool operator==(
+      const Vector<dim, fptype> &rhs) const {
+		for(unsigned i = 0; i < dim; i++)
+			if(get(i) != rhs.get(i))
+				return false;
+		return true;
+	}
+
+	CUDA_CALLABLE bool operator!=(
+      const Vector<dim, fptype> &rhs) const {
+		return !((*this) == rhs);
+	}
 
   CUDA_CALLABLE fptype
   dot(const Vector<dim, fptype> &rhs) const {

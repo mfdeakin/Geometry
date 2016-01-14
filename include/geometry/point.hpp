@@ -114,7 +114,7 @@ class Point : public Solid<dim, fptype>,
   cudaError_t cudaCopy(
       std::shared_ptr<PointData> cudaMem) const {
     cudaError_t err = this->origin.cudaCopy(&cudaMem->o);
-    err = this->offset.cudaCopy(&cudaMem->p);
+    err = this->offset.cudaCopy(&cudaMem->v);
     return err;
   }
 

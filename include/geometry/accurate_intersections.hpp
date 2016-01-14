@@ -21,8 +21,8 @@ class IntersectionBase;
 template <int dim, typename fptype>
 class IntersectionBase<dim, fptype, true> {
  public:
-  const Quadric<dim, fptype> q;
-  const Line<dim, fptype> l;
+  Quadric<dim, fptype> q;
+  Line<dim, fptype> l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
   int numIP;
@@ -171,8 +171,8 @@ class IntersectionBase<dim, fptype, true> {
 template <int dim, typename fptype>
 class IntersectionBase<dim, fptype, false> {
  public:
-  const Quadric<dim, fptype> q;
-  const Line<dim, fptype> l;
+  Quadric<dim, fptype> q;
+  Line<dim, fptype> l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
 
@@ -314,32 +314,34 @@ class Intersection
 
   cudaError_t cudaRetrieve(
       std::shared_ptr<IntersectionData> cudaMem) {
-    IntersectionData buffer;
     cudaError_t err = cudaMemcpy(
-        &buffer.intPos, &cudaMem->intPos,
-        sizeof(buffer.intPos), cudaMemcpyDeviceToHost);
+        &this->intPos, &cudaMem->intPos,
+        sizeof(this->intPos), cudaMemcpyDeviceToHost);
     err = cudaMemcpy(
-        &buffer.otherIntPos, &cudaMem->otherIntPos,
-        sizeof(buffer.otherIntPos), cudaMemcpyDeviceToHost);
-    err = cudaMemcpy(&buffer.absErrMargin,
+        &this->otherIntPos, &cudaMem->otherIntPos,
+        sizeof(this->otherIntPos), cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(&this->absErrMargin,
                      &cudaMem->absErrMargin,
-                     sizeof(buffer.absErrMargin),
+                     sizeof(this->absErrMargin),
                      cudaMemcpyDeviceToHost);
+		err = this->q.cudaRetrieve(&cudaMem->quad);
+		err = this->l.cudaRetrieve(&cudaMem->line);
     return err;
   }
 
   cudaError_t cudaRetrieve(IntersectionData *cudaMem) {
-    IntersectionData buffer;
     cudaError_t err = cudaMemcpy(
-        &buffer.intPos, &cudaMem->intPos,
-        sizeof(buffer.intPos), cudaMemcpyDeviceToHost);
+        &this->intPos, &cudaMem->intPos,
+        sizeof(this->intPos), cudaMemcpyDeviceToHost);
     err = cudaMemcpy(
-        &buffer.otherIntPos, &cudaMem->otherIntPos,
-        sizeof(buffer.otherIntPos), cudaMemcpyDeviceToHost);
-    err = cudaMemcpy(&buffer.absErrMargin,
+        &this->otherIntPos, &cudaMem->otherIntPos,
+        sizeof(this->otherIntPos), cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(&this->absErrMargin,
                      &cudaMem->absErrMargin,
-                     sizeof(buffer.absErrMargin),
+                     sizeof(this->absErrMargin),
                      cudaMemcpyDeviceToHost);
+		err = this->q.cudaRetrieve(&cudaMem->quad);
+		err = this->l.cudaRetrieve(&cudaMem->line);
     return err;
   }
 #endif

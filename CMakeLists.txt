@@ -26,4 +26,4 @@ set_target_properties(timer timing_intersections geomtest PROPERTIES COMPILE_FLA
 
 target_link_libraries(geomtest mpfr gtest pthread)
 target_link_libraries(timing_intersections mpfr timer)
-target_link_libraries(cudatest mpfr timer)
+target_link_libraries(cudatest mpfr gtest pthread timer)

@@ -59,17 +59,26 @@ class Origin : public GeometryBase<dim, fptype> {
   }
 
 #ifdef __CUDACC__
-  std::shared_ptr<const OriginData> cudaCopy() const {
+  std::shared_ptr<OriginData> cudaCopy() const {
     OriginData *cudaMem = NULL;
     cudaError_t err =
         cudaMalloc(&cudaMem, sizeof(*cudaMem));
     err = globalCoords.cudaCopy(&cudaMem->v);
-    return std::shared_ptr<const OriginData>(cudaMem,
-                                             cudaFree);
+    return std::shared_ptr<OriginData>(cudaMem,
+																			 cudaFree);
   }
 
   cudaError_t cudaCopy(OriginData *cudaMem) const {
     return globalCoords.cudaCopy(&cudaMem->v);
+  }
+
+  cudaError_t cudaRetrieve(
+      std::shared_ptr<OriginData> cudaMem) {
+    return globalCoords.cudaRetrieve(&cudaMem->v);
+  }
+
+  cudaError_t cudaRetrieve(OriginData *cudaMem) {
+    return globalCoords.cudaRetrieve(&cudaMem->v);
   }
 #endif
 
