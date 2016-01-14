@@ -46,7 +46,7 @@ class IntersectionBase<dim, fptype, true> {
         otherIntPos(otherIntPos),
         absErrMargin(absErrMargin),
         numIP(0) {}
-	
+
   IntersectionBase(
       const IntersectionBase<dim, fptype, true> &i)
       : q(i.q),
@@ -229,15 +229,17 @@ class Intersection
           dim, fptype,
           !std::is_same<fptype, mpfr::mpreal>::value> {
  public:
-	struct IntersectionData {
-		typename Quadric<dim, fptype>::QuadricData quad;
-		typename Line<dim, fptype>::LineData line;
-		fptype intPos;
-		fptype otherIntPos;
-		fptype absErrMargin;
-	};
+  struct IntersectionData {
+    typename Quadric<dim, fptype>::QuadricData quad;
+    typename Line<dim, fptype>::LineData line;
+    fptype intPos;
+    fptype otherIntPos;
+    fptype absErrMargin;
+  };
   Intersection()
-      : IntersectionBase<dim, fptype, !std::is_same<fptype, mpfr::mpreal>::value>() {}
+      : IntersectionBase<
+            dim, fptype,
+            !std::is_same<fptype, mpfr::mpreal>::value>() {}
 
   Intersection(const Quadric<dim, fptype> &quad,
                const Line<dim, fptype> &line,
@@ -268,46 +270,45 @@ class Intersection
                 !std::is_same<fptype,
                               mpfr::mpreal>::value>>(i)) {}
 
-	#ifdef __CUDACC__
+#ifdef __CUDACC__
   std::shared_ptr<IntersectionData> cudaCopy() const {
     IntersectionData *cudaMem = NULL;
     cudaError_t err =
         cudaMalloc(&cudaMem, sizeof(*cudaMem));
-    auto safeMem =
-        std::shared_ptr<IntersectionData>(cudaMem, cudaFree);
+    auto safeMem = std::shared_ptr<IntersectionData>(
+        cudaMem, cudaFree);
     err = cudaCopy(cudaMem);
     return safeMem;
   }
 
   cudaError_t cudaCopy(
       std::shared_ptr<IntersectionData> cudaMem) const {
-    cudaError_t err =
-        cudaMemcpy(&cudaMem->intPos, &this->intPos,
-                   sizeof(this->intPos), cudaMemcpyHostToDevice);
-    err =
-        cudaMemcpy(&cudaMem->otherIntPos, &this->otherIntPos,
-                   sizeof(this->otherIntPos), cudaMemcpyHostToDevice);
-    err =
-        cudaMemcpy(&cudaMem->absErrMargin, &this->otherIntPos,
-                   sizeof(this->absErrMargin), cudaMemcpyHostToDevice);
+    cudaError_t err = cudaMemcpy(
+        &cudaMem->intPos, &this->intPos,
+        sizeof(this->intPos), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(
+        &cudaMem->otherIntPos, &this->otherIntPos,
+        sizeof(this->otherIntPos), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(
+        &cudaMem->absErrMargin, &this->otherIntPos,
+        sizeof(this->absErrMargin), cudaMemcpyHostToDevice);
     err = this->q.cudaCopy(&cudaMem->quad);
-		err = this->l.cudaCopy(&cudaMem->line);
+    err = this->l.cudaCopy(&cudaMem->line);
     return err;
   }
 
-  cudaError_t cudaCopy(
-      IntersectionData *cudaMem) const {
-    cudaError_t err =
-        cudaMemcpy(&cudaMem->intPos, &this->intPos,
-                   sizeof(this->intPos), cudaMemcpyHostToDevice);
-    err =
-        cudaMemcpy(&cudaMem->otherIntPos, &this->otherIntPos,
-                   sizeof(this->otherIntPos), cudaMemcpyHostToDevice);
-    err =
-        cudaMemcpy(&cudaMem->absErrMargin, &this->absErrMargin,
-                   sizeof(this->absErrMargin), cudaMemcpyHostToDevice);
+  cudaError_t cudaCopy(IntersectionData *cudaMem) const {
+    cudaError_t err = cudaMemcpy(
+        &cudaMem->intPos, &this->intPos,
+        sizeof(this->intPos), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(
+        &cudaMem->otherIntPos, &this->otherIntPos,
+        sizeof(this->otherIntPos), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(
+        &cudaMem->absErrMargin, &this->absErrMargin,
+        sizeof(this->absErrMargin), cudaMemcpyHostToDevice);
     err = this->q.cudaCopy(&cudaMem->quad);
-		err = this->l.cudaCopy(&cudaMem->line);
+    err = this->l.cudaCopy(&cudaMem->line);
     return err;
   }
 
@@ -317,36 +318,39 @@ class Intersection
     cudaError_t err = cudaMemcpy(
         &buffer.intPos, &cudaMem->intPos,
         sizeof(buffer.intPos), cudaMemcpyDeviceToHost);
-		err = cudaMemcpy(
+    err = cudaMemcpy(
         &buffer.otherIntPos, &cudaMem->otherIntPos,
         sizeof(buffer.otherIntPos), cudaMemcpyDeviceToHost);
-		err = cudaMemcpy(
-        &buffer.absErrMargin, &cudaMem->absErrMargin,
-        sizeof(buffer.absErrMargin), cudaMemcpyDeviceToHost);
-		return err;
+    err = cudaMemcpy(&buffer.absErrMargin,
+                     &cudaMem->absErrMargin,
+                     sizeof(buffer.absErrMargin),
+                     cudaMemcpyDeviceToHost);
+    return err;
   }
 
-  cudaError_t cudaRetrieve(
-      IntersectionData *cudaMem) {
+  cudaError_t cudaRetrieve(IntersectionData *cudaMem) {
     IntersectionData buffer;
     cudaError_t err = cudaMemcpy(
         &buffer.intPos, &cudaMem->intPos,
         sizeof(buffer.intPos), cudaMemcpyDeviceToHost);
-		err = cudaMemcpy(
+    err = cudaMemcpy(
         &buffer.otherIntPos, &cudaMem->otherIntPos,
         sizeof(buffer.otherIntPos), cudaMemcpyDeviceToHost);
-		err = cudaMemcpy(
-        &buffer.absErrMargin, &cudaMem->absErrMargin,
-        sizeof(buffer.absErrMargin), cudaMemcpyDeviceToHost);
-		return err;
+    err = cudaMemcpy(&buffer.absErrMargin,
+                     &cudaMem->absErrMargin,
+                     sizeof(buffer.absErrMargin),
+                     cudaMemcpyDeviceToHost);
+    return err;
   }
-	#endif
+#endif
 
-	friend std::ostream &operator<<(std::ostream &os,
-																	const Intersection<dim, fptype> &i) {
-		os << i.q << "\n" << i.l << "\n(" << i.intPos << ", " << i.otherIntPos << ")";
-		return os;
-	}
+  friend std::ostream &operator<<(
+      std::ostream &os,
+      const Intersection<dim, fptype> &i) {
+    os << i.q << "\n" << i.l << "\n(" << i.intPos << ", "
+       << i.otherIntPos << ")";
+    return os;
+  }
 
  private:
   static constexpr const bool isMPFR =
@@ -396,9 +400,9 @@ sortIntersections(const Line<dim, fptype> &line,
     auto intPos = q.calcLineDistToIntersect(line);
     for(int k = 0; k < 2; k++) {
       if(!MathFuncs::MathFuncs<fptype>::isnan(intPos[k])) {
-        Intersection<dim, fptype> i(
-            q, line, intPos[k], intPos[1 - k],
-            absErrMargin);
+        Intersection<dim, fptype> i(q, line, intPos[k],
+                                    intPos[1 - k],
+                                    absErrMargin);
         inter->push_back(i);
       }
     }

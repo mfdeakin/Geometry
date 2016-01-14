@@ -9,23 +9,21 @@ struct Array {
   T data[sz];
 
   CUDA_CALLABLE Array() {}
-  
+
   CUDA_CALLABLE Array(const Array<T, sz> &src) {
-    for(int i = 0; i < sz; i++)
-      data[i] = src[i];
+    for(int i = 0; i < sz; i++) data[i] = src[i];
   }
-  
+
   CUDA_CALLABLE Array(const T src[sz]) {
-    for(int i = 0; i < sz; i++)
-      data[i] = src[i];
+    for(int i = 0; i < sz; i++) data[i] = src[i];
   }
-  
+
   CUDA_CALLABLE Array(std::initializer_list<T> src) {
     std::copy(src.begin(), src.end(), data);
   }
-  
+
   CUDA_CALLABLE ~Array() {}
-  
+
   CUDA_CALLABLE const T &operator[](int idx) const {
     assert(idx >= 0);
     assert(idx < sz);

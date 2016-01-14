@@ -20,16 +20,15 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Line : public Solid<dim, fptype> {
  public:
-	struct LineData {
-		typename Vector<dim, fptype>::VectorData d;
-		typename Point<dim, fptype>::PointData p;
-	};
-	
-	CUDA_CALLABLE Line() : Solid<dim, fptype>(), intercept() {
-		for(int i = 0; i < dim; i++)
-			dir.set(i, NAN);
-	}
-	
+  struct LineData {
+    typename Vector<dim, fptype>::VectorData d;
+    typename Point<dim, fptype>::PointData p;
+  };
+
+  CUDA_CALLABLE Line() : Solid<dim, fptype>(), intercept() {
+    for(int i = 0; i < dim; i++) dir.set(i, NAN);
+  }
+
   CUDA_CALLABLE Line(const Point<dim, fptype> &intercept,
                      const Vector<dim, fptype> &direction)
       : Solid<dim, fptype>(intercept.origin),
@@ -126,8 +125,7 @@ class Line : public Solid<dim, fptype> {
     return err;
   }
 
-  cudaError_t cudaCopy(
-      LineData *cudaMem) const {
+  cudaError_t cudaCopy(LineData *cudaMem) const {
     cudaError_t err = dir.cudaCopy(&cudaMem->d);
     err = this->intercept.cudaCopy(&cudaMem->p);
     return err;
@@ -135,16 +133,17 @@ class Line : public Solid<dim, fptype> {
 
   cudaError_t cudaRetrieve(
       std::shared_ptr<LineData> cudaMem) {
-		cudaError_t err = this->intercept.cudaRetrieve(&cudaMem->p);
-		err = this->dir.cudaRetrieve(&cudaMem->d);
-		return err;
+    cudaError_t err =
+        this->intercept.cudaRetrieve(&cudaMem->p);
+    err = this->dir.cudaRetrieve(&cudaMem->d);
+    return err;
   }
 
-  cudaError_t cudaRetrieve(
-      LineData *cudaMem) {
-		cudaError_t err = this->intercept.cudaRetrieve(&cudaMem->p);
-		err = this->dir.cudaRetrieve(&cudaMem->d);
-		return err;
+  cudaError_t cudaRetrieve(LineData *cudaMem) {
+    cudaError_t err =
+        this->intercept.cudaRetrieve(&cudaMem->p);
+    err = this->dir.cudaRetrieve(&cudaMem->d);
+    return err;
   }
 #endif
 

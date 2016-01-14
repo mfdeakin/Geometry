@@ -19,16 +19,15 @@ template <int dim, typename fptype>
 class Point : public Solid<dim, fptype>,
               public Origin<dim, fptype> {
  public:
-	struct PointData {
-		typename Origin<dim, fptype>::OriginData o;
-		typename Vector<dim, fptype>::VectorData v;
-	};
-	
-	CUDA_CALLABLE Point() : Solid<dim, fptype>() {
-		for(int i = 0; i < dim; i++)
-			offset.set(i, NAN);
-	}
-	
+  struct PointData {
+    typename Origin<dim, fptype>::OriginData o;
+    typename Vector<dim, fptype>::VectorData v;
+  };
+
+  CUDA_CALLABLE Point() : Solid<dim, fptype>() {
+    for(int i = 0; i < dim; i++) offset.set(i, NAN);
+  }
+
   template <typename srctype>
   CUDA_CALLABLE Point(const Vector<dim, srctype> &offset)
       : Solid<dim, fptype>(), offset(offset) {}
@@ -82,9 +81,9 @@ class Point : public Solid<dim, fptype>,
     return offset.norm();
   }
 
-  CUDA_CALLABLE PointLocation ptLocation(
-      const Point<dim, fptype> &pt,
-      fptype absPrecision = defAbsPrecision) const {
+  CUDA_CALLABLE PointLocation
+  ptLocation(const Point<dim, fptype> &pt,
+             fptype absPrecision = defAbsPrecision) const {
     // We have no knowledge of the precision, so downcast
     Vector<dim, float> delta = this->calcOffset(pt);
     float dist = delta.norm();
@@ -119,8 +118,7 @@ class Point : public Solid<dim, fptype>,
     return err;
   }
 
-  cudaError_t cudaCopy(
-      PointData *cudaMem) const {
+  cudaError_t cudaCopy(PointData *cudaMem) const {
     cudaError_t err = this->origin.cudaCopy(&cudaMem->o);
     err = this->offset.cudaCopy(&cudaMem->v);
     return err;
@@ -128,16 +126,17 @@ class Point : public Solid<dim, fptype>,
 
   cudaError_t cudaRetrieve(
       std::shared_ptr<PointData> cudaMem) {
-		cudaError_t err = this->origin.cudaRetrieve(&cudaMem->o);
-		err = this->offset.cudaRetrieve(&cudaMem->v);
-		return err;
+    cudaError_t err =
+        this->origin.cudaRetrieve(&cudaMem->o);
+    err = this->offset.cudaRetrieve(&cudaMem->v);
+    return err;
   }
 
-  cudaError_t cudaRetrieve(
-      PointData *cudaMem) {
-		cudaError_t err = this->origin.cudaRetrieve(&cudaMem->o);
-		err = this->offset.cudaRetrieve(&cudaMem->v);
-		return err;
+  cudaError_t cudaRetrieve(PointData *cudaMem) {
+    cudaError_t err =
+        this->origin.cudaRetrieve(&cudaMem->o);
+    err = this->offset.cudaRetrieve(&cudaMem->v);
+    return err;
   }
 #endif
 

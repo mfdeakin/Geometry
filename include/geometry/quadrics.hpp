@@ -274,8 +274,7 @@ class Quadric : public Solid<dim, fptype> {
     return err;
   }
 
-  cudaError_t cudaCopy(
-      QuadricData *cudaMem) const {
+  cudaError_t cudaCopy(QuadricData *cudaMem) const {
     cudaError_t err =
         cudaMemcpy(&cudaMem->coeffs, &coeffs,
                    sizeof(coeffs), cudaMemcpyHostToDevice);
@@ -291,18 +290,17 @@ class Quadric : public Solid<dim, fptype> {
         sizeof(buffer.coeffs), cudaMemcpyDeviceToHost);
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, buffer.coeffs[i]);
-		return err;
+    return err;
   }
 
-  cudaError_t cudaRetrieve(
-      QuadricData *cudaMem) {
+  cudaError_t cudaRetrieve(QuadricData *cudaMem) {
     QuadricData buffer;
     cudaError_t err = cudaMemcpy(
         &buffer.coeffs, &cudaMem->coeffs,
         sizeof(buffer.coeffs), cudaMemcpyDeviceToHost);
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, buffer.coeffs[i]);
-		return err;
+    return err;
   }
 #endif
 

@@ -17,7 +17,7 @@ namespace AccurateMath {
 
 template <unsigned size, typename fptype>
 CUDA_CALLABLE static fptype kahanSum(
-    const fptype (&summands)[size]) {
+    const fptype(&summands)[size]) {
   fptype sum = 0.0;
   fptype extra = 0.0;
   for(unsigned i = 0; i < size; i++) {
@@ -161,12 +161,10 @@ CUDA_CALLABLE static std::array<fptype, 2> kahanQuadratic(
   fptype disc =
       kahanDiscriminant(sqCoeff, linCoeff, constant);
   if(disc < 0) return std::array<fptype, 2>({{NAN, NAN}});
-  fptype fracPart =
-      -MathFuncs::MathFuncs<fptype>::copysign(
-          MathFuncs::MathFuncs<fptype>::fabs(linCoeff /
-                                             2.0) +
-              MathFuncs::MathFuncs<fptype>::sqrt(disc),
-          linCoeff);
+  fptype fracPart = -MathFuncs::MathFuncs<fptype>::copysign(
+      MathFuncs::MathFuncs<fptype>::fabs(linCoeff / 2.0) +
+          MathFuncs::MathFuncs<fptype>::sqrt(disc),
+      linCoeff);
   std::array<fptype, 2> roots = {
       {fracPart / sqCoeff, constant / fracPart}};
   return roots;

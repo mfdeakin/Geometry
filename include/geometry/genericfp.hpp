@@ -84,12 +84,12 @@ double gfDouble(T orig);
 template <unsigned pBits, unsigned eBits>
 void gfFPToBinString(
     fp<pBits, eBits> in,
-    char (&out)[(pBits + eBits) / 4 + 1 + 6]);
+    char(&out)[(pBits + eBits) / 4 + 1 + 6]);
 
 template <unsigned pBits, unsigned eBits>
 void gfFPToBinString(
     fp<pBits, eBits> in,
-    char (&out)[(pBits + eBits) / 4 + 1 + 6]) {
+    char(&out)[(pBits + eBits) / 4 + 1 + 6]) {
   snprintf(out, pBits + eBits + 5, "2^%x * 1.%x");
 }
 

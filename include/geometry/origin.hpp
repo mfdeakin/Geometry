@@ -47,8 +47,8 @@ class Origin : public GeometryBase<dim, fptype> {
   template <int d, typename f>
   friend class Origin;
 
-  CUDA_CALLABLE static const Origin<dim, fptype> &
-  uOrigin() {
+  CUDA_CALLABLE static const Origin<dim, fptype>
+      &uOrigin() {
 #ifdef __CUDA_ARCH__
     CUDA_SHARED static const Origin<dim, fptype>
         universeOrigin;

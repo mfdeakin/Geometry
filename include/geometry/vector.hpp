@@ -66,8 +66,8 @@ class Vector : public GeometryBase<dim, fptype> {
     return get(dimension);
   }
 
-  CUDA_CALLABLE fptype
-  operator()(int dimension, fptype val) {
+  CUDA_CALLABLE fptype operator()(int dimension,
+                                  fptype val) {
     return set(dimension, val);
   }
 
@@ -108,7 +108,7 @@ class Vector : public GeometryBase<dim, fptype> {
   }
 
   CUDA_CALLABLE fptype
-      dot(const Vector<dim, fptype> &rhs) const {
+  dot(const Vector<dim, fptype> &rhs) const {
     fptype sum = 0.0;
     for(int i = 0; i < dim; i++)
       sum = MathFuncs::MathFuncs<fptype>::fma(
@@ -198,8 +198,7 @@ class Vector : public GeometryBase<dim, fptype> {
         cudaMalloc(&cudaMem, sizeof(*cudaMem));
     cudaMemcpy(cudaMem, &offset, sizeof(offset),
                cudaMemcpyHostToDevice);
-    return std::shared_ptr<VectorData>(cudaMem,
-                                             cudaFree);
+    return std::shared_ptr<VectorData>(cudaMem, cudaFree);
   }
 
   cudaError_t cudaCopy(VectorData *cudaMem) const {
@@ -208,21 +207,22 @@ class Vector : public GeometryBase<dim, fptype> {
   }
 
   cudaError_t cudaCopy(
-											 std::shared_ptr<VectorData> cudaMem) const {
-    return cudaMemcpy(cudaMem.get(), &offset, sizeof(offset),
-											cudaMemcpyHostToDevice);
+      std::shared_ptr<VectorData> cudaMem) const {
+    return cudaMemcpy(cudaMem.get(), &offset,
+                      sizeof(offset),
+                      cudaMemcpyHostToDevice);
   }
 
   cudaError_t cudaRetrieve(
       std::shared_ptr<VectorData> cudaMem) {
-		return cudaMemcpy(&offset, cudaMem.get(), sizeof(offset),
-											cudaMemcpyDeviceToHost);
+    return cudaMemcpy(&offset, cudaMem.get(),
+                      sizeof(offset),
+                      cudaMemcpyDeviceToHost);
   }
 
-  cudaError_t cudaRetrieve(
-      VectorData *cudaMem) {
-		return cudaMemcpy(&offset, cudaMem, sizeof(offset),
-											cudaMemcpyDeviceToHost);
+  cudaError_t cudaRetrieve(VectorData *cudaMem) {
+    return cudaMemcpy(&offset, cudaMem, sizeof(offset),
+                      cudaMemcpyDeviceToHost);
   }
 #endif
 
