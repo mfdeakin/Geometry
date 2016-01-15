@@ -1,5 +1,5 @@
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.3)
 project(geometry)
 
 find_package(CUDA QUIET)
@@ -18,7 +18,6 @@ set(CUDA_64_BIT_DEVICE_CODE ON)
 list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
 add_library(timer STATIC ${TIMER_SRC})
-#cuda_add_executable(cudatest ${CUDATEST_SRC})
 add_executable(timing_intersections ${TIMING_INTERSECTIONS_SRC})
 add_executable(geomtest ${TEST_SRC})
 
@@ -32,6 +31,7 @@ if(CUDA_FOUND)
         list(GET GCC_VERSION_COMPONENTS 0 GCC_MAJOR)
         list(GET GCC_VERSION_COMPONENTS 1 GCC_MINOR)
         if(GCC_VERSION VERSION_LESS 5.3 OR GCC_VERSION VERSION_GREATER 5.3)
+                cuda_add_executable(cudatest ${CUDATEST_SRC})
                 target_link_libraries(cudatest mpfr timer)
         endif()
 endif()
