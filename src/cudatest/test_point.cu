@@ -17,7 +17,7 @@ using O = Geometry::Origin<dim, fptype>;
 using V = Geometry::Vector<dim, fptype>;
 using P = Geometry::Point<dim, fptype>;
 
-TEST(CudaCopy, Point) {
+TEST(Point, CudaCopy) {
 	constexpr const fptype minValue = -(1 << 30);
 	constexpr const fptype maxValue = 1 << 30;
   constexpr const fptype maxMag = 1024.0 * 1024.0;

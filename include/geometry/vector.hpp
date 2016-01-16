@@ -203,7 +203,17 @@ class Vector : public GeometryBase<dim, fptype> {
     os << ")";
     return os;
   }
-
+	
+	CUDA_CALLABLE void copy(VectorData *mem) const {
+		for(int i = 0; i < dim; i++)
+			(*mem)[i] = offset[i];
+	}
+	
+	CUDA_CALLABLE void copy(std::shared_ptr<VectorData> mem) const {
+		for(int i = 0; i < dim; i++)
+			(*mem.get())[i] = offset[i];
+	}
+	
 #ifdef __CUDACC__
   std::shared_ptr<VectorData> cudaCopy() const {
     VectorData *cudaMem = NULL;
