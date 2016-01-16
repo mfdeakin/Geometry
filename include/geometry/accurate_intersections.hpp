@@ -320,12 +320,11 @@ class Intersection
     err = cudaMemcpy(
         &this->otherIntPos, &cudaMem->otherIntPos,
         sizeof(this->otherIntPos), cudaMemcpyDeviceToHost);
-    err = cudaMemcpy(&this->absErrMargin,
-                     &cudaMem->absErrMargin,
-                     sizeof(this->absErrMargin),
-                     cudaMemcpyDeviceToHost);
-		err = this->q.cudaRetrieve(&cudaMem->quad);
-		err = this->l.cudaRetrieve(&cudaMem->line);
+    err = cudaMemcpy(
+        &this->absErrMargin, &cudaMem->absErrMargin,
+        sizeof(this->absErrMargin), cudaMemcpyDeviceToHost);
+    err = this->q.cudaRetrieve(&cudaMem->quad);
+    err = this->l.cudaRetrieve(&cudaMem->line);
     return err;
   }
 
@@ -336,12 +335,11 @@ class Intersection
     err = cudaMemcpy(
         &this->otherIntPos, &cudaMem->otherIntPos,
         sizeof(this->otherIntPos), cudaMemcpyDeviceToHost);
-    err = cudaMemcpy(&this->absErrMargin,
-                     &cudaMem->absErrMargin,
-                     sizeof(this->absErrMargin),
-                     cudaMemcpyDeviceToHost);
-		err = this->q.cudaRetrieve(&cudaMem->quad);
-		err = this->l.cudaRetrieve(&cudaMem->line);
+    err = cudaMemcpy(
+        &this->absErrMargin, &cudaMem->absErrMargin,
+        sizeof(this->absErrMargin), cudaMemcpyDeviceToHost);
+    err = this->q.cudaRetrieve(&cudaMem->quad);
+    err = this->l.cudaRetrieve(&cudaMem->line);
     return err;
   }
 #endif

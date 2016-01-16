@@ -106,19 +106,18 @@ class Vector : public GeometryBase<dim, fptype> {
       set(i, get(i) - rhs.get(i));
     return *this;
   }
-	
-	CUDA_CALLABLE bool operator==(
-      const Vector<dim, fptype> &rhs) const {
-		for(unsigned i = 0; i < dim; i++)
-			if(get(i) != rhs.get(i))
-				return false;
-		return true;
-	}
 
-	CUDA_CALLABLE bool operator!=(
+  CUDA_CALLABLE bool operator==(
       const Vector<dim, fptype> &rhs) const {
-		return !((*this) == rhs);
-	}
+    for(unsigned i = 0; i < dim; i++)
+      if(get(i) != rhs.get(i)) return false;
+    return true;
+  }
+
+  CUDA_CALLABLE bool operator!=(
+      const Vector<dim, fptype> &rhs) const {
+    return !((*this) == rhs);
+  }
 
   CUDA_CALLABLE fptype
   dot(const Vector<dim, fptype> &rhs) const {
@@ -203,17 +202,17 @@ class Vector : public GeometryBase<dim, fptype> {
     os << ")";
     return os;
   }
-	
-	CUDA_CALLABLE void copy(VectorData *mem) const {
-		for(int i = 0; i < dim; i++)
-			(*mem)[i] = offset[i];
-	}
-	
-	CUDA_CALLABLE void copy(std::shared_ptr<VectorData> mem) const {
-		for(int i = 0; i < dim; i++)
-			(*mem.get())[i] = offset[i];
-	}
-	
+
+  CUDA_CALLABLE void copy(VectorData *mem) const {
+    for(int i = 0; i < dim; i++) (*mem)[i] = offset[i];
+  }
+
+  CUDA_CALLABLE void copy(
+      std::shared_ptr<VectorData> mem) const {
+    for(int i = 0; i < dim; i++)
+      (*mem.get())[i] = offset[i];
+  }
+
 #ifdef __CUDACC__
   std::shared_ptr<VectorData> cudaCopy() const {
     VectorData *cudaMem = NULL;
