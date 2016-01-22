@@ -119,6 +119,29 @@ class Vector : public GeometryBase<dim, fptype> {
     return !((*this) == rhs);
   }
 
+  CUDA_CALLABLE Vector<dim, fptype> operator=(
+      const Vector<dim, fptype> &v) {
+    offset = v.offset;
+    return *this;
+  }
+
+  CUDA_CALLABLE Vector<dim, fptype> operator=(
+      const VectorData &v) {
+    offset = v;
+    return *this;
+  }
+
+  CUDA_CALLABLE VectorData copyData() const {
+    VectorData v;
+    v = offset;
+    return v;
+  }
+
+  CUDA_CALLABLE VectorData &copyData(VectorData &v) const {
+    v = offset;
+    return v;
+  }
+
   CUDA_CALLABLE fptype
   dot(const Vector<dim, fptype> &rhs) const {
     fptype sum = 0.0;

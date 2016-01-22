@@ -100,6 +100,32 @@ class Point : public Solid<dim, fptype>,
     return o;
   }
 
+  CUDA_CALLABLE Point<dim, fptype> operator=(
+      Point<dim, fptype> p) {
+    Solid<dim, fptype>::operator=(p);
+    offset = p.offset;
+    return *this;
+  }
+
+  CUDA_CALLABLE Point<dim, fptype> operator=(PointData p) {
+    Solid<dim, fptype>::operator=(p.origin);
+    offset = p.v;
+    return *this;
+  }
+
+  CUDA_CALLABLE PointData copyData() const {
+    PointData p;
+    this->origin.copyData(p.o);
+    offset.copyData(p.v);
+    return p;
+  }
+
+  CUDA_CALLABLE PointData &copyData(PointData &p) const {
+    this->origin.copyData(p.o);
+    offset.copyData(p.v);
+    return p;
+  }
+
 #ifdef __CUDACC__
   std::shared_ptr<PointData> cudaCopy() const {
     PointData *cudaMem = NULL;

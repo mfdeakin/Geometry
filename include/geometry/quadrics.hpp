@@ -178,8 +178,7 @@ class Quadric : public Solid<dim, fptype> {
     return poly;
   }
 
-  CUDA_CALLABLE std::array<fptype, 2>
-  calcLineDistToIntersect(
+  CUDA_CALLABLE Array<fptype, 2> calcLineDistToIntersect(
       Line<dim, fptype> line,
       fptype absPrecision = defAbsPrecision) const {
     fptype shiftDist =
@@ -193,13 +192,13 @@ class Quadric : public Solid<dim, fptype> {
     return roots;
   }
 
-  CUDA_CALLABLE std::array<Point<dim, fptype>, 2>
+  CUDA_CALLABLE Array<Point<dim, fptype>, 2>
   calcLineIntersect(
       const Line<dim, fptype> &line,
       fptype absPrecision = defAbsPrecision) const {
-    std::array<fptype, 2> roots =
+    Array<fptype, 2> roots =
         calcLineDistToIntersect(line, absPrecision);
-    return std::array<Point<dim, fptype>, 2>(
+    return Array<Point<dim, fptype>, 2>(
         {line.getPosAtDist(roots[0]),
          line.getPosAtDist(roots[1])});
   }
@@ -223,6 +222,13 @@ class Quadric : public Solid<dim, fptype> {
     Solid<dim, fptype>::operator=(q);
     for(int i = 0; i < numCoeffs; i++)
       setCoeff(i, q.coeff(i));
+    return *this;
+  }
+
+  CUDA_CALLABLE Quadric<dim, fptype> operator=(
+      const Quadric<dim, fptype>::QuadricData &q) {
+    this->origin = q.origin;
+    coeffs = q.coeffs;
     return *this;
   }
 

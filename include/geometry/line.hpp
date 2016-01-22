@@ -107,6 +107,26 @@ class Line : public Solid<dim, fptype> {
     return dir;
   }
 
+  CUDA_CALLABLE Line<dim, fptype> operator=(
+      const Line<dim, fptype>::LineData &l) {
+    this->origin = l.p.o;
+    intercept = l.p;
+    dir = l.d;
+    return *this;
+  }
+
+  CUDA_CALLABLE LineData copyData() const {
+    LineData l;
+    dir.copyData(l.d);
+    intercept.copyData(l.p);
+  }
+
+  CUDA_CALLABLE LineData &copyData(LineData &l) const {
+    dir.copyData(l.d);
+    intercept.copyData(l.p);
+    return l;
+  }
+
 #ifdef __CUDACC__
   std::shared_ptr<LineData> cudaCopy() const {
     LineData *cudaMem = NULL;

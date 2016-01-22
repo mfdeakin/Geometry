@@ -3,9 +3,9 @@
 #define _POLYNOMIAL_HPP_
 
 #include <memory>
-#include <array>
 #include <cmath>
 
+#include "array.hpp"
 #include "cudadef.h"
 #include "typecast.hpp"
 
@@ -22,7 +22,7 @@ class PolynomialBase {
   }
 
   CUDA_CALLABLE PolynomialBase(
-      const std::array<fptype, order> &coeffs) {
+      const Array<fptype, order> &coeffs) {
     for(int i = 0; i < order; i++) set(i, coeffs[i]);
   }
 
@@ -59,7 +59,7 @@ class PolynomialBase {
   using _fptype = fptype;
 
  protected:
-  std::array<fptype, numCoeffs> coeffs;
+  Array<fptype, numCoeffs> coeffs;
 };
 
 template <int order, typename fptype, bool isSolvable>
@@ -72,14 +72,14 @@ class PolyIsSolvable<order, fptype, false>
 template <typename fptype>
 class PolyIsSolvable<0, fptype, true>
     : public PolynomialBase<0, fptype> {
-  std::array<fptype, 1> calcRoots() { return {}; }
+  Array<fptype, 1> calcRoots() { return {}; }
 };
 
 template <typename fptype>
 class PolyIsSolvable<1, fptype, true>
     : public PolynomialBase<1, fptype> {
  public:
-  std::array<fptype, 1> calcRoots() {
+  Array<fptype, 1> calcRoots() {
     return {-PolynomialBase<1, fptype>::get(0) /
             PolynomialBase<1, fptype>::get(1)};
   }
@@ -89,7 +89,7 @@ template <typename fptype>
 class PolyIsSolvable<2, fptype, true>
     : public PolynomialBase<2, fptype> {
  public:
-  std::array<fptype, 2> calcRoots() {
+  Array<fptype, 2> calcRoots() {
     return AccurateMath::kahanQuadratic(
         PolynomialBase<2, fptype>::get(2),
         PolynomialBase<2, fptype>::get(1),

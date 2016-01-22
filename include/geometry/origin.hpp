@@ -58,6 +58,17 @@ class Origin : public GeometryBase<dim, fptype> {
     return universeOrigin;
   }
 
+  CUDA_CALLABLE OriginData copyData() const {
+    OriginData o;
+    globalCoords.copyData(o.v);
+    return o;
+  }
+
+  CUDA_CALLABLE OriginData &copyData(OriginData o) const {
+    globalCoords.copyData(o.v);
+    return o;
+  }
+
 #ifdef __CUDACC__
   std::shared_ptr<OriginData> cudaCopy() const {
     OriginData *cudaMem = NULL;
