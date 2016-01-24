@@ -8,6 +8,10 @@
 #include <curand.h>
 #include <curand_kernel.h>
 
+#include <fstream>
+#include <iostream>
+#include <list>
+
 constexpr static const int dim = 3;
 using fptype = float;
 
@@ -47,16 +51,13 @@ __global__ void computeIntersections(
     for(int j = 0; j < numQuads; j++) {
       auto q = quads[j];
       auto intParams = q.calcLineDistToIntersect(line);
-      I::IntersectionData i1;
-      i1.quad = quadData[j];
-      line.copyData(i1.line);
-      i1.intPos = intParams[0];
-      i1.intPos = intParams[1];
-      I::IntersectionData i2;
-      i2.quad = quadData[j];
-      line.copyData(i2.line);
-      i2.intPos = intParams[1];
-      i2.intPos = intParams[0];
+      I::IntersectionData inter[2];
+      for(int k = 0; k < 2; k++) {
+        inter[k].quad = quadData[j];
+        line.copyData(inter[k].line);
+        inter[k].intPos = intParams[k];
+        inter[k].intPos = intParams[(k + 1) % 2];
+      }
     }
   }
 }
@@ -76,17 +77,81 @@ CUDA_DEVICE L uDistLine(curandState *rngState) {
   return L(P(intercept), dir);
 }
 
+template <int dim, typename fptype>
+std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
+    const char *fname) {
+  std::ifstream file(fname);
+  using Qf = Geometry::Quadric<dim, fptype>;
+  std::list<Qf> quads;
+  int imQuads = 0;
+  while(!file.eof()) {
+    Qf q;
+    file >> q;
+    QuadricClassify::QuadType type =
+        QuadricClassify::classifyQuadric(q);
+    if(!QuadricClassify::isImaginary(type) &&
+       type != QuadricClassify::QUADT_ERROR)
+      quads.push_back(q);
+    else
+      imQuads++;
+  }
+  std::cout << imQuads << " imaginary quadrics, "
+            << quads.size() << " real quadrics.\n";
+  return quads;
+}
+
 int main(int argc, char **argv) {
+  if(argc < 2) {
+    std::cout << "Not enough parameters. Usage:\n"
+              << argv[0] << " quadricfile\n";
+  }
+  const char *fname = argv[1];
   constexpr const int numBlocks = 128;
   constexpr const int numTPB = 32;
   constexpr const int numThreads = numBlocks * numTPB;
   curandState *curng;
   cudaError_t err =
       cudaMalloc(&curng, sizeof(*curng) * numThreads);
+  if(err != cudaSuccess || curng == NULL) {
+    std::cout << "Error allocated GPU memory 1\n";
+    return 1;
+  }
   int seed = 0;
   setupKernel<<<numBlocks, numTPB>>>(curng, seed);
+
+  auto quads = parseQuadrics<dim, fptype>(fname);
+  constexpr const int numLines = 1024;
+  Q::QuadricData *cuQuadMem;
+  err = cudaMalloc(&cuQuadMem,
+                   sizeof(*cuQuadMem) * quads.size());
+  if(err != cudaSuccess || cuQuadMem == NULL) {
+    cudaFree(curng);
+    std::cout << "Error allocated GPU memory 2\n";
+    return 1;
+  }
+  int i = 0;
+  for(auto q : quads) {
+    q.cudaCopy(&cuQuadMem[i]);
+    i++;
+  }
+
+  I::IntersectionData *cuIntMem;
+  int maxNumInts = quads.size() * numLines;
+  err =
+      cudaMalloc(&cuIntMem, sizeof(*cuIntMem) * maxNumInts);
+  if(err != cudaSuccess || cuQuadMem == NULL) {
+    cudaFree(curng);
+    cudaFree(cuQuadMem);
+    std::cout << "Error allocated GPU memory 3\n";
+    return 1;
+  }
+
   computeIntersections<uDistLine, 1,
                        1><<<numBlocks, numTPB>>>(
-      curng, NULL, NULL);
+      curng, cuQuadMem, cuIntMem);
+
+  cudaFree(curng);
+  cudaFree(cuQuadMem);
+  cudaFree(cuIntMem);
   return 0;
 }
