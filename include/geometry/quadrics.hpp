@@ -386,6 +386,11 @@ class Quadric : public Solid<dim, fptype> {
 
  private:
   CUDA_CALLABLE static int getCoeffPos(int d1, int d2) {
+    /* Quadric Coefficient Ordering:
+     * c1 x1^2 + c2 x2^2 + ... + cd +
+     * c(d+1) x1 x2 + c(d+2) x1 x3 + ... + c(2d) x1 +
+     * c(2d+1) x2 x3 + c(2d+2) x2 x4 + ... c(3d-1) x2 + ...
+     */
     assert(0 <= d1);
     assert(d1 < dim + 1);
     assert(0 <= d2);
@@ -393,8 +398,8 @@ class Quadric : public Solid<dim, fptype> {
     if(d1 == d2) {
       return d1;
     } else {
-      int first = std::min(d1, d2);
-      int second = std::max(d1, d2);
+      int first = d1 < d2 ? d1 : d2;
+      int second = d1 < d2 ? d2 : d1;
       int offset =
           first * dim - (first * (first - 1)) / 2 + dim + 1;
       return offset + second - first - 1;
