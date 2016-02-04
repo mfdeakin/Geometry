@@ -1,6 +1,6 @@
 
-#ifndef _QUADRICS_HPP_
-#define _QUADRICS_HPP_
+#ifndef _QUADRIC_HPP_
+#define _QUADRIC_HPP_
 
 #include <stdlib.h>
 #include <assert.h>
@@ -96,6 +96,14 @@ class Quadric : public Solid<dim, fptype> {
     return coeffs[pos];
   }
 
+  /* For finite quadric surfaces,
+   * compute the point which has the minimum average
+   * distance to the surface.
+   * This will likely reduce the error of computations in
+   * this space.
+   * Currently only implemented for the real ellipsoidal
+   * surface.
+   */
   CUDA_CALLABLE void optimizeOrigin() {
     auto qt = QuadricClassify::classifyQuadric(*this);
     switch(qt) {
@@ -125,6 +133,12 @@ class Quadric : public Solid<dim, fptype> {
     }
   }
 
+  /* Returns a signed value which determines the side of the
+   * surface that the point is on.
+   * This is done by simply evaluating
+   * c00 p0 p0 + c01 p0 p1 + ... + c11 p1 p1 + c12 p1 p2 +
+   * ...
+   */
   template <typename outtype>
   CUDA_CALLABLE outtype evaluatePoint(
       const Point<dim, fptype> &pt,
@@ -150,13 +164,31 @@ class Quadric : public Solid<dim, fptype> {
     return ret;
   }
 
+  /* Calculates the quadratic polynomial with roots
+   * at the points at which the line's parameter
+   * will intersect with the quadric surface */
   CUDA_CALLABLE Polynomial<2, fptype> calcLineDistPoly(
       const Line<dim, fptype> &line,
       fptype absPrecision = defAbsPrecision) const {
+    /* Notation: The line is represented as $d t + p$
+     * The component of the direction or point in the
+     * i'th direction is given as d[i] and p[i],
+     * respectively */
     auto lDir = line.getDirection();
     auto lInt = line.getIntercept().getOffset();
+    /* The square coefficient is only composed of terms
+     * from the direction terms.
+     * This term is easily seen to be the sum of c[i, i] d[i]^2.
+     */
     fptype sqCoeff = 0.0;
+    /* The linear coefficient is composed of a combination
+     * of direction and intercept terms.
+     * 
+     */
     fptype linCoeff = 0.0;
+    /* The constant term is only composed of terms
+     * from the intercept coefficients.
+     */
     fptype constant = coeff(dim, dim);
     for(int i = 0; i < dim; i++) {
       sqCoeff += coeff(i, i) * lDir(i) * lDir(i);

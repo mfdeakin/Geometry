@@ -3,7 +3,7 @@
 #define _BSGTREE_HPP_
 
 #include "geometry.hpp"
-#include "quadrics.hpp"
+#include "quadric.hpp"
 #include "origin.hpp"
 
 namespace Geometry {

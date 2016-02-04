@@ -2,7 +2,7 @@
 #include "cudadef.h"
 
 #include "line.hpp"
-#include "quadrics.hpp"
+#include "quadric.hpp"
 #include "accurate_intersections.hpp"
 
 #include <curand.h>

@@ -2,7 +2,7 @@
 #include <cstddef>
 
 #include "origin.hpp"
-#include "quadrics.hpp"
+#include "quadric.hpp"
 #include "line.hpp"
 #include "bsgtree.hpp"
 #include "accurate_math.hpp"

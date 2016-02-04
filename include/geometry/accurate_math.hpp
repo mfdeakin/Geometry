@@ -15,6 +15,11 @@
 
 namespace AccurateMath {
 
+/* kahanSum
+ * Implements Kahan Summation over a static array of
+ * floating point values
+ * Returns the sum
+ */
 template <unsigned size, typename fptype>
 CUDA_CALLABLE static fptype kahanSum(
     const fptype(&summands)[size]) {
@@ -29,6 +34,12 @@ CUDA_CALLABLE static fptype kahanSum(
   return sum;
 }
 
+/* kahanSum
+ * Implements Kahan Summation over a dynamic array of
+ * floating point values.
+ * Requires a valid pointer to the array
+ * Returns the sum
+ */
 template <typename fptype>
 CUDA_CALLABLE static fptype kahanSum(const fptype *summands,
                                      unsigned size) {
@@ -82,6 +93,14 @@ CUDA_CALLABLE static fptype twoNormSum(
       summands[i], summands[i], curSum);
 }
 
+/* twoSum
+ * An exact sum function
+ * Returns an array of the floating point components,
+ * with sum[0] > sum[1].
+ * The exact value of the sum is sum[0] + sum[1].
+ * "Robust Adaptive Floating-Point Geometric Predicates"
+ * by Shewchuck
+ */
 template <typename fptype>
 CUDA_CALLABLE static Array<fptype, 2> twoSum(fptype a,
                                              fptype b) {
@@ -97,6 +116,14 @@ CUDA_CALLABLE static Array<fptype, 2> twoSum(fptype a,
   return sum;
 }
 
+/* twoProd
+ * An exact product function
+ * Returns an array of the floating point components,
+ * with products[0] > products[1]
+ * The exact value of the product is product[0] + product[1]
+ * From "Some Functions Computable with a Fused-mac", by
+ * Boldo, Muller
+ */
 template <typename fptype>
 CUDA_CALLABLE static Array<fptype, 2> twoProd(fptype lhs,
                                               fptype rhs) {
@@ -107,6 +134,14 @@ CUDA_CALLABLE static Array<fptype, 2> twoProd(fptype lhs,
   return products;
 }
 
+/* threeFMA
+ * An exact FMA function
+ * Returns an array of the floating point components,
+ * with fma[0] > fma[1] > fma[2]
+ * The exact value of the FMA is fma[0] + fma[1] + fma[2]
+ * From "Some Functions Computable with a Fused-mac", by
+ * Boldo, Muller
+ */
 template <typename fptype>
 CUDA_CALLABLE static Array<fptype, 3> threeFMA(fptype a,
                                                fptype b,
@@ -121,6 +156,15 @@ CUDA_CALLABLE static Array<fptype, 3> threeFMA(fptype a,
   return ret;
 }
 
+/* compensatedDotProd
+ * Computes the dot product of two vectors of equal
+ * dimension
+ * Requires valid arrays of floats as inputs
+ * Uses threeFMA in combination with Kahan summation to
+ * improve accuracy
+ * From "Accurate dot products with FMA" by
+ * Graillat, Langlois, and Louvet
+ */
 template <typename fptype>
 CUDA_CALLABLE static fptype compensatedDotProd(
     const fptype *vec1, const fptype *vec2, unsigned dim) {
@@ -135,15 +179,19 @@ CUDA_CALLABLE static fptype compensatedDotProd(
   return s + c;
 }
 
+/* Solves the linear system linCoeff * t + constant = 0 */
 template <typename fptype>
 CUDA_CALLABLE static fptype solveLinear(fptype linCoeff,
                                         fptype constant) {
   return -constant / linCoeff;
 }
 
+/* Computes the discriminant at double the intial precision
+ */
 template <typename fptype>
 CUDA_CALLABLE static fptype kahanDiscriminant(
     fptype sqCoeff, fptype linCoeff, fptype constant) {
+  /* Computes the discriminant */
   Array<fptype, 2> prod = twoProd(sqCoeff, constant);
   Array<fptype, 2> sqr =
       twoProd(linCoeff, linCoeff / (fptype)4.0);
@@ -152,6 +200,13 @@ CUDA_CALLABLE static fptype kahanDiscriminant(
   return disc;
 }
 
+/* Computes the roots of the quadratic equation
+ * Uses double precision to avoid a catastrophic
+ * loss of precision in the discriminant
+ * Computes the root with a larger magnitude normally,
+ * and the smaller root in a way that avoids
+ * the catastrophic loss of precision.
+ */
 template <typename fptype>
 CUDA_CALLABLE static Array<fptype, 2> kahanQuadratic(
     fptype sqCoeff, fptype linCoeff, fptype constant) {
@@ -160,7 +215,8 @@ CUDA_CALLABLE static Array<fptype, 2> kahanQuadratic(
   }
   fptype disc =
       kahanDiscriminant(sqCoeff, linCoeff, constant);
-  if(disc < 0) return Array<fptype, 2>({{NAN, NAN}});
+  if(disc < 0)
+    return Array<fptype, 2>({{fptype(NAN), fptype(NAN)}});
   fptype fracPart = -MathFuncs::MathFuncs<fptype>::copysign(
       MathFuncs::MathFuncs<fptype>::fabs(linCoeff / 2.0) +
           MathFuncs::MathFuncs<fptype>::sqrt(disc),
@@ -170,6 +226,13 @@ CUDA_CALLABLE static Array<fptype, 2> kahanQuadratic(
   return roots;
 }
 
+/* Uses Newton's method to optimize a guess,
+ * which may be roots computed with the standard quadratic
+ * equation.
+ * This is not subject to the same errors that the
+ * regular root computation is,
+ * and will usually bring the root to a more accurate value
+ */
 template <typename fptype>
 CUDA_CALLABLE static fptype newtonsQuadratic(
     fptype sqCoeff, fptype linCoeff, fptype constant,

@@ -1,6 +1,6 @@
 
 #include "geometry.hpp"
-#include "quadrics.hpp"
+#include "quadric.hpp"
 #include "line.hpp"
 #include "polynomial.hpp"
 #include "genericfp.hpp"

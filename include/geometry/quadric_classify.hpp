@@ -5,7 +5,7 @@
 #include "mpreal.hpp"
 
 #include "geometry.hpp"
-#include "quadrics.hpp"
+#include "quadric.hpp"
 
 #include "array.hpp"
 

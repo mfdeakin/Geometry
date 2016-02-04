@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include "quadrics.hpp"
+#include "quadric.hpp"
 #include "origin.hpp"
 #include "accurate_intersections.hpp"
 #include "accurate_math.hpp"
