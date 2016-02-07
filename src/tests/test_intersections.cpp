@@ -22,36 +22,43 @@ using L = Geometry::Line<dim, fptype>;
 using I = Geometry::Intersection<dim, fptype>;
 
 TEST(QLIntersect, Determinant) {
-  P intercept(V({0.0, 0.0, 0.0}));
-  L l(intercept, V({1.0, 0.0, 0.0}));
-  constexpr const int numQuads = 2;
+  constexpr const int numTests = 1;
   /* For simplicity, just use to spheres.
    * Since the line is axis aligned,
    * the intersection parameter will be given by the square
    * root of the constant coefficient
    */
-  fptype quadCoeffs[numQuads][Q::numCoeffs] = {
-      {1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-      {1.0, 1.0, 1.0, -1.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-  };
-  constexpr const fptype expectedDet = NAN;
+  constexpr const int numQuads = 2;
+  constexpr const fptype
+      quadCoeffs[numTests][numQuads][Q::numCoeffs] = {{
+          {1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+           0.0},
+          {1.0, 1.0, 1.0, -1.25, 0.0, 0.0, 0.0, 0.0, 0.0,
+           0.0},
+      }};
+  for(int t = 0; t < numTests; t++) {
+    P intercept(V({0.0, 0.0, 0.0}));
+    L l(intercept, V({1.0, 0.0, 0.0}));
+    constexpr const fptype expectedDet = 0.0625;
 
-  I intersections[2];
-  for(int i = 0; i < numQuads; i++) {
-    intersections[i].l = l;
-    intersections[i].intPos =
-        MathFuncs::MathFuncs<fptype>::sqrt(
-            -quadCoeffs[i][3]);
-    intersections[i].otherIntPos =
-        -MathFuncs::MathFuncs<fptype>::sqrt(
-            -quadCoeffs[i][3]);
-    for(int j = 0; j < Q::numCoeffs; j++) {
-      intersections[i].q.setCoeff(j, quadCoeffs[i][j]);
+    I intersections[2];
+    for(int i = 0; i < numQuads; i++) {
+      intersections[i].l = l;
+      intersections[i].intPos =
+          MathFuncs::MathFuncs<fptype>::sqrt(
+              -quadCoeffs[t][i][3]);
+      intersections[i].otherIntPos =
+          -MathFuncs::MathFuncs<fptype>::sqrt(
+              -quadCoeffs[t][i][3]);
+      for(int j = 0; j < Q::numCoeffs; j++) {
+        intersections[i].q.setCoeff(j, quadCoeffs[t][i][j]);
+      }
     }
+    fptype calcedDet = intersections[0]
+                           .resultantDet(intersections[1])
+                           .toLDouble();
+    EXPECT_EQ(calcedDet, expectedDet);
   }
-  
-  fptype calcedDet = 0.0;
-  EXPECT_EQ(calcedDet, expectedDet);
 }
 
 TEST(QLIntersect, LineIntersection) {

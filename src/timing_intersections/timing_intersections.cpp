@@ -1,6 +1,6 @@
 
 #include "geometry.hpp"
-#include "quadrics.hpp"
+#include "quadric.hpp"
 #include "line.hpp"
 #include "accurate_intersections.hpp"
 #include "quadric_classify.hpp"
@@ -281,8 +281,9 @@ int main(int argc, char **argv) {
       outFName = argv[2];
       if(argc > 3) numTests = atoi(argv[3]);
     }
-  } else
+  } else {
     quads = parseQuadrics<dim, fptype>("cylinders.csg");
+  }
   std::ofstream results(outFName);
   signal(SIGINT, sigInt);
   intersectionTest(quads, results, numTests, defRandLine);

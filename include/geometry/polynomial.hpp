@@ -4,6 +4,9 @@
 
 #include <memory>
 #include <cmath>
+#include <ostream>
+#include <istream>
+#include <iostream>
 
 #include "array.hpp"
 #include "cudadef.h"
@@ -52,6 +55,20 @@ class PolynomialBase {
       sum = std::fma(v, sum, get(i));
     }
     return sum;
+  }
+
+  friend std::ostream &operator<<(
+      std::ostream &os,
+      const Polynomial<order, fptype> &p) {
+    bool once = false;
+    for(int i = p.numCoeffs - 1; i >= 0; i--) {
+      if(once) {
+        os << " + ";
+      }
+      once = true;
+      os << p.get(i) << " t^" << i;
+    }
+    return os;
   }
 
   static constexpr const int _order = order;
