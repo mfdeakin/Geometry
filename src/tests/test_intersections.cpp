@@ -12,14 +12,49 @@
 #include "timer.hpp"
 #include "genericfp.hpp"
 
+using fptype = float;
+constexpr const int dim = 3;
+constexpr const fptype eps = 1e-3;
+using Q = Geometry::Quadric<dim, fptype>;
+using V = Geometry::Vector<dim, fptype>;
+using P = Geometry::Point<dim, fptype>;
+using L = Geometry::Line<dim, fptype>;
+using I = Geometry::Intersection<dim, fptype>;
+
+TEST(QLIntersect, Determinant) {
+  P intercept(V({0.0, 0.0, 0.0}));
+  L l(intercept, V({1.0, 0.0, 0.0}));
+  constexpr const int numQuads = 2;
+  /* For simplicity, just use to spheres.
+   * Since the line is axis aligned,
+   * the intersection parameter will be given by the square
+   * root of the constant coefficient
+   */
+  fptype quadCoeffs[numQuads][Q::numCoeffs] = {
+      {1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+      {1.0, 1.0, 1.0, -1.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+  };
+  constexpr const fptype expectedDet = NAN;
+
+  I intersections[2];
+  for(int i = 0; i < numQuads; i++) {
+    intersections[i].l = l;
+    intersections[i].intPos =
+        MathFuncs::MathFuncs<fptype>::sqrt(
+            -quadCoeffs[i][3]);
+    intersections[i].otherIntPos =
+        -MathFuncs::MathFuncs<fptype>::sqrt(
+            -quadCoeffs[i][3]);
+    for(int j = 0; j < Q::numCoeffs; j++) {
+      intersections[i].q.setCoeff(j, quadCoeffs[i][j]);
+    }
+  }
+  
+  fptype calcedDet = 0.0;
+  EXPECT_EQ(calcedDet, expectedDet);
+}
+
 TEST(QLIntersect, LineIntersection) {
-  using fptype = float;
-  constexpr const int dim = 3;
-  constexpr const fptype eps = 1e-3;
-  using Q = Geometry::Quadric<dim, fptype>;
-  using V = Geometry::Vector<dim, fptype>;
-  using P = Geometry::Point<dim, fptype>;
-  using L = Geometry::Line<dim, fptype>;
   P intercept(V({1.0, 0.0, -1.0}));
   L l(intercept, V({1.0, 1.0, 1.0}));
   fptype quadCoeffs[][Q::numCoeffs] = {

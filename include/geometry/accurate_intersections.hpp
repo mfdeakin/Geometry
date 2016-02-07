@@ -29,7 +29,6 @@ class IntersectionBase<dim, fptype, true> {
 
   IntersectionBase()
       : q(),
-        l(Point<dim, fptype>(), Vector<dim, fptype>()),
         intPos(NAN),
         otherIntPos(NAN),
         absErrMargin(defAbsPrecision),
@@ -66,17 +65,15 @@ class IntersectionBase<dim, fptype, true> {
     return *this;
   }
 
-  fptype accurateCompare(
+  mpfr::mpreal resultantDet(
       const IntersectionBase<dim, fptype, true> &i) {
-    numIP++;
-    /* Only works when there are two roots for both quadrics
-     * Also requires the differences of roots to be
-     * greater than the minimum precision.
-     * Compute the coefficients for the determinant
+    /* Compute the coefficients for the determinant
      * We need a precision of 3 times machine precision
      * to compute the coefficients accurately,
      * so set that first
      */
+    const unsigned prevPrec =
+        mpfr::mpreal::get_default_prec();
     constexpr const unsigned machPrec =
         GenericFP::fpconvert<fptype>::precision;
     constexpr const unsigned coeffPrec = 3 * machPrec;
@@ -90,31 +87,83 @@ class IntersectionBase<dim, fptype, true> {
         q1.calcLineDistPoly(line);
     Polynomial<2, mpfr::mpreal> p2 =
         q2.calcLineDistPoly(line);
-    /* And the determinant */
-    const unsigned prevPrec =
-        mpfr::mpreal::get_default_prec();
-    const unsigned detPrec = 4 * coeffPrec;
-    mpfr::mpreal::set_default_prec(detPrec);
+    /* And the determinant
+     * The determinant requires 4 times the coefficients
+     * precision to avoid multiplicative errors
+     */
     mpfr::mpreal coeffs[] = {p1.get(2), p1.get(1),
                              p1.get(0), p2.get(2),
                              p2.get(1), p2.get(0)};
-    constexpr const int numTerms = 7;
-    constexpr const int numProds = 4;
-    int detTermCoeffs[numTerms][numProds] = {
-        {0, 0, 5, 5}, {2, 2, 3, 3}, {1, 1, 3, 5},
-        {4, 4, 0, 2}, {1, 2, 3, 4}, {0, 1, 4, 5},
-        {0, 2, 3, 5}};
-    fptype termSigns[numTerms] = {1, 1, 1, 1, -1, -1, -2};
+    /* The fastest way to compute a 4x4 determinant
+     * 1.0(0 0 5 5)+1.0(2 2 3 3)+1.0(1 1 3 5)+1.0(4 4 0 2)+
+     * -1.0(1 2 3 4)-1.0(0 1 4 5)-2.0(0 2 3 5)
+     * 35 FLOPs
+     * (0 5)((0 5)-2.0(2 3)-(1 4))+(2 3)((2 3)-(1 4))+
+     * (1 1 3 5)+(4 4 0 2)
+     *  3+1+2+1                    +0+0+1+1
+     * +3       +3
+     * +3
+     * 18 FLOPs, reduced by a factor of ~1/2,
+     * in exchange for ugly code
+     *
+     * Start by computing the partial products
+     */
+    const unsigned partPrec = 2 * coeffPrec;
+    mpfr::mpreal::set_default_prec(partPrec);
+    mpfr::mpreal partialProds[3];
+    partialProds[0] = coeffs[0];
+    partialProds[0] *= coeffs[5];
+    partialProds[1] = coeffs[2];
+    partialProds[1] *= coeffs[3];
+    partialProds[2] = coeffs[1];
+    partialProds[2] *= coeffs[4];
+
+    /* Now compute the larger terms */
+    const unsigned detPrec = 4 * coeffPrec;
+    mpfr::mpreal::set_default_prec(detPrec);
+    constexpr const int numTerms = 4;
+    mpfr::mpreal detTerms[numTerms];
+    // (0 5)((0 5)-2.0(2 3)-(1 4))
+    detTerms[0] = partialProds[0];
+    detTerms[0] += -2 * partialProds[1] - partialProds[2];
+    detTerms[0] *= partialProds[0];
+    // (2 3)((2 3)-(1 4))
+    detTerms[1] = partialProds[1];
+    detTerms[1] -= partialProds[2];
+    detTerms[1] *= partialProds[1];
+    // (1 1 3 5)
+    detTerms[2] = coeffs[1];
+    detTerms[2] =
+        ((detTerms[2] * coeffs[1]) * coeffs[3]) * coeffs[5];
+    // (4 4 0 2)
+    detTerms[3] = coeffs[4];
+    detTerms[3] =
+        ((detTerms[3] * coeffs[4]) * coeffs[0]) * coeffs[2];
+    /* There are only 4 terms to sum,
+     * which isn't enough for compensated summation to be
+     * worthwhile in my experience
+     */
     mpfr::mpreal det(0.0);
     for(int i = 0; i < numTerms; i++) {
-      mpfr::mpreal term(termSigns[i]);
-      for(int j = 0; j < numProds; j++) {
-        int c = detTermCoeffs[i][j];
-        term *= coeffs[c];
-      }
-      det += term;
+      det += detTerms[i];
     }
-    /* Now compute the signs of the resultant terms */
+    mpfr::mpreal::set_default_prec(prevPrec);
+    return det;
+  }
+
+  fptype accurateCompare(
+      const IntersectionBase<dim, fptype, true> &i) {
+    /* Only works when there are two roots for both quadrics
+     * Also requires the differences of roots to be
+     * greater than the minimum precision.
+     */
+
+    /* Keep track of the number of precision increases
+     * required for statistics
+     */
+    numIP++;
+    mpfr::mpreal det = resultantDet(i);
+    /* Now compute the signs of the other resultant terms */
     constexpr const int numPartialTerms = 3;
     fptype partResTerms[numPartialTerms] = {
         intPos - i.otherIntPos, otherIntPos - i.intPos,
@@ -127,7 +176,6 @@ class IntersectionBase<dim, fptype, true> {
      * otherwise, this intersection occurs before */
     fptype tmp = static_cast<fptype>(det);
     tmp *= partialResultant;
-    mpfr::mpreal::set_default_prec(prevPrec);
     if(tmp < 0.0) {
       /* Opposite signs! */
       return -1.0;

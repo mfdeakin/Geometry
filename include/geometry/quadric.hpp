@@ -178,16 +178,20 @@ class Quadric : public Solid<dim, fptype> {
     auto lInt = line.getIntercept().getOffset();
     /* The square coefficient is only composed of terms
      * from the direction terms.
-     * This term is easily seen to be the sum of c[i, i] d[i]^2.
+     * This term is easily seen to be the sum of
+     * c[i, j] d[i] d[j].
      */
     fptype sqCoeff = 0.0;
     /* The linear coefficient is composed of a combination
      * of direction and intercept terms.
-     * 
+     *
      */
     fptype linCoeff = 0.0;
     /* The constant term is only composed of terms
      * from the intercept coefficients.
+     * This term is easily seen to be the sum of
+     * 2 c[i, dim] p[i] p[j]
+     * and c[dim, dim]
      */
     fptype constant = coeff(dim, dim);
     for(int i = 0; i < dim; i++) {
