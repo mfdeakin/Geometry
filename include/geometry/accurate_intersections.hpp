@@ -183,9 +183,8 @@ class IntersectionBase<dim, fptype, true> {
         return 0.0;
     }
     /* The sign of the product of the resultant and the
-     * known differences
-     * of roots has the sign of the final difference of the
-     * root
+     * known differences of roots has the sign of the
+     * final difference of the root
      */
     if(det < 0) numNeg ^= 1;
     if(numNeg == 0)
