@@ -5,7 +5,6 @@
 #include "geometry.hpp"
 
 #include <assert.h>
-#include <array>
 #include <memory>
 #include <ostream>
 
@@ -189,7 +188,7 @@ class Vector : public GeometryBase<dim, fptype> {
     return scaled;
   }
 
-  CUDA_CALLABLE std::array<Vector<dim, fptype>, dim - 1>
+  CUDA_CALLABLE Array<Vector<dim, fptype>, dim - 1>
   calcOrthogonals() const {
     /* Use a Householder reflection to compute the
      * orthonormal vectors.
@@ -203,7 +202,7 @@ class Vector : public GeometryBase<dim, fptype> {
     Vector<dim, fptype> w(*this);
     w.set(0, n + offset[0]);
     const fptype wNormSq = w.dot(w);
-    std::array<Vector<dim, fptype>, dim - 1> basis;
+    Array<Vector<dim, fptype>, dim - 1> basis;
     for(int i = 0; i < dim - 1; i++) {
       basis[i].offset[i + 1] = 1.0;
       for(int j = 0; j < dim; j++) {

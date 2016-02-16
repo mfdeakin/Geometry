@@ -8,7 +8,6 @@
 #include <ostream>
 #include <istream>
 #include <iostream>
-#include <array>
 #include <memory>
 
 #include "geometry.hpp"

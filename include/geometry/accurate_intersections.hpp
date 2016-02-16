@@ -171,7 +171,6 @@ class IntersectionBase<dim, fptype, true> {
     fptype partResTerms[numPartialTerms] = {
         intPos - i.otherIntPos, otherIntPos - i.intPos,
         otherIntPos - i.otherIntPos};
-    fptype ret;
     int numNeg = 0;
     for(int i = 0; i < numPartialTerms; i++) {
       if(partResTerms[i] < 0.0)
@@ -186,11 +185,14 @@ class IntersectionBase<dim, fptype, true> {
      * known differences of roots has the sign of the
      * final difference of the root
      */
-    if(det < 0) numNeg ^= 1;
-    if(numNeg == 0)
+    if(det < 0) {
+      numNeg ^= 1;
+    }
+    if(numNeg == 0) {
       return 1.0;
-    else
+    } else {
       return -1.0;
+    }
   }
 
   fptype compare(
