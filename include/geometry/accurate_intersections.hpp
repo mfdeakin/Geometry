@@ -134,11 +134,11 @@ class IntersectionBase<dim, fptype, true> {
     // (1 1 3 5)
     detTerms[2] = coeffs[1];
     detTerms[2] =
-        ((detTerms[2] * coeffs[1]) * coeffs[3]) * coeffs[5];
+        (detTerms[2] * coeffs[1]) * (coeffs[3] * coeffs[5]);
     // (4 4 0 2)
     detTerms[3] = coeffs[4];
     detTerms[3] =
-        ((detTerms[3] * coeffs[4]) * coeffs[0]) * coeffs[2];
+        (detTerms[3] * coeffs[4]) * (coeffs[0] * coeffs[2]);
     /* There are only 4 terms to sum,
      * which isn't enough for compensated summation to be
      * worthwhile in my experience
@@ -163,28 +163,35 @@ class IntersectionBase<dim, fptype, true> {
      */
     numIP++;
     mpfr::mpreal det = resultantDet(i);
-    /* Now compute the signs of the other resultant terms */
+    /* Now compute the signs of the other resultant terms.
+     * Since the sign flips with each negative, just
+     * use XOR on one bit to keep track of the final sign
+     */
     constexpr const int numPartialTerms = 3;
     fptype partResTerms[numPartialTerms] = {
         intPos - i.otherIntPos, otherIntPos - i.intPos,
         otherIntPos - i.otherIntPos};
-    fptype partialResultant = 1.0;
-    for(int i = 0; i < numPartialTerms; i++)
-      partialResultant *= partResTerms[i];
-    /* If the sign of this matches the determinants sign,
-     * then this intersection occurs after the other one,
-     * otherwise, this intersection occurs before */
-    fptype tmp = static_cast<fptype>(det);
-    tmp *= partialResultant;
-    if(tmp < 0.0) {
-      /* Opposite signs! */
-      return -1.0;
-    } else if(tmp > 0.0) {
-      /* Same Signs! */
-      return 1.0;
+    fptype ret;
+    int numNeg = 0;
+    for(int i = 0; i < numPartialTerms; i++) {
+      if(partResTerms[i] < 0.0)
+        numNeg ^= 1;
+      else if(partResTerms[i] == 0.0)
+        /* Zero, so the sign of this difference can't be
+         * determined with this method
+         */
+        return 0.0;
     }
-    /* We can't distinguish the two intersections */
-    return 0.0;
+    /* The sign of the product of the resultant and the
+     * known differences
+     * of roots has the sign of the final difference of the
+     * root
+     */
+    if(det < 0) numNeg ^= 1;
+    if(numNeg == 0)
+      return 1.0;
+    else
+      return -1.0;
   }
 
   fptype compare(
