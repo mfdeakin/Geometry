@@ -35,6 +35,10 @@ struct Array {
     assert(idx < sz);
     return data[idx];
   }
+
+  CUDA_CALLABLE int size() const {
+    return sz;
+  }
 };
 
 #endif

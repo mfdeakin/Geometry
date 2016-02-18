@@ -94,7 +94,7 @@ class IntersectionBase<dim, fptype, true> {
     mpfr::mpreal coeffs[] = {p1.get(2), p1.get(1),
                              p1.get(0), p2.get(2),
                              p2.get(1), p2.get(0)};
-    /* The fastest way to compute a 4x4 determinant
+    /* The fastest way to compute our determinant
      * 1.0(0 0 5 5)+1.0(2 2 3 3)+1.0(1 1 3 5)+1.0(4 4 0 2)+
      * -1.0(1 2 3 4)-1.0(0 1 4 5)-2.0(0 2 3 5)
      * 35 FLOPs
