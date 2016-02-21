@@ -19,7 +19,7 @@ canonicalShapes = {"coplanes": Matrix([[1.0, 0.0, 0.0, 0.0],
                    "ellcylinder": Matrix([[1.0, 0.0, 0.0, 0.0],
                                             [0.0, 1.0, 0.0, 0.0],
                                             [0.0, 0.0, 0.0, 0.0],
-                                            [0.0, 0.0, 0.0, 1.0]]),
+                                            [0.0, 0.0, 0.0, -1.0]]),
                    "hypcylinder": Matrix([[1.0, 0.0, 0.0, 0.0],
                                             [0.0, -1.0, 0.0, 0.0],
                                             [0.0, 0.0, 0.0, 0.0],
@@ -108,11 +108,11 @@ def writeScene(fname, quads):
         f.write("m")
         for y in range(q.shape[0]):
             val = float(q[y * q.shape[1]])
-            vstr = "{:.30f}".format(val)
+            vstr = "{:.30f}".format(val).rstrip("0").rstrip(".")
             f.write("\n" + vstr)
             for x in range(1, q.shape[1]):
                 val = float(q[y * q.shape[1] + x])
-                vstr = "{:.30f}".format(val)
+                vstr = "{:.30f}".format(val).rstrip("0").rstrip(".")
                 f.write(" " + vstr)
         i += 1
 
