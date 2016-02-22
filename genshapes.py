@@ -116,9 +116,10 @@ def writeScene(fname, quads):
                 f.write(" " + vstr)
         i += 1
 
-def genAxialCylinders(numCyls, eps = (2 ** -20)):
+def genAxialCylinders(numCyls, eps = (2 ** -3)):
     defCyl = canonicalShapes["ellcylinder"]
-    scene = [defCyl * scaleXMtx(1 + i * eps) for i in range(numCyls)]
+    scene = [defCyl * scaleXMtx(1 + i * eps) * scaleYMtx(1 + i * i * eps)
+             for i in range(numCyls)]
     return scene
 
 if __name__ == "__main__":
