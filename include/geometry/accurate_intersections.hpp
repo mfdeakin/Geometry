@@ -76,13 +76,14 @@ class IntersectionBase<dim, fptype, true> {
         mpfr::mpreal::get_default_prec();
     constexpr const unsigned machPrec =
         GenericFP::fpconvert<fptype>::precision;
-    constexpr const unsigned coeffPrec = 3 * machPrec;
-    mpfr::mpreal::set_default_prec(coeffPrec);
+    mpfr::mpreal::set_default_prec(machPrec);
     /* Compute the coefficients */
     Quadric<dim, mpfr::mpreal> q1(q);
     Quadric<dim, mpfr::mpreal> q2(i.q);
     Line<dim, mpfr::mpreal> line(l);
     line.shiftOrigin(q.getOrigin());
+    constexpr const unsigned coeffPrec = 3 * machPrec;
+    mpfr::mpreal::set_default_prec(coeffPrec);
     Polynomial<2, mpfr::mpreal> p1 =
         q1.calcLineDistPoly(line);
     Polynomial<2, mpfr::mpreal> p2 =
@@ -91,9 +92,6 @@ class IntersectionBase<dim, fptype, true> {
      * The determinant requires 4 times the coefficients
      * precision to avoid multiplicative errors
      */
-    mpfr::mpreal coeffs[] = {p1.get(2), p1.get(1),
-                             p1.get(0), p2.get(2),
-                             p2.get(1), p2.get(0)};
     /* The fastest way to compute our determinant
      * 1.0(0 0 5 5)+1.0(2 2 3 3)+1.0(1 1 3 5)+1.0(4 4 0 2)+
      * -1.0(1 2 3 4)-1.0(0 1 4 5)-2.0(0 2 3 5)
@@ -110,35 +108,35 @@ class IntersectionBase<dim, fptype, true> {
      */
     const unsigned partPrec = 2 * coeffPrec;
     mpfr::mpreal::set_default_prec(partPrec);
-    mpfr::mpreal partialProds[3];
-    partialProds[0] = coeffs[0];
-    partialProds[0] *= coeffs[5];
-    partialProds[1] = coeffs[2];
-    partialProds[1] *= coeffs[3];
-    partialProds[2] = coeffs[1];
-    partialProds[2] *= coeffs[4];
+    mpfr::mpreal partialProds[7];
+    partialProds[0] = mpfr::mpreal(p1.get(2)) * p2.get(0);
+    partialProds[1] = mpfr::mpreal(p1.get(0)) * p2.get(2);
+    partialProds[2] = mpfr::mpreal(p1.get(1)) * p2.get(1);
+
+    partialProds[3] = mpfr::mpreal(p1.get(1)) * p1.get(1);
+    partialProds[4] = mpfr::mpreal(p2.get(2)) * p2.get(0);
+
+    partialProds[5] = mpfr::mpreal(p2.get(1)) * p2.get(1);
+    partialProds[6] = mpfr::mpreal(p1.get(2)) * p1.get(0);
 
     /* Now compute the larger terms */
-    const unsigned detPrec = 4 * coeffPrec;
+    const unsigned detPrec = 2 * partPrec;
     mpfr::mpreal::set_default_prec(detPrec);
     constexpr const int numTerms = 4;
     mpfr::mpreal detTerms[numTerms];
     // (0 5)((0 5)-2.0(2 3)-(1 4))
-    detTerms[0] = partialProds[0];
-    detTerms[0] += -2 * partialProds[1] - partialProds[2];
-    detTerms[0] *= partialProds[0];
+    detTerms[0] = (partialProds[0] - 2.0 * partialProds[1] -
+                   partialProds[2]) *
+                  partialProds[0];
     // (2 3)((2 3)-(1 4))
-    detTerms[1] = partialProds[1];
-    detTerms[1] -= partialProds[2];
-    detTerms[1] *= partialProds[1];
+    detTerms[1] = (partialProds[1] - partialProds[2]) *
+                  partialProds[1];
     // (1 1 3 5)
-    detTerms[2] = coeffs[1];
     detTerms[2] =
-        (detTerms[2] * coeffs[1]) * (coeffs[3] * coeffs[5]);
+        partialProds[3] * partialProds[4];
     // (4 4 0 2)
-    detTerms[3] = coeffs[4];
     detTerms[3] =
-        (detTerms[3] * coeffs[4]) * (coeffs[0] * coeffs[2]);
+        partialProds[5] * partialProds[6];
     /* There are only 4 terms to sum,
      * which isn't enough for compensated summation to be
      * worthwhile in my experience

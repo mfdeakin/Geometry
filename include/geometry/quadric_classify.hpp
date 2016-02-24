@@ -375,6 +375,27 @@ static int classifyCalcEigenSign(
 }
 
 template <typename fptype>
+QuadType classifyEllCylinder(
+    const Geometry::Quadric<3, fptype> &quad) {
+  /* This is an elliptic cylinder 
+   * We have it in the form c_{xx} x^2 + c_{xy} x y + ... +
+   *                          c_z z + c_0
+   * We want it in the form c_{xx} x^2 + c_{yy} y^2 + ... +
+   *                          c_z z + c_0
+   * Consider c_{xx} x^2 + c_{xy} x y + c_{yy} y^2
+   * We can eliminate c_{xy} with a rotation in the xy plane
+   * c_xx (x cos(theta) - y sin(theta))^2 + 
+   *   c_xy (x cos(theta) - y sin(theta)) *
+   *     (x sin(theta) + y cos(theta)) +
+   *   c_yy (x sin(theta) + y cos(theta))^2
+   * This has two solutions:
+   * x cos(theta) = y sin(theta)
+   * x sin(theta) = -y cos(theta)
+   */
+  return QUADT_CYLINDER_ELL;
+}
+
+template <typename fptype>
 QuadType classifyRank_Error(
     int detSign, int eigenSign,
     const Geometry::Quadric<3, fptype> &quad) {
@@ -433,7 +454,7 @@ QuadType classifyRank_2_3(
   if(eigenSign == 0)
     return QUADT_CYLINDER_HYP;
   else
-    return QUADT_CYLINDER_ELL;
+    return classifyEllCylinder(quad);
 }
 
 template <typename fptype>

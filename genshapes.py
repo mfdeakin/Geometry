@@ -54,6 +54,15 @@ canonicalShapes = {"coplanes": Matrix([[1.0, 0.0, 0.0, 0.0],
                                               [0.0, 0.0, 0.5, 0.0]]),
 }
 
+def applyTForm(quad, tform):
+    return tform.T * quad * tform
+
+def translateMtx(x, y, z):
+    return Matrix([[1.0, 0.0, 0.0, x],
+                   [0.0, 1.0, 0.0, y],
+                   [0.0, 0.0, 1.0, z],
+                   [0.0, 0.0, 0.0, 1.0]])
+
 def scaleXMtx(scale):
     return Matrix([[scale, 0.0, 0.0, 0.0],
                    [0.0, 1.0, 0.0, 0.0],
@@ -116,10 +125,14 @@ def writeScene(fname, quads):
                 f.write(" " + vstr)
         i += 1
 
-def genAxialCylinders(numCyls, eps = (2 ** -3)):
+def genAxialCylinders(numCyls, eps = (2 ** -8)):
     defCyl = canonicalShapes["ellcylinder"]
-    scene = [defCyl * scaleXMtx(1 + i * eps) * scaleYMtx(1 + i * i * eps)
-             for i in range(numCyls)]
+    scene = [applyTForm(applyTForm(defCyl,
+                                   scaleMtx(2.0 * (1.0 + i * eps - eps),
+                                            2.0 * (1.0 + i * i * eps - eps),
+                                            1.0)),
+                        translateMtx(-0.5, -0.5, 0.0))
+             for i in range(1, numCyls + 1)]
     return scene
 
 if __name__ == "__main__":

@@ -192,7 +192,8 @@ class Quadric : public Solid<dim, fptype> {
      * 2 c[i, dim] p[i] p[j]
      * and c[dim, dim]
      */
-    fptype constant = coeff(dim, dim);
+    fptype constant = 0.0;
+    constant += coeff(dim, dim);
     for(int i = 0; i < dim; i++) {
       sqCoeff += coeff(i, i) * lDir(i) * lDir(i);
       linCoeff += 2 * coeff(i, i) * lDir(i) * lInt(i);
