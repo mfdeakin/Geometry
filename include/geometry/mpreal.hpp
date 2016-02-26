@@ -333,6 +333,8 @@ class mpreal {
   const mpreal operator--(int);
 
   // *
+  friend mpreal mult(const mpreal &lhs, const mpreal &rhs,
+                     int finalPrec);
   mpreal &operator*=(const mpreal &v);
   mpreal &operator*=(const mpz_t v);
   mpreal &operator*=(const mpq_t v);
@@ -345,6 +347,8 @@ class mpreal {
   mpreal &operator*=(const int v);
 
   // /
+  friend mpreal div(const mpreal &num, const mpreal &den,
+                    int finalPrec);
   mpreal &operator/=(const mpreal &v);
   mpreal &operator/=(const mpz_t v);
   mpreal &operator/=(const mpq_t v);
@@ -1795,6 +1799,19 @@ inline const mpreal operator-(const int b,
 
 //////////////////////////////////////////////////////////////////////////
 // * Multiplication
+// friend void swap(mpreal &x, mpreal &y);
+// inline void swap(mpreal &a, mpreal &b);
+inline mpreal mult(const mpreal &lhs, const mpreal &rhs,
+                   int finalPrec = -1) {
+  if(finalPrec < 0) {
+    finalPrec = lhs.getPrecision() + rhs.getPrecision();
+  }
+  mpreal prod(0, finalPrec);
+  mpfr_mul(prod.mpfr_ptr(), lhs.mpfr_srcptr(),
+           rhs.mpfr_srcptr(), mpreal::get_default_rnd());
+  return prod;
+}
+
 inline mpreal &mpreal::operator*=(const mpreal &v) {
   mpfr_mul(mpfr_ptr(), mpfr_srcptr(), v.mpfr_srcptr(),
            mpreal::get_default_rnd());
@@ -1877,6 +1894,17 @@ inline const mpreal operator*(const mpreal &a,
 
 //////////////////////////////////////////////////////////////////////////
 // / Division
+inline mpreal div(const mpreal &num, const mpreal &den,
+                  int finalPrec) {
+  if(finalPrec < 0) {
+    finalPrec = 2 * num.getPrecision();
+  }
+  mpreal fraction(0, finalPrec);
+  mpfr_div(fraction.mpfr_ptr(), num.mpfr_srcptr(),
+           den.mpfr_srcptr(), mpreal::get_default_rnd());
+  return fraction;
+}
+
 inline mpreal &mpreal::operator/=(const mpreal &v) {
   mpfr_div(mpfr_ptr(), mpfr_srcptr(), v.mpfr_srcptr(),
            mpreal::get_default_rnd());
