@@ -110,55 +110,44 @@ class IntersectionBase<dim, fptype, true> {
      * Start by computing the partial products
      */
     const unsigned partPrec = 2 * coeffPrec;
-    constexpr const int numCoeffs = 6;
-    mpfr::mpreal coeffs[numCoeffs] = {
-        p1.get(2).setPrecision(partPrec, MPFR_RNDN),
-        p1.get(1).setPrecision(partPrec, MPFR_RNDN),
-        p1.get(0).setPrecision(partPrec, MPFR_RNDN),
-        p2.get(2).setPrecision(partPrec, MPFR_RNDN),
-        p2.get(1).setPrecision(partPrec, MPFR_RNDN),
-        p2.get(0).setPrecision(partPrec, MPFR_RNDN)};
-
     constexpr const int numPP = 7;
-    mpfr::mpreal partialProds[numPP];
-    partialProds[0] = coeffs[0] * coeffs[5];
-    partialProds[1] = coeffs[2] * coeffs[3];
-    partialProds[2] = coeffs[1] * coeffs[4];
+    mpfr::mpreal partialProds[numPP] = {
+      mpfr::mult(p1.get(2), p2.get(0), partPrec),
+      mpfr::mult(p1.get(0), p2.get(2), partPrec),
+      mpfr::mult(p1.get(1), p2.get(1), partPrec),
+      
+      mpfr::mult(p1.get(1), p1.get(1), partPrec),
+      mpfr::mult(p2.get(0), p2.get(2), partPrec),
+      
+      mpfr::mult(p2.get(1), p2.get(1), partPrec),
+      mpfr::mult(p1.get(0), p1.get(2), partPrec)
+    };
 
-    partialProds[3] = sqr(coeffs[1]);
-    partialProds[4] = coeffs[3] * coeffs[5];
-
-    partialProds[5] = sqr(coeffs[4]);
-    partialProds[6] = coeffs[0] * coeffs[2];
-
-    /* Increase the precision for the multiplication
-     * Again, an inefficiency :(
-     */
     const unsigned detPrec = 2 * partPrec;
-    for(int i = 0; i < numPP; i++) {
-      partialProds[i].setPrecision(detPrec, MPFR_RNDN);
-    }
-
     /* Now compute the larger terms */
     constexpr const int numTerms = 4;
-    mpfr::mpreal detTerms[numTerms];
-    // (0 5)((0 5)-2.0(2 3)-(1 4))
-    detTerms[0] = (partialProds[0] - (partialProds[1] << 1) -
-                   partialProds[2]) *
-                  partialProds[0];
+    mpfr::mpreal detTerms[numTerms] = {
+      // (0 5)((0 5)-2.0(2 3)-(1 4))
+      mpfr::mult(partialProds[0] -
+                 (partialProds[1] << 1) -
+                 partialProds[2],
+                 partialProds[0], detPrec),
     // (2 3)((2 3)-(1 4))
-    detTerms[1] = (partialProds[1] - partialProds[2]) *
-                  partialProds[1];
+      mpfr::mult(partialProds[1] - partialProds[2],
+                 partialProds[1], detPrec),
     // (1 1 3 5)
-    detTerms[2] = partialProds[3] * partialProds[4];
+      mpfr::mult(partialProds[3],
+                 partialProds[4], detPrec),
     // (4 4 0 2)
-    detTerms[3] = partialProds[5] * partialProds[6];
+      mpfr::mult(partialProds[5],
+                 partialProds[6], detPrec)
+    };
     /* There are only 4 terms to sum,
      * which isn't enough for compensated summation to be
      * worthwhile in my experience
      */
-    mpfr::mpreal det(0.0);
-    for(int i = 0; i < numTerms; i++) {
+    mpfr::mpreal det(detTerms[0]);
+    for(int i = 1; i < numTerms; i++) {
       det += detTerms[i];
     }
     mpfr::mpreal::set_default_prec(prevPrec);
