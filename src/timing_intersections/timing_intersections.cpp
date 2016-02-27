@@ -144,6 +144,21 @@ using randLineGen =
     Geometry::Line<dim, fptype> (*)(std::mt19937_64 &rng);
 
 template <int dim, typename fptype>
+std::shared_ptr<
+    std::list<Geometry::Intersection<dim, fptype>>>
+runTest(std::list<Geometry::Quadric<dim, fptype>> &quads,
+        Geometry::Line<dim, fptype> &line,
+        Timer::Timer &timer) __attribute__((noinline)) {
+  constexpr const double eps =
+      std::numeric_limits<double>::infinity();
+  timer.startTimer();
+  auto inter =
+      Geometry::sortIntersections(line, quads, fptype(eps));
+  timer.stopTimer();
+  return inter;
+}
+
+template <int dim, typename fptype>
 void intersectionTest(
     std::list<Geometry::Quadric<dim, fptype>> &quads,
     std::ostream &results, const int numTests,
@@ -187,15 +202,8 @@ void intersectionTest(
     constexpr const fptype eps =
         std::numeric_limits<fptype>::infinity();
     /* Then sort the intersections */
-    fp_time.startTimer();
-    auto inter =
-        Geometry::sortIntersections(line, quads, eps);
-    fp_time.stopTimer();
-    mp_time.startTimer();
-    auto truth =
-        Geometry::sortIntersections<dim, mpfr::mpreal>(
-            truthLine, truthQuads, eps);
-    mp_time.stopTimer();
+    auto inter = runTest(quads, line, fp_time);
+    auto truth = runTest(truthQuads, truthLine, mp_time);
     times[t].fpns = fp_time.instant_ns();
     times[t].mpns = mp_time.instant_ns();
     times[t].correct = validateResults(inter, truth);

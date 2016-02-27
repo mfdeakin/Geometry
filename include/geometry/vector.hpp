@@ -16,40 +16,64 @@ namespace Geometry {
 template <int dim, typename fptype>
 class Vector : public GeometryBase<dim, fptype> {
  public:
-  typedef Array<fptype, dim> VectorData;
+  struct VectorData {
+    Array<fptype, dim> vector;
+    // For efficiency,
+    // this is only computed when explicitly asked for.
+    // Otherwise, the first value will contain an NAN
+    Array<Array<fptype, dim>, dim - 1> orthonorms;
+  };
 
   CUDA_CALLABLE Vector() {
-    for(int i = 0; i < dim; i++) offset[i] = 0.0;
+    for(int i = 0; i < dim; i++) {
+      offset.vector[i] = 0.0;
+    }
+    offset.orthonorms[0][0] = NAN;
+  }
+
+  CUDA_CALLABLE Vector(const Array<fptype, dim> &v) {
+    offset.vector = v;
+    offset.orthonorms[0][0] = NAN;
   }
 
   CUDA_CALLABLE Vector(const VectorData &v) {
-    for(int i = 0; i < dim; i++) offset[i] = v[i];
+    offset.vector = v.vector;
+    if(!MathFuncs::MathFuncs<fptype>::isnan(
+           v.orthonorms[0][0]))
+      offset.orthonorms = v.orthonorms;
+    else
+      offset.orthonorms[0][0] = NAN;
   }
 
   template <typename srctype>
   CUDA_CALLABLE Vector(const Vector<dim, srctype> &src) {
-    for(int i = 0; i < dim; i++)
-      offset[i] = (fptype)src.offset[i];
+    for(int i = 0; i < dim; i++) {
+      offset.vector[i] = fptype(src.offset.vector[i]);
+      /* We can't assume that the orthogonal vectors can
+       * just be cast to the current type, unfortunately.
+       * Thus, initialize them to NAN
+       */
+      for(int j = 0; j < dim - 1; j++) {
+        offset.orthonorms[j][i] = fptype(NAN);
+      }
+    }
   }
 
   CUDA_CALLABLE fptype get(int dimension) const {
-    assert(dimension >= 0);
-    assert(dimension < dim);
-    return offset[dimension];
+    return offset.vector[dimension];
   }
 
   CUDA_CALLABLE fptype set(int dimension, fptype val) {
-    assert(dimension >= 0);
-    assert(dimension < dim);
-    offset[dimension] = val;
-    return offset[dimension];
+    offset.vector[dimension] = val;
+    return offset.vector[dimension];
   }
 
   CUDA_CALLABLE Vector<dim, fptype> add(
       const Vector<dim, fptype> &rhs) const {
     Vector<dim, fptype> sum;
     for(int i = 0; i < dim; i++)
-      sum.offset[i] = offset[i] + rhs.offset[i];
+      sum.offset.vector[i] =
+          offset.vector[i] + rhs.offset.vector[i];
     return sum;
   }
 
@@ -57,7 +81,8 @@ class Vector : public GeometryBase<dim, fptype> {
       const Vector<dim, fptype> &rhs) const {
     Vector<dim, fptype> diff;
     for(int i = 0; i < dim; i++)
-      diff.offset[i] = offset[i] - rhs.offset[i];
+      diff.offset.vector[i] =
+          offset.vector[i] - rhs.offset.vector[i];
     return diff;
   }
 
@@ -88,7 +113,7 @@ class Vector : public GeometryBase<dim, fptype> {
   CUDA_CALLABLE Vector<dim, fptype> operator*=(
       fptype scale) {
     for(unsigned i = 0; i < dim; i++)
-      set(i, get(i) * scale);
+      offset.vector[i] *= scale;
     return *this;
   }
 
@@ -96,6 +121,7 @@ class Vector : public GeometryBase<dim, fptype> {
       const Vector<dim, fptype> &rhs) {
     for(unsigned i = 0; i < dim; i++)
       set(i, get(i) + rhs.get(i));
+    offset.orthonorms[0][0] = fptype(NAN);
     return *this;
   }
 
@@ -103,6 +129,7 @@ class Vector : public GeometryBase<dim, fptype> {
       const Vector<dim, fptype> &rhs) {
     for(unsigned i = 0; i < dim; i++)
       set(i, get(i) - rhs.get(i));
+    offset.orthonorms[0][0] = fptype(NAN);
     return *this;
   }
 
@@ -120,24 +147,44 @@ class Vector : public GeometryBase<dim, fptype> {
 
   CUDA_CALLABLE Vector<dim, fptype> operator=(
       const Vector<dim, fptype> &v) {
-    offset = v.offset;
+    offset.vector = v.offset.vector;
+    if(!MathFuncs::MathFuncs<fptype>::isnan(
+           v.offset.orthonorms[0][0]))
+      offset.orthonorms = v.offset.orthonorms;
+    else
+      offset.orthonorms[0][0] = NAN;
     return *this;
   }
 
   CUDA_CALLABLE Vector<dim, fptype> operator=(
       const VectorData &v) {
-    offset = v;
+    offset.vector = v.vector;
+    if(!MathFuncs::MathFuncs<fptype>::isnan(
+           v.orthonorms[0][0]))
+      offset.orthonorms = v.orthonorms;
+    else
+      offset.orthonorms[0][0] = NAN;
     return *this;
   }
 
   CUDA_CALLABLE VectorData copyData() const {
     VectorData v;
-    v = offset;
+    v.vector = offset.vector;
+    if(!MathFuncs::MathFuncs<fptype>::isnan(
+           offset.orthonorms[0][0]))
+      v.orthonorms = offset.orthonorms;
+    else
+      v.orthonorms[0][0] = NAN;
     return v;
   }
 
   CUDA_CALLABLE VectorData &copyData(VectorData &v) const {
-    v = offset;
+    v.vector = offset.vector;
+    if(!MathFuncs::MathFuncs<fptype>::isnan(
+           offset.orthonorms[0][0]))
+      v.orthonorms = offset.orthonorms;
+    else
+      v.orthonorms[0][0] = NAN;
     return v;
   }
 
@@ -166,30 +213,38 @@ class Vector : public GeometryBase<dim, fptype> {
 
   CUDA_CALLABLE Vector<dim, fptype> normalize() const {
     fptype mag = norm();
-    Vector<dim, fptype> normalized;
     if(mag == 0.0)
       // Can't normalize a 0 vector
-      return normalized;
-    for(int i = 0; i < dim; i++)
-      normalized.offset[i] = offset[i] / mag;
-    return normalized;
+      return *this;
+    return (*this) * (fptype(1.0) / mag);
+  }
+
+  CUDA_CALLABLE fptype normSquare() const {
+    fptype normSq = 0.0;
+    for(int i = 0; i < dim; i++) {
+      normSq += offset.vector[i] * offset.vector[i];
+    }
+    return normSq;
   }
 
   CUDA_CALLABLE fptype norm() const {
-    fptype normSq = dot(*this);
-    return MathFuncs::MathFuncs<fptype>::sqrt(normSq);
+    return MathFuncs::MathFuncs<fptype>::sqrt(normSquare());
   }
 
   CUDA_CALLABLE Vector<dim, fptype> scale(
       fptype scalar) const {
-    Vector<dim, fptype> scaled;
-    for(int i = 0; i < dim; i++)
-      scaled.offset[i] = offset[i] * scalar;
-    return scaled;
+    if(scalar == 0.0)
+      return Vector<dim, fptype>();
+    else
+      return (*this) * scalar;
   }
 
-  CUDA_CALLABLE Array<Vector<dim, fptype>, dim - 1>
-  calcOrthogonals() const {
+  CUDA_CALLABLE const Array<Array<fptype, dim>, dim - 1>
+      &calcOrthogonals() const {
+    if(!MathFuncs::MathFuncs<fptype>::isnan(
+           offset.orthonorms[0][0])) {
+      return offset.orthonorms;
+    }
     /* Use a Householder reflection to compute the
      * orthonormal vectors.
      * This works because the Householder matrix is unitary.
@@ -197,42 +252,46 @@ class Vector : public GeometryBase<dim, fptype> {
      * https://math.stackexchange.com/questions/710103/algorithm-to-find-an-orthogonal-basis-orthogonal-to-a-given-vector
      */
     fptype n = MathFuncs::MathFuncs<fptype>::copysign(
-        norm(), offset[0]);
+        norm(), offset.vector[0]);
     assert(n != 0.0);
-    Vector<dim, fptype> w(*this);
-    w.set(0, n + offset[0]);
-    const fptype wNormSq = w.dot(w);
-    Array<Vector<dim, fptype>, dim - 1> basis;
+    Array<fptype, dim> w = offset.vector;
+    w[0] = n + offset.vector[0];
+    fptype wNormSq = 0.0;
+    for(int i = 0; i < dim; i++)
+      wNormSq += w[i] * w[i];
+    // Array<Vector<dim, fptype>, dim - 1> basis;
     for(int i = 0; i < dim - 1; i++) {
-      basis[i].offset[i + 1] = 1.0;
+      offset.orthonorms[i][i + 1] = 1.0;
+      // basis[i].offset[i + 1] = 1.0;
       for(int j = 0; j < dim; j++) {
         fptype updated = MathFuncs::MathFuncs<fptype>::fma(
-            2 * w.get(i + 1), -w.get(j) / wNormSq,
-            basis[i].offset[j]);
-        basis[i].set(j, updated);
+            2 * w[i + 1], -w[j] / wNormSq,
+            // basis[i].offset[j]);
+            offset.orthonorms[i][j]);
+        offset.orthonorms[i][j] = updated;
+        // basis[i].set(j, updated);
       }
     }
-    return basis;
+    return offset.orthonorms;
   }
 
   friend std::ostream &operator<<(
       std::ostream &os, const Vector<dim, fptype> &v) {
     os << "(";
-    if(v.dim > 0) os << v.offset[0];
+    if(v.dim > 0) os << v.offset.vector[0];
     for(unsigned i = 1; i < dim; i++)
-      os << ", " << v.offset[i];
+      os << ", " << v.offset.vector[i];
     os << ")";
     return os;
   }
 
   CUDA_CALLABLE void copy(VectorData *mem) const {
-    for(int i = 0; i < dim; i++) (*mem)[i] = offset[i];
+    copyData(*mem);
   }
 
   CUDA_CALLABLE void copy(
       std::shared_ptr<VectorData> mem) const {
-    for(int i = 0; i < dim; i++)
-      (*mem.get())[i] = offset[i];
+    copyData(*mem);
   }
 
 #ifdef __CUDACC__

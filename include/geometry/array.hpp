@@ -36,9 +36,14 @@ struct Array {
     return data[idx];
   }
 
-  CUDA_CALLABLE int size() const {
-    return sz;
+  CUDA_CALLABLE Array<T, sz> operator=(
+      const Array<T, sz> &src) {
+    for(int i = 0; i < sz; i++)
+      data[i] = src[i];
+    return *this;
   }
+
+  CUDA_CALLABLE int size() const { return sz; }
 };
 
 #endif
