@@ -38,10 +38,11 @@ class Vector : public GeometryBase<dim, fptype> {
 
   CUDA_CALLABLE Vector(const VectorData &v) {
     offset.vector = v.vector;
-    if(v.orthosComputed())
+    if(!MathFuncs::MathFuncs<fptype>::isnan(
+           v.orthonorms[0][0]))
       offset.orthonorms = v.orthonorms;
     else
-      offset.orthonorms[0][0] = NAN;
+      offset.orthonorms[0][0] = fptype(NAN);
   }
 
   template <typename srctype>

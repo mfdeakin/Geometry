@@ -38,8 +38,7 @@ struct Array {
 
   CUDA_CALLABLE Array<T, sz> operator=(
       const Array<T, sz> &src) {
-    for(int i = 0; i < sz; i++)
-      data[i] = src[i];
+    for(int i = 0; i < sz; i++) data[i] = src[i];
     return *this;
   }
 

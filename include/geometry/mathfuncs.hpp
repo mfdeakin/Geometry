@@ -113,6 +113,18 @@ struct IsStdMathFuncs<fptype, true> {
     return std::sin(val);
 #endif
   }
+
+  CUDA_CALLABLE static fptype fastMult2Pow(fptype val,
+                                           int twoPower) {
+    union {
+      fptype floatVal;
+      GenericFP::fpconvert<fptype> structVal;
+    } mult;
+    mult.structVal.mantissa = 0;
+    mult.structVal.exponent =
+        twoPower + GenericFP::fpconvert<fptype>::centralExp;
+    return val * mult.floatVal;
+  }
 };
 
 template <typename fptype>
@@ -147,6 +159,9 @@ struct IsMPFRMathFuncs<fptype, true> {
     return mpfr::isnan(val);
   }
   static fptype sin(fptype val) { return mpfr::sin(val); }
+  static fptype fastMult2Pow(fptype val, int twoPower) {
+    return val << twoPower;
+  }
 };
 
 template <typename fptype>

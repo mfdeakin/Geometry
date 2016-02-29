@@ -57,7 +57,8 @@ class Line : public Solid<dim, fptype> {
         intercept.calcOffset(newOrigin));
     Vector<dim, fptype> interceptOff;
     for(int i = 0; i < dim - 1; i++) {
-      Vector<dim, fptype> p = dir.getOrthogonal(i).normalize();
+      Vector<dim, fptype> p =
+          dir.getOrthogonal(i).normalize();
       fptype scale = p.dot(delta);
       interceptOff += p * scale;
     }

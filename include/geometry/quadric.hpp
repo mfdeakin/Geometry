@@ -195,16 +195,27 @@ class Quadric : public Solid<dim, fptype> {
     fptype constant = 0.0;
     constant += coeff(dim, dim);
     for(int i = 0; i < dim; i++) {
-      sqCoeff += coeff(i, i) * lDir(i) * lDir(i);
-      linCoeff += 2 * coeff(i, i) * lDir(i) * lInt(i);
-      linCoeff += coeff(i, dim) * lDir(i);
-      constant += coeff(i, dim) * lInt(i);
-      constant += coeff(i, i) * lInt(i) * lInt(i);
+      sqCoeff = MathFuncs::MathFuncs<fptype>::fma(
+          coeff(i, i), lDir(i) * lDir(i), sqCoeff);
+      linCoeff = MathFuncs::MathFuncs<fptype>::fma(
+          MathFuncs::MathFuncs<fptype>::fastMult2Pow(
+              coeff(i, i), 1),
+          lDir(i) * lInt(i),
+          MathFuncs::MathFuncs<fptype>::fma(
+              coeff(i, dim), lDir(i), linCoeff));
+      constant = MathFuncs::MathFuncs<fptype>::fma(
+          coeff(i, dim), lInt(i),
+          MathFuncs::MathFuncs<fptype>::fma(
+              coeff(i, i), lInt(i) * lInt(i), constant));
       for(int j = i + 1; j < dim; j++) {
-        sqCoeff += coeff(i, j) * lDir(i) * lDir(j);
-        linCoeff += coeff(i, j) * lDir(i) * lInt(j);
-        linCoeff += coeff(i, j) * lDir(j) * lInt(i);
-        constant += coeff(i, j) * lInt(i) * lInt(j);
+        sqCoeff = MathFuncs::MathFuncs<fptype>::fma(
+            coeff(i, j), lDir(i) * lDir(j), sqCoeff);
+        linCoeff = MathFuncs::MathFuncs<fptype>::fma(
+            coeff(i, j), lDir(i) * lInt(j),
+            MathFuncs::MathFuncs<fptype>::fma(
+                coeff(i, j), lDir(j) * lInt(i), linCoeff));
+        constant = MathFuncs::MathFuncs<fptype>::fma(
+            coeff(i, j), lInt(i) * lInt(j), constant);
       }
     }
     Polynomial<2, fptype> poly;

@@ -87,10 +87,10 @@ class IntersectionBase<dim, fptype, true> {
     Quadric<dim, mpfr::mpreal> q2(i.q);
     Line<dim, mpfr::mpreal> line(l);
     line.shiftOrigin(q.getOrigin());
-    Polynomial<2, mpfr::mpreal> p1 =
-        q1.calcLineDistPoly(line);
-    Polynomial<2, mpfr::mpreal> p2 =
-        q2.calcLineDistPoly(line);
+    Polynomial<2, mpfr::mpreal> p1(
+        q1.calcLineDistPoly(line));
+    Polynomial<2, mpfr::mpreal> p2(
+        q2.calcLineDistPoly(line));
     /* And the determinant
      * The determinant requires 4 times the coefficients
      * precision to avoid multiplicative errors
@@ -112,36 +112,34 @@ class IntersectionBase<dim, fptype, true> {
     const unsigned partPrec = 2 * coeffPrec;
     constexpr const int numPP = 7;
     mpfr::mpreal partialProds[numPP] = {
-      mpfr::mult(p1.get(2), p2.get(0), partPrec),
-      mpfr::mult(p1.get(0), p2.get(2), partPrec),
-      mpfr::mult(p1.get(1), p2.get(1), partPrec),
-      
-      mpfr::mult(p1.get(1), p1.get(1), partPrec),
-      mpfr::mult(p2.get(0), p2.get(2), partPrec),
-      
-      mpfr::mult(p2.get(1), p2.get(1), partPrec),
-      mpfr::mult(p1.get(0), p1.get(2), partPrec)
-    };
+        mpfr::mult(p1.get(2), p2.get(0), partPrec),
+        mpfr::mult(p1.get(0), p2.get(2), partPrec),
+        mpfr::mult(p1.get(1), p2.get(1), partPrec),
+
+        mpfr::mult(p1.get(1), p1.get(1), partPrec),
+        mpfr::mult(p2.get(0), p2.get(2), partPrec),
+
+        mpfr::mult(p2.get(1), p2.get(1), partPrec),
+        mpfr::mult(p1.get(0), p1.get(2), partPrec)};
 
     const unsigned detPrec = 2 * partPrec;
     /* Now compute the larger terms */
     constexpr const int numTerms = 4;
     mpfr::mpreal detTerms[numTerms] = {
-      // (0 5)((0 5)-2.0(2 3)-(1 4))
-      mpfr::mult(partialProds[0] -
-                 (partialProds[1] << 1) -
-                 partialProds[2],
-                 partialProds[0], detPrec),
-    // (2 3)((2 3)-(1 4))
-      mpfr::mult(partialProds[1] - partialProds[2],
-                 partialProds[1], detPrec),
-    // (1 1 3 5)
-      mpfr::mult(partialProds[3],
-                 partialProds[4], detPrec),
-    // (4 4 0 2)
-      mpfr::mult(partialProds[5],
-                 partialProds[6], detPrec)
-    };
+        // (0 5)((0 5)-2.0(2 3)-(1 4))
+        mpfr::mult(partialProds[0] -
+                       (partialProds[1] << 1) -
+                       partialProds[2],
+                   partialProds[0], detPrec),
+        // (2 3)((2 3)-(1 4))
+        mpfr::mult(partialProds[1] - partialProds[2],
+                   partialProds[1], detPrec),
+        // (1 1 3 5)
+        mpfr::mult(partialProds[3], partialProds[4],
+                   detPrec),
+        // (4 4 0 2)
+        mpfr::mult(partialProds[5], partialProds[6],
+                   detPrec)};
     /* There are only 4 terms to sum,
      * which isn't enough for compensated summation to be
      * worthwhile in my experience
