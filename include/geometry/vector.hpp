@@ -230,8 +230,7 @@ class Vector : public GeometryBase<dim, fptype> {
       fptype scalar) const {
     if(scalar == 0.0) {
       return Vector<dim, fptype>();
-    }
-    else {
+    } else {
       Vector<dim, fptype> scaled(*this);
       for(int i = 0; i < dim; i++)
         scaled.set(i, scaled.get(i) * scalar);
@@ -326,15 +325,18 @@ class Vector : public GeometryBase<dim, fptype> {
      * https://math.stackexchange.com/questions/710103/algorithm-to-find-an-orthogonal-basis-orthogonal-to-a-given-vector
      */
     fptype n = MathFuncs::MathFuncs<fptype>::copysign(
-        norm(), offset.vector[0]);
+        norm(), get(0));
     assert(n != 0.0);
     Array<fptype, dim> w(offset.vector);
     w[0] += n;
-    Vector<dim, fptype> normed(scale(fptype(1.0) / n));
     fptype wNormSq = 0.0;
-    for(int i = 0; i < dim; i++)
+    for(int i = 0; i < dim; i++) {
       wNormSq = MathFuncs::MathFuncs<fptype>::fma(
           w[i], w[i], wNormSq);
+      for(int j = 0; j < dim - 1; j++) {
+        offset.orthonorms[j][i] = 0.0;
+      }
+    }
     for(int i = 0; i < dim - 1; i++) {
       offset.orthonorms[i][i + 1] = 1.0;
       for(int j = 0; j < dim; j++) {
