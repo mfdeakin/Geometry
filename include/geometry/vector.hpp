@@ -38,8 +38,7 @@ class Vector : public GeometryBase<dim, fptype> {
 
   CUDA_CALLABLE Vector(const VectorData &v) {
     offset.vector = v.vector;
-    if(!MathFuncs::MathFuncs<fptype>::isnan(
-           v.orthonorms[0][0]))
+    if(v.orthosComputed())
       offset.orthonorms = v.orthonorms;
     else
       offset.orthonorms[0][0] = NAN;
@@ -148,8 +147,7 @@ class Vector : public GeometryBase<dim, fptype> {
   CUDA_CALLABLE Vector<dim, fptype> operator=(
       const Vector<dim, fptype> &v) {
     offset.vector = v.offset.vector;
-    if(!MathFuncs::MathFuncs<fptype>::isnan(
-           v.offset.orthonorms[0][0]))
+    if(v.orthosComputed())
       offset.orthonorms = v.offset.orthonorms;
     else
       offset.orthonorms[0][0] = NAN;
@@ -159,8 +157,7 @@ class Vector : public GeometryBase<dim, fptype> {
   CUDA_CALLABLE Vector<dim, fptype> operator=(
       const VectorData &v) {
     offset.vector = v.vector;
-    if(!MathFuncs::MathFuncs<fptype>::isnan(
-           v.orthonorms[0][0]))
+    if(v.orthosComputed())
       offset.orthonorms = v.orthonorms;
     else
       offset.orthonorms[0][0] = NAN;
@@ -170,8 +167,7 @@ class Vector : public GeometryBase<dim, fptype> {
   CUDA_CALLABLE VectorData copyData() const {
     VectorData v;
     v.vector = offset.vector;
-    if(!MathFuncs::MathFuncs<fptype>::isnan(
-           offset.orthonorms[0][0]))
+    if(orthosComputed())
       v.orthonorms = offset.orthonorms;
     else
       v.orthonorms[0][0] = NAN;
@@ -180,8 +176,7 @@ class Vector : public GeometryBase<dim, fptype> {
 
   CUDA_CALLABLE VectorData &copyData(VectorData &v) const {
     v.vector = offset.vector;
-    if(!MathFuncs::MathFuncs<fptype>::isnan(
-           offset.orthonorms[0][0]))
+    if(orthosComputed())
       v.orthonorms = offset.orthonorms;
     else
       v.orthonorms[0][0] = NAN;
@@ -216,7 +211,7 @@ class Vector : public GeometryBase<dim, fptype> {
     if(mag == 0.0)
       // Can't normalize a 0 vector
       return *this;
-    return (*this) * (fptype(1.0) / mag);
+    return scale(fptype(1.0) / mag);
   }
 
   CUDA_CALLABLE fptype normSquare() const {
@@ -233,46 +228,30 @@ class Vector : public GeometryBase<dim, fptype> {
 
   CUDA_CALLABLE Vector<dim, fptype> scale(
       fptype scalar) const {
-    if(scalar == 0.0)
+    if(scalar == 0.0) {
       return Vector<dim, fptype>();
-    else
-      return (*this) * scalar;
+    }
+    else {
+      Vector<dim, fptype> scaled(*this);
+      for(int i = 0; i < dim; i++)
+        scaled.set(i, scaled.get(i) * scalar);
+      return scaled;
+    }
   }
 
-  CUDA_CALLABLE const Array<Array<fptype, dim>, dim - 1>
-      &calcOrthogonals() const {
-    if(!MathFuncs::MathFuncs<fptype>::isnan(
-           offset.orthonorms[0][0])) {
-      return offset.orthonorms;
+  CUDA_CALLABLE bool orthosComputed() const {
+    return !MathFuncs::MathFuncs<fptype>::isnan(
+        offset.orthonorms[0][0]);
+  }
+
+  CUDA_CALLABLE Vector<dim, fptype> getOrthogonal(
+      int orthoIdx) {
+    assert(orthoIdx >= 0);
+    assert(orthoIdx < dim - 1);
+    if(!orthosComputed()) {
+      calcOrthogonals();
     }
-    /* Use a Householder reflection to compute the
-     * orthonormal vectors.
-     * This works because the Householder matrix is unitary.
-     * See the following answer for more details:
-     * https://math.stackexchange.com/questions/710103/algorithm-to-find-an-orthogonal-basis-orthogonal-to-a-given-vector
-     */
-    fptype n = MathFuncs::MathFuncs<fptype>::copysign(
-        norm(), offset.vector[0]);
-    assert(n != 0.0);
-    Array<fptype, dim> w = offset.vector;
-    w[0] = n + offset.vector[0];
-    fptype wNormSq = 0.0;
-    for(int i = 0; i < dim; i++)
-      wNormSq += w[i] * w[i];
-    // Array<Vector<dim, fptype>, dim - 1> basis;
-    for(int i = 0; i < dim - 1; i++) {
-      offset.orthonorms[i][i + 1] = 1.0;
-      // basis[i].offset[i + 1] = 1.0;
-      for(int j = 0; j < dim; j++) {
-        fptype updated = MathFuncs::MathFuncs<fptype>::fma(
-            2 * w[i + 1], -w[j] / wNormSq,
-            // basis[i].offset[j]);
-            offset.orthonorms[i][j]);
-        offset.orthonorms[i][j] = updated;
-        // basis[i].set(j, updated);
-      }
-    }
-    return offset.orthonorms;
+    return returnOrthogonal(orthoIdx);
   }
 
   friend std::ostream &operator<<(
@@ -333,6 +312,40 @@ class Vector : public GeometryBase<dim, fptype> {
   friend class Vector;
 
  private:
+  CUDA_CALLABLE Vector<dim, fptype> returnOrthogonal(
+      int orthoIdx) const {
+    return Vector<dim, fptype>(offset.orthonorms[orthoIdx]);
+  }
+
+  CUDA_CALLABLE void calcOrthogonals() {
+    /* Use a Householder reflection to compute the
+     * orthonormal vectors.
+     * This works because the Householder matrix is
+     * unitary.
+     * See the following answer for more details:
+     * https://math.stackexchange.com/questions/710103/algorithm-to-find-an-orthogonal-basis-orthogonal-to-a-given-vector
+     */
+    fptype n = MathFuncs::MathFuncs<fptype>::copysign(
+        norm(), offset.vector[0]);
+    assert(n != 0.0);
+    Array<fptype, dim> w(offset.vector);
+    w[0] += n;
+    Vector<dim, fptype> normed(scale(fptype(1.0) / n));
+    fptype wNormSq = 0.0;
+    for(int i = 0; i < dim; i++)
+      wNormSq = MathFuncs::MathFuncs<fptype>::fma(
+          w[i], w[i], wNormSq);
+    for(int i = 0; i < dim - 1; i++) {
+      offset.orthonorms[i][i + 1] = 1.0;
+      for(int j = 0; j < dim; j++) {
+        fptype updated = MathFuncs::MathFuncs<fptype>::fma(
+            2 * w[i + 1], -w[j] / wNormSq,
+            offset.orthonorms[i][j]);
+        offset.orthonorms[i][j] = updated;
+      }
+    }
+  }
+
   VectorData offset;
 };
 };

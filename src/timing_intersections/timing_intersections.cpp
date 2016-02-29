@@ -144,11 +144,11 @@ using randLineGen =
     Geometry::Line<dim, fptype> (*)(std::mt19937_64 &rng);
 
 template <int dim, typename fptype>
-std::shared_ptr<
-    std::list<Geometry::Intersection<dim, fptype>>>
+std::shared_ptr<std::list<Geometry::Intersection<
+    dim, fptype>>> __attribute__((noinline))
 runTest(std::list<Geometry::Quadric<dim, fptype>> &quads,
         Geometry::Line<dim, fptype> &line,
-        Timer::Timer &timer) __attribute__((noinline)) {
+        Timer::Timer &timer) {
   constexpr const double eps =
       std::numeric_limits<double>::infinity();
   timer.startTimer();

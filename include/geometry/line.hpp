@@ -55,10 +55,9 @@ class Line : public Solid<dim, fptype> {
      * cancellation in the computation of the offset */
     Vector<dim, fptype> delta(
         intercept.calcOffset(newOrigin));
-    auto perpDirs = dir.calcOrthogonals();
     Vector<dim, fptype> interceptOff;
     for(int i = 0; i < dim - 1; i++) {
-      Vector<dim, fptype> p = perpDirs[i].normalize();
+      Vector<dim, fptype> p = dir.getOrthogonal(i).normalize();
       fptype scale = p.dot(delta);
       interceptOff += p * scale;
     }

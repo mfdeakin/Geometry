@@ -19,13 +19,12 @@ TEST(Vector, OrthogonalBasis) {
       {{1.0, 1.0e3, 1.0e-3}}};
   for(auto t : tests) {
     Geometry::Vector<dim, fptype> v(t);
-    auto orthogs = v.calcOrthogonals();
-    for(unsigned i = 0; i < orthogs.size(); i++) {
-      auto o1 = orthogs[i];
+    for(unsigned i = 0; i < dim - 1; i++) {
+      auto o1 = v.getOrthogonal(i);
       fptype dp = o1.dot(v);
       EXPECT_NEAR(dp, 0.0, eps);
-      for(unsigned j = i + 1; j < orthogs.size(); j++) {
-        auto o2 = orthogs[j];
+      for(unsigned j = i + 1; j < dim - 1; j++) {
+        auto o2 = v.getOrthogonal(j);
         dp = o1.dot(o2);
         EXPECT_NEAR(dp, 0.0, eps);
       }
