@@ -3,8 +3,13 @@
 #define _CUDADEF_H_
 
 #ifdef __CUDACC__
+
 #include <cuda.h>
+
+#ifndef NDEBUG
 #define NDEBUG
+#endif
+
 #define CUDA_CALLABLE __host__ __device__
 #define CUDA_HOST __host__
 #define CUDA_DEVICE __device__

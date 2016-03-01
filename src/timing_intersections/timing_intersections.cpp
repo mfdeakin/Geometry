@@ -213,11 +213,13 @@ void intersectionTest(
   results << "Test #, FP Time (ns), MP Time (ns), Correct, "
              "Precision Increases\n";
   int totIP = 0;
+  int totIncorrect = 0;
   for(int i = 0; i < t; i++) {
     results << i + 1 << ", " << times[i].fpns << ", "
             << times[i].mpns << ", " << times[i].correct
             << ", " << times[i].numIP << "\n";
     totIP += times[i].numIP;
+    totIncorrect += 1 - times[i].correct;
   }
   results << "\n"
           << "Total FP Time (s): " << fp_time.elapsed_s()
@@ -227,6 +229,8 @@ void intersectionTest(
           << "." << std::setw(9) << std::setfill('0')
           << mp_time.elapsed_ns() << "\n";
   results << "Total precision increases: " << totIP << "\n";
+  results << "Total potentially incorrect: " << totIncorrect
+          << "\n";
   delete[] times;
 }
 
