@@ -36,14 +36,10 @@ class PolynomialBase {
   }
 
   CUDA_CALLABLE fptype get(int coeff) const {
-    assert(coeff >= 0);
-    assert(coeff < numCoeffs);
     return coeffs[coeff];
   }
 
   CUDA_CALLABLE fptype &set(int coeff, fptype val) {
-    assert(coeff >= 0);
-    assert(coeff < numCoeffs);
     coeffs[coeff] = val;
     return coeffs[coeff];
   }
@@ -89,6 +85,10 @@ class PolyIsSolvable<order, fptype, false>
 template <typename fptype>
 class PolyIsSolvable<0, fptype, true>
     : public PolynomialBase<0, fptype> {
+ public:
+  PolyIsSolvable() : PolynomialBase<0, fptype>() {}
+  PolyIsSolvable(const PolyIsSolvable<0, fptype, true> &p)
+      : PolynomialBase<0, fptype>(p) {}
   Array<fptype, 1> calcRoots() { return {}; }
 };
 
@@ -96,6 +96,9 @@ template <typename fptype>
 class PolyIsSolvable<1, fptype, true>
     : public PolynomialBase<1, fptype> {
  public:
+  PolyIsSolvable() : PolynomialBase<1, fptype>() {}
+  PolyIsSolvable(const PolyIsSolvable<1, fptype, true> &p)
+      : PolynomialBase<1, fptype>(p) {}
   Array<fptype, 1> calcRoots() {
     return {-PolynomialBase<1, fptype>::get(0) /
             PolynomialBase<1, fptype>::get(1)};
@@ -106,6 +109,9 @@ template <typename fptype>
 class PolyIsSolvable<2, fptype, true>
     : public PolynomialBase<2, fptype> {
  public:
+  PolyIsSolvable() : PolynomialBase<2, fptype>() {}
+  PolyIsSolvable(const PolyIsSolvable<2, fptype, true> &p)
+      : PolynomialBase<2, fptype>(p) {}
   Array<fptype, 2> calcRoots() {
     return AccurateMath::kahanQuadratic(
         PolynomialBase<2, fptype>::get(2),
@@ -115,9 +121,13 @@ class PolyIsSolvable<2, fptype, true>
 };
 
 template <int order, typename fptype>
-    class Polynomial : public PolyIsSolvable < order,
-    fptype, order<3> {
+class Polynomial
+    : public PolyIsSolvable<order, fptype, (order < 3)> {
  public:
+  Polynomial()
+      : PolyIsSolvable<order, fptype, (order < 3)>() {}
+  Polynomial(const Polynomial<order, fptype> &p)
+      : PolyIsSolvable<order, fptype, (order < 3)>(p) {}
   template <typename p2Type>
   Polynomial<
       order + p2Type::_order,

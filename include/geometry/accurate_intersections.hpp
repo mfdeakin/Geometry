@@ -27,12 +27,17 @@ class IntersectionBase<dim, fptype, true> {
   fptype absErrMargin;
   int numIP;
 
+  static constexpr const int numPartialProds = 6;
+  Array<mpfr::mpreal, numPartialProds> partialProds;
+
   IntersectionBase()
       : q(),
         intPos(NAN),
         otherIntPos(NAN),
         absErrMargin(defAbsPrecision),
-        numIP(0) {}
+        numIP(0) {
+    partialProds[0] = mpfr::mpreal(NAN);
+  }
 
   IntersectionBase(const Quadric<dim, fptype> &quad,
                    const Line<dim, fptype> &line,
@@ -44,7 +49,9 @@ class IntersectionBase<dim, fptype, true> {
         intPos(intPos),
         otherIntPos(otherIntPos),
         absErrMargin(absErrMargin),
-        numIP(0) {}
+        numIP(0) {
+    partialProds[0] = mpfr::mpreal(NAN);
+  }
 
   IntersectionBase(
       const IntersectionBase<dim, fptype, true> &i)
@@ -53,7 +60,9 @@ class IntersectionBase<dim, fptype, true> {
         intPos(i.intPos),
         otherIntPos(i.otherIntPos),
         absErrMargin(i.absErrMargin),
-        numIP(i.numIP) {}
+        numIP(i.numIP) {
+    partialProds[0] = mpfr::mpreal(NAN);
+  }
 
   IntersectionBase<dim, fptype, true> operator=(
       const IntersectionBase<dim, fptype, true> &i) {
@@ -62,84 +71,102 @@ class IntersectionBase<dim, fptype, true> {
     intPos = i.intPos;
     otherIntPos = i.otherIntPos;
     absErrMargin = i.absErrMargin;
+    partialProds = i.partialProds;
     return *this;
   }
 
+  bool ppReady() const {
+    return !MathFuncs::MathFuncs<mpfr::mpreal>::isnan(
+        partialProds[0]);
+  }
+
+  const mpfr::mpreal &getPartialProd(int idx) {
+    if(!ppReady()) {
+      const unsigned prevPrec =
+          mpfr::mpreal::get_default_prec();
+      /* This is less efficient than we'd like,
+       * but is the only way to implement this in a
+       * manner which is agnostic floating point type
+       */
+      constexpr const unsigned machPrec =
+          GenericFP::fpconvert<fptype>::precision;
+      constexpr const unsigned coeffPrec = 3 * machPrec;
+      constexpr const int partPrec = 2 * coeffPrec;
+      mpfr::mpreal::set_default_prec(coeffPrec);
+      Quadric<dim, mpfr::mpreal> quad(q);
+      Line<dim, mpfr::mpreal> line(l);
+      Polynomial<2, mpfr::mpreal> lqInt =
+          quad.calcLineDistPoly(line);
+      partialProds[0] =
+          mpfr::mult(lqInt.get(0), lqInt.get(0), partPrec);
+      partialProds[1] =
+          mpfr::mult(lqInt.get(1), lqInt.get(1), partPrec);
+      partialProds[2] =
+          mpfr::mult(lqInt.get(2), lqInt.get(2), partPrec);
+      partialProds[3] =
+          mpfr::mult(lqInt.get(0), lqInt.get(1), partPrec);
+      partialProds[4] =
+          mpfr::mult(lqInt.get(0), lqInt.get(2), partPrec);
+      partialProds[5] =
+          mpfr::mult(lqInt.get(1), lqInt.get(2), partPrec);
+      mpfr::mpreal::set_default_prec(prevPrec);
+    }
+    return partialProds[idx];
+  }
+
   mpfr::mpreal resultantDet(
-      const IntersectionBase<dim, fptype, true> &i) {
-    /* Compute the coefficients for the determinant
-     * We need a precision of 3 times machine precision
-     * to compute the coefficients accurately,
-     * so set that first
-     */
-    const unsigned prevPrec =
-        mpfr::mpreal::get_default_prec();
-    constexpr const unsigned machPrec =
-        GenericFP::fpconvert<fptype>::precision;
-    /* This is less efficient than we'd like,
-     * but is the only way to implement this in a
-     * manner which is agnostic floating point type
-     */
-    constexpr const unsigned coeffPrec = 3 * machPrec;
-    mpfr::mpreal::set_default_prec(coeffPrec);
-    /* Compute the coefficients */
-    Quadric<dim, mpfr::mpreal> q1(q);
-    Quadric<dim, mpfr::mpreal> q2(i.q);
-    Line<dim, mpfr::mpreal> line(l);
-    line.shiftOrigin(q.getOrigin());
-    Polynomial<2, mpfr::mpreal> p1(
-        q1.calcLineDistPoly(line));
-    Polynomial<2, mpfr::mpreal> p2(
-        q2.calcLineDistPoly(line));
-    /* And the determinant
-     * The determinant requires 4 times the coefficients
-     * precision to avoid multiplicative errors
-     */
+      IntersectionBase<dim, fptype, true> &i) {
+    assert(l == i.l);
     /* The fastest way to compute our determinant
      * 1.0(0 0 5 5)+1.0(2 2 3 3)+1.0(1 1 3 5)+1.0(4 4 0 2)+
      * -1.0(1 2 3 4)-1.0(0 1 4 5)-2.0(0 2 3 5)
      * 35 FLOPs
      * (0 5)((0 5)-2.0(2 3)-(1 4))+(2 3)((2 3)-(1 4))+
      * (1 1 3 5)+(4 4 0 2)
-     *  3+1+2+1                    +0+0+1+1
-     * +3       +3
-     * +3
-     * 18 FLOPs, reduced by a factor of ~1/2,
-     * in exchange for ugly code
+     * 18 FLOPs, which is nice,
+     * but we can do better with caching
      *
-     * Start by computing the partial products
+     * Amortize like so:
+     * (0 0)(5 5)+(2 2)(3 3)+(1 1)(3 5)+(4 4)(0 2)+
+     * -(1 2)(3 4)-(0 1)(4 5)-2.0(0 2)(3 5)
+     * where all partial products (0 0), (2 2), etc. are
+     * computed only once.
+     * This brings us to 14 FLOPs per comparison,
+     * plus some small constant for the initial computation
      */
-    const unsigned partPrec = 2 * coeffPrec;
-    constexpr const int numPP = 7;
-    mpfr::mpreal partialProds[numPP] = {
-        mpfr::mult(p1.get(2), p2.get(0), partPrec),
-        mpfr::mult(p1.get(0), p2.get(2), partPrec),
-        mpfr::mult(p1.get(1), p2.get(1), partPrec),
-
-        mpfr::mult(p1.get(1), p1.get(1), partPrec),
-        mpfr::mult(p2.get(0), p2.get(2), partPrec),
-
-        mpfr::mult(p2.get(1), p2.get(1), partPrec),
-        mpfr::mult(p1.get(0), p1.get(2), partPrec)};
-
-    const unsigned detPrec = 2 * partPrec;
+    const unsigned prevPrec =
+        mpfr::mpreal::get_default_prec();
+    constexpr const unsigned machPrec =
+        GenericFP::fpconvert<fptype>::precision;
+    constexpr const unsigned coeffPrec = 3 * machPrec;
+    constexpr const unsigned partPrec = 2 * coeffPrec;
+    constexpr const unsigned detPrec = 2 * partPrec;
     /* Now compute the larger terms */
-    constexpr const int numTerms = 4;
+    constexpr const int numTerms = 7;
     mpfr::mpreal detTerms[numTerms] = {
-        // (0 5)((0 5)-2.0(2 3)-(1 4))
-        mpfr::mult(partialProds[0] -
-                       (partialProds[1] << 1) -
-                       partialProds[2],
-                   partialProds[0], detPrec),
-        // (2 3)((2 3)-(1 4))
-        mpfr::mult(partialProds[1] - partialProds[2],
-                   partialProds[1], detPrec),
-        // (1 1 3 5)
-        mpfr::mult(partialProds[3], partialProds[4],
+        //(0 0)(5 5)
+        mpfr::mult(getPartialProd(0), i.getPartialProd(2),
                    detPrec),
-        // (4 4 0 2)
-        mpfr::mult(partialProds[5], partialProds[6],
-                   detPrec)};
+        //(2 2)(3 3)
+        mpfr::mult(getPartialProd(2), i.getPartialProd(0),
+                   detPrec),
+        //(1 1)(3 5)
+        mpfr::mult(getPartialProd(1), i.getPartialProd(4),
+                   detPrec),
+        //(0 2)(4 4)
+        mpfr::mult(getPartialProd(4), i.getPartialProd(1),
+                   detPrec),
+        //-(1 2)(3 4)
+        -mpfr::mult(getPartialProd(5), i.getPartialProd(3),
+                    detPrec),
+        //-(0 1)(4 5)
+        -mpfr::mult(getPartialProd(3), i.getPartialProd(5),
+                    detPrec),
+        //-2.0(0 2)(3 5)
+        -mpfr::mult(getPartialProd(4), i.getPartialProd(4),
+                    detPrec)
+            << 1,
+    };
     /* There are only 4 terms to sum,
      * which isn't enough for compensated summation to be
      * worthwhile in my experience
@@ -153,7 +180,7 @@ class IntersectionBase<dim, fptype, true> {
   }
 
   fptype accurateCompare(
-      const IntersectionBase<dim, fptype, true> &i) {
+      IntersectionBase<dim, fptype, true> &i) {
     /* Only works when there are two roots for both quadrics
      * Also requires the differences of roots to be
      * greater than the minimum precision.
@@ -172,7 +199,7 @@ class IntersectionBase<dim, fptype, true> {
     fptype partResTerms[numPartialTerms] = {
         intPos - i.otherIntPos, otherIntPos - i.intPos,
         otherIntPos - i.otherIntPos};
-    int numNeg = 0;
+    int numNeg = det < 0;
     for(int i = 0; i < numPartialTerms; i++) {
       if(partResTerms[i] < 0.0)
         numNeg ^= 1;
@@ -186,9 +213,6 @@ class IntersectionBase<dim, fptype, true> {
      * known differences of roots has the sign of the
      * final difference of the root
      */
-    if(det < 0) {
-      numNeg ^= 1;
-    }
     if(numNeg == 0) {
       return 1.0;
     } else {
@@ -196,8 +220,7 @@ class IntersectionBase<dim, fptype, true> {
     }
   }
 
-  fptype compare(
-      const IntersectionBase<dim, fptype, true> &i) {
+  fptype compare(IntersectionBase<dim, fptype, true> &i) {
     fptype delta = intPos - i.intPos;
     if(MathFuncs::MathFuncs<fptype>::fabs(delta) <
            absErrMargin &&
@@ -464,7 +487,7 @@ sortIntersections(const Line<dim, fptype> &line,
       }
     }
   }
-  inter->sort([](IP &lhs, const IP &rhs) {
+  inter->sort([](IP &lhs, IP &rhs) {
     return lhs.compare(rhs) < 0.0;
   });
   /* TODO: Fix this */

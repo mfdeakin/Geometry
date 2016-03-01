@@ -115,6 +115,12 @@ class Line : public Solid<dim, fptype> {
     return *this;
   }
 
+  CUDA_CALLABLE bool operator==(
+      const Line<dim, fptype> &l) const {
+    return (this->origin == l.origin &&
+            intercept == l.intercept && dir == l.dir);
+  }
+
   CUDA_CALLABLE LineData copyData() const {
     LineData l;
     dir.copyData(l.d);
