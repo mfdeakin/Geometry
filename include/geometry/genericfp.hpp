@@ -14,8 +14,10 @@ struct fp {
   unsigned long mantissa : p;
   unsigned long exponent : e;
   unsigned sign : 1;
-  static const unsigned eBits = e, pBits = p,
-                        precision = p + 1;
+  static constexpr const unsigned eBits = e, pBits = p,
+                                  precision = p + 1;
+  static constexpr const int centralExp =
+      (1 << (e - 1)) - 1;
 } __attribute__((packed));
 
 /* The bitfield lengths specified by IEEE 754 */
