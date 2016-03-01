@@ -120,6 +120,7 @@ struct IsStdMathFuncs<fptype, true> {
       fptype floatVal;
       GenericFP::fpconvert<fptype> structVal;
     } mult;
+    mult.structVal.sign = 0;
     mult.structVal.mantissa = 0;
     mult.structVal.exponent =
         twoPower + GenericFP::fpconvert<fptype>::centralExp;
@@ -160,7 +161,10 @@ struct IsMPFRMathFuncs<fptype, true> {
   }
   static fptype sin(fptype val) { return mpfr::sin(val); }
   static fptype fastMult2Pow(fptype val, int twoPower) {
-    return val << twoPower;
+    if(twoPower >= 0)
+      return val << twoPower;
+    else
+      return val >> twoPower;
   }
 };
 
