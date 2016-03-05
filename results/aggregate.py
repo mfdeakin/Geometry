@@ -2,92 +2,63 @@ import csv
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from pylab import savefig
 
-files = os.listdir()
+def readData(fname, size):
+    fd = open(fname, 'r')
+    reader = csv.reader(fd)
+    next(reader)
+    data = []
+    for row in reader:
+        if len(row) != 5:
+            continue
+        number, resTime, mpTime, correct, precIncreases = map(int, row)
+        data.append([size, precIncreases, resTime, mpTime, correct, number])
+    return np.array(data)
 
-resLSQ = {}
-resLSQAvg = {}
-resLSQVar = {}
-res5th = {}
-res95th = {}
-
-incLSQ = {}
-incLSQAvg = {}
-incLSQVar = {}
-inc5th = {}
-inc95th = {}
-
-for fname in files:
+def validateFName(fname):
     testInfo = fname.split('.')
     if len(testInfo) != 5:
-        continue
+        return None
     testName, testSize, _, testMachine, fileType = fname.split('.')
     if fileType != 'csv':
-        continue
-    testSize = int(testSize)
-    if not testMachine in resLSQ.keys():
-        resLSQ[testMachine] = {}
-        incLSQ[testMachine] = {}
-        resLSQAvg[testMachine] = {}
-        incLSQAvg[testMachine] = {}
-        resLSQVar[testMachine] = {}
-        incLSQVar[testMachine] = {}
-    if not testName in resLSQ[testMachine].keys():
-        resLSQ[testMachine][testName] = {}
-        incLSQ[testMachine][testName] = {}
-        resLSQAvg[testMachine][testName] = np.array([0.0, 0.0])
-        incLSQAvg[testMachine][testName] = np.array([0.0, 0.0])
-        resLSQVar[testMachine][testName] = np.array([0.0, 0.0])
-        incLSQVar[testMachine][testName] = np.array([0.0, 0.0])
-    if not testSize in resLSQ[testMachine][testName].keys():
-        resLSQ[testMachine][testName][testSize] = []
-        incLSQ[testMachine][testName][testSize] = []
-    csvFile = open(fname, 'r')
-    csvRead = csv.reader(csvFile)
-    resTimes = []
-    incTimes = []
-    precIncreases = []
-    numCorrect = 0
-    numLines = 0
-    next(csvRead)
-    for row in csvRead:
-        if len(row) != 5:
-            break
-        resTimes.append(np.float64(row[1]))
-        incTimes.append(np.float64(row[2]))
-        numCorrect += int(row[3])
-        precIncreases.append(int(row[4]))
-        numLines += 1
-    resLSqr = np.linalg.lstsq(np.vstack([precIncreases,
-                                         np.ones(len(precIncreases))]).T,
-                              resTimes)
-    mRes, cRes = resLSqr[0]
-    resLSQ[testMachine][testName][testSize].append(np.array([mRes, cRes]))
-    incLSqr = np.linalg.lstsq(np.vstack([precIncreases,
-                                         np.ones(len(precIncreases))]).T,
-                              incTimes)
-    mInc, cInc = incLSqr[0]
-    incLSQ[testMachine][testName][testSize].append(np.array([mInc, cInc]))
+        return None
+    try:
+        testSize = int(testSize)
+    except ValueError:
+        return None
+    return [testMachine, testName, testSize]
 
-for machine in resLSQ:
-    for test in resLSQ[machine]:
-        mTot = 0.0
-        cTot = 0.0
-        for size in resLSQ[machine][test]:
-            print(test, machine, resLSQ[machine][test][size])
-            mTot += resLSQ[machine][test][size][0][0]
-            cTot += resLSQ[machine][test][size][0][1]
-        resLSQAvg[machine][test][0] = mTot / len(resLSQ[machine][test])
-        resLSQAvg[machine][test][1] = cTot / len(resLSQ[machine][test])
-        print(resLSQAvg[machine][test])
-        exit()
+def aggregateData():
+    files = os.listdir()
+    datum = {}
+    for fname in files:
+        dataInfo = validateFName(fname)
+        if dataInfo == None:
+            continue
+        print(fname)
+        machine, test, size = dataInfo
+        if not machine in datum:
+            datum[machine] = {}
+        if not test in datum[machine]:
+            datum[machine][test] = []
+        testData = datum[machine][test]
+        data = readData(fname, size)
+        precIncreases = data.T[1]
+        resTimes = data.T[2]
+        mpTimes = data.T[3]
+        resLSqr = np.linalg.lstsq(np.vstack([precIncreases,
+                                             np.ones(len(precIncreases))]).T,
+                                  resTimes)
+        mpLSqr = np.linalg.lstsq(np.vstack([precIncreases,
+                                            np.ones(len(precIncreases))]).T,
+                                  mpTimes)
+        plt.scatter(precIncreases, resTimes, c = "blue",
+                    label = "Resultant Method")
+        plt.scatter(precIncreases, mpTimes, c = "red",
+                    label = "Resultant Method")
+        testData.append((size, data, resLSqr, mpLSqr))
+        plt.show()
 
-#    spRes = plt.scatter(precIncreases, resTimes,
-#                        c = "blue", label = "Resultant Method")
-#    spInc = plt.scatter(precIncreases, incTimes,
-#                        c = "red", label = "Naive Method")
-#    plt.legend(bbox_to_anchor=(0.95, 0.25))
-#    print(fname)
-#    print("% Correct: " + str(numCorrect) + " / " + str(numLines))
-#    print(m, c)
-#    plt.show()
+if __name__ == "__main__":
+    aggregateData()
