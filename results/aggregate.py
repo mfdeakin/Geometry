@@ -10,10 +10,10 @@ def readData(fname, size):
     next(reader)
     data = []
     for row in reader:
-        if len(row) != 5:
+        if len(row) != 6:
             continue
-        number, resTime, mpTime, correct, precIncreases = map(int, row)
-        data.append([size, precIncreases, resTime, mpTime, correct, number])
+        number, resNum, resTime, mpNum, mpTime, correct = map(int, row)
+        data.append([size, resNum, resTime, mpNum, mpTime, correct, number])
     return np.array(data)
 
 def validateFName(fname):
@@ -30,22 +30,23 @@ def validateFName(fname):
     return [testMachine, testName, testSize]
 
 def createPlot(data, resLSqr, mpLSqr, fname):
-    precIncreases = data.T[1]
+    resNum = data.T[1]
     resTimes = data.T[2]
-    mpTimes = data.T[3]
-    plt.scatter(precIncreases, resTimes, c = "blue",
+    mpNum = data.T[3]
+    mpTimes = data.T[4]
+    plt.scatter(resNum, resTimes, c = "blue",
                 label = "Resultant Method")
-    plt.scatter(precIncreases, mpTimes, c = "red",
+    plt.scatter(mpNum, mpTimes, c = "red",
                 label = "Resultant Method")
-    plt.plot(precIncreases,
-             precIncreases * resLSqr[0][0] + resLSqr[0][1],
+    plt.plot(resNum,
+             resNum * resLSqr[0][0] + resLSqr[0][1],
              c = "cyan", linewidth = 4)
-    plt.plot(precIncreases,
-             precIncreases * mpLSqr[0][0] + mpLSqr[0][1],
+    plt.plot(mpNum,
+             mpNum * mpLSqr[0][0] + mpLSqr[0][1],
              c = "purple", linewidth = 4)
-    plt.axes().set_xlim(left = 0, right = max(precIncreases) * 1.0625)
-    maxValue = max(max(precIncreases) * mpLSqr[0][0] + mpLSqr[0][1],
-                   max(precIncreases) * resLSqr[0][0] + resLSqr[0][1],
+    plt.axes().set_xlim(left = 0, right = max(max(mpNum), max(resNum)) * 1.0625)
+    maxValue = max(max(mpNum) * mpLSqr[0][0] + mpLSqr[0][1],
+                   max(resNum) * resLSqr[0][0] + resLSqr[0][1],
                    max(mpTimes), max(resTimes))
     plt.axes().set_ylim(bottom = 0,
                         top =  maxValue * 1.0625)
@@ -79,23 +80,26 @@ def analyzeData(datum):
     for machine in datum:
         for test in datum[machine]:
             testData = datum[machine][test]
-            precIncreases = testData.T[1]
+            print(testData.shape)
+            resNum = testData.T[1]
             resTimes = testData.T[2]
-            resLSqr = np.linalg.lstsq(np.vstack([precIncreases,
-                                                 np.ones(len(precIncreases))]).T,
+            resLSqr = np.linalg.lstsq(np.vstack([resNum,
+                                                 np.ones(len(resNum))]).T,
                                       resTimes)
-            incTimes = testData.T[3]
-            incLSqr = np.linalg.lstsq(np.vstack([precIncreases,
-                                                 np.ones(len(precIncreases))]).T,
-                                      incTimes)
+            mpNum = testData.T[3]
+            mpTimes = testData.T[4]
+            mpLSqr = np.linalg.lstsq(np.vstack([mpNum,
+                                                np.ones(len(mpNum))]).T,
+                                      mpTimes)
             plotFName = test + "." + machine + ".results.png"
-            createPlot(testData, resLSqr, incLSqr, plotFName)
+            createPlot(testData, resLSqr, mpLSqr, plotFName)
             pca = sklearn.decomposition.PCA(6).fit(testData)
             print("Resultant Least Square Coefficients:", resLSqr[0])
-            print("Increased Precision Coefficients:", incLSqr[0])
+            print("Increased Precision Coefficients:", mpLSqr[0])
             print("PCA Components of " +
-                  "[numQuadrics, numPrecIncreases, " +
-                  "resultantTime_ns, incTime_ns, correct?, counter\n",
+                  "[numQuadrics, numResultants, " +
+                  "resultantTime_ns, numMPComparisons, " +
+                  "mpTime_ns, correct?, counter\n",
                   pca.components_[0])
 
 if __name__ == "__main__":
