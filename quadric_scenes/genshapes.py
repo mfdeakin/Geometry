@@ -1,7 +1,7 @@
 
 import sys
 import io
-from sympy import exp, N, S
+from sympy import sqrt, exp, N, S
 from sympy.matrices import Matrix
 from numpy import float32
 
@@ -139,13 +139,22 @@ def genAxialCylinders(numCyls, eps = (2 ** -8)):
 def genCenteredEllipsoids(numElls, eps = (2 ** -8)):
     defEll = canonicalShapes["ellipsoid"]
     scene = [applyTForm(applyTForm(defEll,
-                                   scaleMtx(2.0 * (N(1.0) + N(i) * N(eps) - N(eps)),
-                                            2.0 * (N(1.0) + N(i) * N(i) * N(eps) - N(eps)),
-                                            2.0 * (N(1.0) + N(i) * N(i) * N(i) * N(eps) - N(eps)))),
+                                   scaleMtx(2.0 * (N(1.0) +
+                                                   N(i) * N(eps) -
+                                                   N(eps)),
+                                            2.0 * (N(1.0) +
+                                                   sqrt(N(i) * N(i)) * N(eps) -
+                                                   N(eps)),
+                                            2.0 * (N(1.0)
+                                                   + N(i) * N(i) *
+                                                   N(eps) - N(eps)))),
                         translateMtx(-0.5, -0.5, -0.5))
              for i in range(1, numElls + 1)]
     return scene
 
 if __name__ == "__main__":
+    print("Generating " + sys.argv[2] +
+          " centered ellipsoids in " +
+          sys.argv[1])
     cyls = genCenteredEllipsoids(int(sys.argv[2]))
     writeScene(sys.argv[1], cyls)
