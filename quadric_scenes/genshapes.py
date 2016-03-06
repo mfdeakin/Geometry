@@ -3,6 +3,7 @@ import sys
 import io
 from sympy import exp, N, S
 from sympy.matrices import Matrix
+from numpy import float32
 
 canonicalShapes = {"coplanes": Matrix([[1.0, 0.0, 0.0, 0.0],
                                        [0.0, 0.0, 0.0, 0.0],
@@ -116,11 +117,11 @@ def writeScene(fname, quads):
             f.write("\n")
         f.write("m")
         for y in range(q.shape[0]):
-            val = float(q[y * q.shape[1]])
+            val = float32(q[y * q.shape[1]])
             vstr = "{:.30f}".format(val).rstrip("0").rstrip(".")
             f.write("\n" + vstr)
             for x in range(1, q.shape[1]):
-                val = float(q[y * q.shape[1] + x])
+                val = float32(q[y * q.shape[1] + x])
                 vstr = "{:.30f}".format(val).rstrip("0").rstrip(".")
                 f.write(" " + vstr)
         i += 1
@@ -128,8 +129,8 @@ def writeScene(fname, quads):
 def genAxialCylinders(numCyls, eps = (2 ** -8)):
     defCyl = canonicalShapes["ellcylinder"]
     scene = [applyTForm(applyTForm(defCyl,
-                                   scaleMtx(2.0 * (1.0 + i * eps - eps),
-                                            2.0 * (1.0 + i * i * eps - eps),
+                                   scaleMtx(2.0 * (N(1.0) + N(i) * N(eps) - N(eps)),
+                                            2.0 * (N(1.0) + N(i) * N(i) * N(eps) - N(eps)),
                                             1.0)),
                         translateMtx(-0.5, -0.5, 0.0))
              for i in range(1, numCyls + 1)]
@@ -138,9 +139,9 @@ def genAxialCylinders(numCyls, eps = (2 ** -8)):
 def genCenteredEllipsoids(numElls, eps = (2 ** -8)):
     defEll = canonicalShapes["ellipsoid"]
     scene = [applyTForm(applyTForm(defEll,
-                                   scaleMtx(2.0 * (1.0 + i * eps - eps),
-                                            2.0 * (1.0 + i * i * eps - eps),
-                                            2.0 * (1.0 + i * i * i * eps - eps))),
+                                   scaleMtx(2.0 * (N(1.0) + N(i) * N(eps) - N(eps)),
+                                            2.0 * (N(1.0) + N(i) * N(i) * N(eps) - N(eps)),
+                                            2.0 * (N(1.0) + N(i) * N(i) * N(i) * N(eps) - N(eps)))),
                         translateMtx(-0.5, -0.5, -0.5))
              for i in range(1, numElls + 1)]
     return scene
