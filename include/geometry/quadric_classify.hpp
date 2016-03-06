@@ -118,6 +118,7 @@ static int classifyCalcDetSign(
   const int prevPrec = mpfr::mpreal::get_default_prec();
   mpfr::mpreal::set_default_prec(guessedExtraPrec *
                                  detTermPrec);
+  /* Use Kahan Summation to sum up the terms */
   mpfr::mpreal detTerm, detSum(0.0), tmpSum, extra(0.0),
       modAdd;
   for(int i = 0; i < numDetTerms; i++) {

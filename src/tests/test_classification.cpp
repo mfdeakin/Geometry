@@ -122,3 +122,45 @@ TEST(Quadric, HyperboloidClassify) {
     EXPECT_EQ(t.expected, quadtype);
   }
 }
+
+TEST(Quadric, EllipsoidClassify) {
+  constexpr const int dim = 3;
+  // The following test fails for single precision floats
+  typedef double fptype;
+  constexpr const unsigned numCoeffs =
+      Geometry::Quadric<dim, fptype>::numCoeffs;
+  struct teststruct {
+    QuadricClassify::QuadType expected;
+    int detSign;
+    int r3, r4;
+    int eigenSameSign;
+    fptype coeffs[numCoeffs];
+  } tests[] = {
+      QuadricClassify::QUADT_ELLIPSOID_RE,
+      -1,
+      3,
+      4,
+      1,
+      {12.4697265625, 93139.4, 3567848359.0322265625,
+       891985376.72802734375, 0.0, 0.0,
+       2.0 * -6.23486328125, 0.0, 2.0 * -46569.705078125,
+       2.0 * -1783924179.51611328125}};
+  Geometry::Origin<dim, fptype> o;
+  Geometry::Quadric<dim, fptype> q(o);
+  for(auto t : tests) {
+    for(unsigned i = 0; i < numCoeffs; i++) {
+      q.setCoeff(i, t.coeffs[i]);
+    }
+    int detSign = QuadricClassify::classifyCalcDetSign(q);
+    EXPECT_EQ(t.detSign, detSign);
+    Array<int, 2> ranks =
+        QuadricClassify::classifyCalcRank(q);
+    EXPECT_EQ(t.r3, ranks[0]);
+    EXPECT_EQ(t.r4, ranks[1]);
+    int eigenSign =
+        QuadricClassify::classifyCalcEigenSign(q);
+    EXPECT_EQ(t.eigenSameSign, eigenSign);
+    auto quadtype = QuadricClassify::classifyQuadric(q);
+    EXPECT_EQ(t.expected, quadtype);
+  }
+}

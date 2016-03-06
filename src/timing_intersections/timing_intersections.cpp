@@ -30,18 +30,26 @@ std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
     qtypeCount[i] = 0;
   std::list<Qf> quads;
   int imQuads = 0;
+  int numQuads = 0;
   while(!file.eof()) {
     Qf q;
     file >> q;
     QuadricClassify::QuadType type =
         QuadricClassify::classifyQuadric(q);
     if(!QuadricClassify::isImaginary(type) &&
-       type != QuadricClassify::QUADT_ERROR) {
+       type != QuadricClassify::QUADT_ERROR &&
+       type != QuadricClassify::QUADT_DEGENERATE &&
+       type != QuadricClassify::QUADT_ERRORINVALID) {
       quads.push_back(q);
       qtypeCount[type]++;
     } else {
+      std::cout << "Quadric " << numQuads
+                << " is invalid, returned type "
+                << QuadricClassify::QuadTypeNames[type]
+                << "\n";
       imQuads++;
     }
+    numQuads++;
   }
   for(int i = 0; i < QuadricClassify::QUADT_ERRORINVALID;
       i++) {
