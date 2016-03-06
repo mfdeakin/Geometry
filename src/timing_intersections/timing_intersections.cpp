@@ -23,6 +23,9 @@ template <int dim, typename fptype>
 std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
     const char *fname) {
   std::ifstream file(fname);
+  if(!file.is_open()) {
+    return std::list<Geometry::Quadric<dim, fptype>>();
+  }
   using Qf = Geometry::Quadric<dim, fptype>;
   int qtypeCount[QuadricClassify::QUADT_ERRORINVALID];
   for(int i = 0; i < QuadricClassify::QUADT_ERRORINVALID;
@@ -200,7 +203,8 @@ void intersectionTest(
     int fpns;
     int mpns;
     bool correct;
-    int numIP;
+    int resNumIP;
+    int mpNumIP;
   } *times = new struct TimeArr[numTests];
   /* Run the tests */
   int t;
@@ -215,28 +219,35 @@ void intersectionTest(
     times[t].fpns = fp_time.instant_ns();
     times[t].mpns = mp_time.instant_ns();
     times[t].correct = validateResults(inter, truth);
-    times[t].numIP = countIP(inter);
+    times[t].resNumIP = countIP(inter);
+    times[t].mpNumIP = countIP(truth);
   }
   /* Output all of the results */
-  results << "Test #, FP Time (ns), MP Time (ns), Correct, "
-             "Precision Increases\n";
-  int totIP = 0;
+  results << "Test #, Resultants, FP Time (ns), "
+             "Increased Precs, MP Time (ns), Correct\n";
+  int resTotIP = 0;
+  int MPTotIP = 0;
   int totIncorrect = 0;
   for(int i = 0; i < t; i++) {
-    results << i + 1 << ", " << times[i].fpns << ", "
-            << times[i].mpns << ", " << times[i].correct
-            << ", " << times[i].numIP << "\n";
-    totIP += times[i].numIP;
+    results << i + 1 << ", " << times[i].resNumIP << ", "
+            << times[i].fpns << ", " << times[i].mpNumIP
+            << ", " << times[i].mpns << ", "
+            << times[i].correct << "\n";
+    resTotIP += times[i].resNumIP;
+    MPTotIP += times[i].mpNumIP;
     totIncorrect += 1 - times[i].correct;
   }
   results << "\n"
+          << "Total resultant computations: " << resTotIP
+          << "\n"
           << "Total FP Time (s): " << fp_time.elapsed_s()
           << "." << std::setw(9) << std::setfill('0')
           << fp_time.elapsed_ns() << "\n"
+          << "Total increased precision computations: "
+          << MPTotIP << "\n"
           << "Total MP Time (s): " << mp_time.elapsed_s()
           << "." << std::setw(9) << std::setfill('0')
           << mp_time.elapsed_ns() << "\n";
-  results << "Total precision increases: " << totIP << "\n";
   results << "Total potentially incorrect: " << totIncorrect
           << "\n";
   delete[] times;

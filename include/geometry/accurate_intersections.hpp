@@ -72,6 +72,7 @@ class IntersectionBase<dim, fptype, true> {
     otherIntPos = i.otherIntPos;
     absErrMargin = i.absErrMargin;
     partialProds = i.partialProds;
+    numIP = i.numIP;
     return *this;
   }
 
@@ -255,6 +256,7 @@ class IntersectionBase<dim, fptype, false> {
   Line<dim, fptype> l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
+  int numIP;
 
   IntersectionBase() {}
 
@@ -267,14 +269,16 @@ class IntersectionBase<dim, fptype, false> {
         l(line),
         intPos(intPos),
         otherIntPos(otherIntPos),
-        absErrMargin(absErrMargin) {}
+        absErrMargin(absErrMargin),
+        numIP(0) {}
   IntersectionBase(
       const IntersectionBase<dim, fptype, false> &i)
       : q(i.q),
         l(i.l),
         intPos(i.intPos),
         otherIntPos(i.otherIntPos),
-        absErrMargin(i.absErrMargin) {}
+        absErrMargin(i.absErrMargin),
+        numIP(i.numIP) {}
 
   IntersectionBase<dim, fptype, false> operator=(
       const IntersectionBase<dim, fptype, false> &i) {
@@ -283,19 +287,21 @@ class IntersectionBase<dim, fptype, false> {
     intPos = i.intPos;
     otherIntPos = i.otherIntPos;
     absErrMargin = i.absErrMargin;
+    numIP = i.numIP;
     return *this;
   }
 
   fptype compare(
-      const IntersectionBase<dim, fptype, false> &i) const {
+      const IntersectionBase<dim, fptype, false> &i) {
+    numIP++;
     fptype delta = intPos - i.intPos;
     return delta;
   }
 
-  int incPrecCount() { return 0; }
+  int incPrecCount() { return numIP; }
 
   static bool cmp(
-      const IntersectionBase<dim, fptype, false> &lhs,
+      IntersectionBase<dim, fptype, false> &lhs,
       const IntersectionBase<dim, fptype, false> &rhs) {
     fptype diff = lhs.compare(rhs);
     if(diff < 0) return true;
