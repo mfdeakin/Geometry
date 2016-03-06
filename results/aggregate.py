@@ -80,7 +80,6 @@ def analyzeData(datum):
     for machine in datum:
         for test in datum[machine]:
             testData = datum[machine][test]
-            print(testData.shape)
             resNum = testData.T[1]
             resTimes = testData.T[2]
             resLSqr = np.linalg.lstsq(np.vstack([resNum,
@@ -100,7 +99,7 @@ def analyzeData(datum):
                   "[numQuadrics, numResultants, " +
                   "resultantTime_ns, numMPComparisons, " +
                   "mpTime_ns, correct?, counter\n",
-                  pca.components_[0])
+                  pca.components_)
 
 if __name__ == "__main__":
     datum = aggregateData()
