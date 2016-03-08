@@ -1,0 +1,1566 @@
+hardEllipsoids.100.csg.laptop.csv
+hardEllipsoids.10.csg.laptop.csv
+hardEllipsoids.1000.csg.laptop.csv
+hardEllipsoids.200.csg.laptop.csv
+hardEllipsoids.300.csg.laptop.csv
+hardEllipsoids.400.csg.laptop.csv
+hardEllipsoids.500.csg.laptop.csv
+hardEllipsoids.600.csg.laptop.csv
+hardEllipsoids.700.csg.laptop.csv
+hardEllipsoids.800.csg.laptop.csv
+hardEllipsoids.900.csg.laptop.csv
+hardcylinders.10.csg.laptop.csv
+hardcylinders.100.csg.laptop.csv
+hardcylinders.1000.csg.laptop.csv
+hardcylinders.200.csg.laptop.csv
+hardcylinders.300.csg.laptop.csv
+hardcylinders.400.csg.laptop.csv
+hardcylinders.500.csg.laptop.csv
+hardcylinders.600.csg.laptop.csv
+hardcylinders.700.csg.laptop.csv
+hardcylinders.800.csg.laptop.csv
+hardcylinders.900.csg.laptop.csv
+cylinders.2.csg.laptop.csv
+packedEll.1331.csg.laptop.csv
+hardcylinders.1000.csg.desktop.csv
+hardcylinders.1000.csg.soliton.csv
+hardcylinders.100.csg.desktop.csv
+hardcylinders.100.csg.soliton.csv
+hardcylinders.10.csg.desktop.csv
+hardcylinders.10.csg.soliton.csv
+hardcylinders.200.csg.desktop.csv
+hardcylinders.200.csg.soliton.csv
+hardcylinders.300.csg.desktop.csv
+hardcylinders.300.csg.soliton.csv
+hardcylinders.400.csg.desktop.csv
+hardcylinders.400.csg.soliton.csv
+hardcylinders.500.csg.desktop.csv
+hardcylinders.500.csg.soliton.csv
+hardcylinders.600.csg.desktop.csv
+hardcylinders.600.csg.soliton.csv
+hardcylinders.700.csg.desktop.csv
+hardcylinders.700.csg.soliton.csv
+hardcylinders.800.csg.desktop.csv
+hardcylinders.800.csg.soliton.csv
+hardcylinders.900.csg.desktop.csv
+hardcylinders.900.csg.soliton.csv
+hardEllipsoids.1000.csg.desktop.csv
+hardEllipsoids.1000.csg.soliton.csv
+hardEllipsoids.100.csg.desktop.csv
+hardEllipsoids.100.csg.soliton.csv
+hardEllipsoids.10.csg.desktop.csv
+hardEllipsoids.10.csg.soliton.csv
+hardEllipsoids.200.csg.desktop.csv
+hardEllipsoids.200.csg.soliton.csv
+hardEllipsoids.300.csg.desktop.csv
+hardEllipsoids.300.csg.soliton.csv
+hardEllipsoids.400.csg.desktop.csv
+hardEllipsoids.400.csg.soliton.csv
+hardEllipsoids.500.csg.desktop.csv
+hardEllipsoids.500.csg.soliton.csv
+hardEllipsoids.600.csg.desktop.csv
+hardEllipsoids.600.csg.soliton.csv
+hardEllipsoids.700.csg.desktop.csv
+hardEllipsoids.700.csg.soliton.csv
+hardEllipsoids.800.csg.desktop.csv
+hardEllipsoids.800.csg.soliton.csv
+hardEllipsoids.900.csg.desktop.csv
+hardEllipsoids.900.csg.soliton.csv
+cylinders.2.csg.desktop.csv
+cylinders.2.csg.soliton.csv
+packedEll.1331.csg.desktop.csv
+packedEll.1331.csg.soliton.csv
+Saving 'hardcylinders.laptop.400.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -7.90963059e-05  -9.12512192e-01  -8.45710952e-05
+   -4.09049491e-01   1.44906827e-08  -3.03974790e-07]
+ [  0.00000000e+00   3.78647013e-05   4.09049487e-01   3.84994296e-05
+   -9.12512199e-01  -1.36043950e-08   3.62639648e-06]
+ [  0.00000000e+00   3.58382285e-04  -1.82777155e-06   3.83101168e-04
+    3.18578337e-06  -3.88136188e-07   9.99999862e-01]
+ [  0.00000000e+00   6.99392643e-01  -1.27724891e-04   7.14737449e-01
+    1.91950995e-06  -1.39107697e-04  -5.24467051e-04]
+ [  0.00000000e+00  -7.14737569e-01  -2.33039948e-06   6.99392738e-01
+   -1.19493593e-06  -7.03750935e-05  -1.17889210e-05]
+ [  0.00000000e+00  -4.69913178e-05  -8.55568521e-10  -1.48645462e-04
+    6.30260865e-09  -9.99999988e-01  -3.14349142e-07]]
+Resultant Least Square Coefficients: [   11515.69015123  2226919.49844817]
+Residual: [  1.24439533e+16]
+Increased Precision Coefficients: [  4.81529714e+03   6.53471925e+07]
+Residual: [  2.53692073e+16]
+Total Potentially Incorrect: 4206.0
+Saving 'hardcylinders.laptop.200.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -7.13926952e-05  -9.20437005e-01  -7.73527377e-05
+   -3.90890917e-01   6.83555245e-10   3.38537494e-06]
+ [  0.00000000e+00  -2.81669114e-05  -3.90890914e-01  -2.99200272e-05
+    9.20437009e-01   5.51633977e-10  -6.16710688e-05]
+ [  0.00000000e+00  -3.04803619e-04   2.10417785e-05  -3.34873108e-04
+   -5.80861336e-05   9.00694137e-07  -9.99999896e-01]
+ [ -0.00000000e+00  -6.90179226e-01   1.12928013e-04  -7.23638315e-01
+    3.34510380e-06  -9.15632453e-05   4.52698284e-04]
+ [  0.00000000e+00  -7.23632467e-01  -1.69182617e-06   6.90173118e-01
+   -4.28563340e-07   4.13768475e-03  -1.05509073e-05]
+ [ -0.00000000e+00  -2.93099335e-03  -1.81663003e-08   2.92200218e-03
+   -1.89133381e-09  -9.99991436e-01  -9.85809370e-07]]
+Resultant Least Square Coefficients: [   12864.21571819  1290981.76197432]
+Residual: [  3.81846642e+15]
+Increased Precision Coefficients: [  5.02561645e+03   3.27468198e+07]
+Residual: [  8.03678254e+15]
+Total Potentially Incorrect: 164.0
+Saving 'hardcylinders.laptop.700.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   8.60521200e-05   9.25344444e-01   9.04497793e-05
+    3.79127477e-01  -8.76213954e-09  -2.66307682e-07]
+ [  0.00000000e+00   4.48628144e-05   3.79127472e-01   2.14640580e-05
+   -9.25344447e-01  -1.01475313e-09   1.07808598e-04]
+ [  0.00000000e+00  -1.52375418e-03   4.10537902e-05  -3.04895439e-03
+   -9.98300191e-05   6.10361380e-07  -9.99994185e-01]
+ [ -0.00000000e+00   5.55384949e-01  -1.29901693e-04   8.31586413e-01
+   -7.40106379e-06   3.78223589e-04  -3.38176321e-03]
+ [  0.00000000e+00   8.31591663e-01  -2.93756189e-05  -5.55387011e-01
+    1.54488717e-05   6.26130762e-04   4.26208508e-04]
+ [  0.00000000e+00   7.30744075e-04  -7.59925440e-08  -3.32211652e-05
+    4.42985400e-09  -9.99999732e-01  -1.62255873e-06]]
+Resultant Least Square Coefficients: [   10738.57428167  3732668.61914145]
+Residual: [  2.80184376e+16]
+Increased Precision Coefficients: [  4.17930932e+03   1.11867309e+08]
+Residual: [  4.28899323e+16]
+Total Potentially Incorrect: 4688.0
+Saving 'hardcylinders.laptop.100.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   6.61655633e-05   9.13792276e-01   7.24008195e-05
+    4.06181815e-01  -4.29223777e-11  -2.46886875e-07]
+ [ -0.00000000e+00  -4.22608650e-05  -4.06181809e-01  -4.49017197e-05
+    9.13792279e-01  -3.11736979e-10   7.71014227e-05]
+ [  0.00000000e+00  -3.12082612e-05  -3.15371224e-05  -3.85585683e-05
+    7.03535893e-05   4.52282822e-08  -9.99999996e-01]
+ [  0.00000000e+00  -7.10544446e-01   1.14545661e-04  -7.03652310e-01
+   -1.65254834e-05  -2.70132903e-05   4.93019062e-05]
+ [ -0.00000000e+00   7.03643008e-01   5.34580135e-06  -7.10535248e-01
+    3.56453722e-09   5.11647706e-03   5.43781021e-06]
+ [ -0.00000000e+00  -3.61941483e-03  -2.43437068e-08   3.61647667e-03
+   -1.65532559e-10   9.99986910e-01   1.87379269e-08]]
+Resultant Least Square Coefficients: [  13797.13639213  788267.57691118]
+Residual: [  3.23423697e+14]
+Increased Precision Coefficients: [  5.59868890e+03   1.63759206e+07]
+Residual: [  4.76232234e+14]
+Total Potentially Incorrect: 8.0
+Saving 'hardcylinders.laptop.900.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -8.82253952e-05  -9.26720808e-01  -9.37967614e-05
+   -3.75750619e-01   6.69352358e-09  -1.99327519e-07]
+ [ -0.00000000e+00  -4.69915480e-05  -3.75750619e-01   2.99285425e-05
+    9.26720812e-01   1.20330022e-09   8.29077735e-05]
+ [  0.00000000e+00   1.38427481e-03  -3.16284493e-05   6.91977363e-03
+    7.64839302e-05  -1.14624300e-06  -9.99975097e-01]
+ [  0.00000000e+00   2.82353275e-01  -1.00449658e-04   9.59284711e-01
+   -5.80202368e-05   2.24971794e-04   7.02906110e-03]
+ [  0.00000000e+00   9.59309194e-01  -7.40233475e-05  -2.82356070e-01
+    2.78050327e-05   7.22254473e-04  -6.25904484e-04]
+ [  0.00000000e+00   7.56385509e-04  -8.26809718e-08   1.18711384e-05
+    5.54175268e-09  -9.99999714e-01   2.27549338e-06]]
+Resultant Least Square Coefficients: [   10488.85556194  4687298.88131761]
+Residual: [  4.50133344e+16]
+Increased Precision Coefficients: [  3.98936248e+03   1.44129617e+08]
+Residual: [  7.80047158e+16]
+Total Potentially Incorrect: 4563.0
+Saving 'hardcylinders.laptop.1000.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   8.63108333e-05   9.27521896e-01   9.22320092e-05
+    3.73768800e-01  -5.83421427e-09   2.51009866e-07]
+ [  0.00000000e+00   4.66273087e-05   3.73768802e-01  -4.32837811e-05
+   -9.27521901e-01  -7.49776560e-09  -3.67767391e-05]
+ [  0.00000000e+00  -1.98956951e-03   1.42869289e-05  -8.36537786e-03
+   -3.36014214e-05  -2.85221753e-07   9.99963030e-01]
+ [  0.00000000e+00   2.70195635e-01  -9.30096531e-05   9.62767090e-01
+   -6.91668742e-05   1.30679670e-04   8.59180017e-03]
+ [  0.00000000e+00  -9.62803240e-01   7.51179063e-05   2.70202777e-01
+   -3.07532021e-05  -5.05567017e-04   3.44794852e-04]
+ [ -0.00000000e+00  -5.22071276e-04   5.83494819e-08   1.07891420e-05
+   -1.12923803e-08   9.99999864e-01  -6.63245866e-07]]
+Resultant Least Square Coefficients: [   10723.78766767  5191723.7018581 ]
+Residual: [  8.41338681e+16]
+Increased Precision Coefficients: [  4.02695045e+03   1.62679086e+08]
+Residual: [  1.37897276e+17]
+Total Potentially Incorrect: 4583.0
+Saving 'hardcylinders.laptop.500.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   8.15349848e-05   9.21024345e-01   8.65222513e-05
+    3.89504997e-01  -1.25124612e-08  -8.38425798e-07]
+ [ -0.00000000e+00   3.85884255e-05   3.89504993e-01   3.74166339e-05
+   -9.21024352e-01  -8.01337088e-09   3.25610940e-05]
+ [  0.00000000e+00  -9.58488150e-04   1.21072355e-05  -1.17082985e-03
+   -3.03206132e-05   7.67413485e-07  -9.99998855e-01]
+ [  0.00000000e+00   6.97588394e-01  -1.30392175e-04   7.16497122e-01
+    3.13809006e-06   1.30051284e-04  -1.50752973e-03]
+ [  0.00000000e+00   7.16497877e-01   1.18018339e-06  -6.97588971e-01
+    2.18344840e-06   6.35579316e-04   1.30003850e-04]
+ [ -0.00000000e+00  -5.46112875e-04   3.08438141e-08   3.50192724e-04
+   -4.27944332e-09   9.99999790e-01   8.80841461e-07]]
+Resultant Least Square Coefficients: [   11279.88461159  2756040.52481359]
+Residual: [  1.50157874e+16]
+Increased Precision Coefficients: [  4.48552407e+03   8.09768475e+07]
+Residual: [  3.14666430e+16]
+Total Potentially Incorrect: 4587.0
+Saving 'hardcylinders.laptop.10.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   4.60651288e-05   9.15460743e-01   5.33646001e-05
+    4.02407284e-01   0.00000000e+00  -2.56282015e-05]
+ [  0.00000000e+00   1.93559685e-05   4.02406589e-01   2.22967279e-05
+   -9.15459284e-01   0.00000000e+00  -1.79889538e-03]
+ [  0.00000000e+00  -1.22060241e-05  -7.47348755e-04  -1.40916073e-05
+    1.63650517e-03   0.00000000e+00  -9.99998381e-01]
+ [  0.00000000e+00   6.85497148e-01  -7.63625651e-05   7.28075308e-01
+   -1.30342439e-06   0.00000000e+00  -1.85720397e-05]
+ [  0.00000000e+00   7.28075310e-01   3.26533811e-06  -6.85497150e-01
+    1.32028377e-07   0.00000000e+00   7.70628844e-07]
+ [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00
+    0.00000000e+00   1.00000000e+00   0.00000000e+00]]
+Resultant Least Square Coefficients: [  19669.92695981  199412.85620871]
+Residual: [  5.01008292e+12]
+Increased Precision Coefficients: [    7424.45009871  1731491.87733355]
+Residual: [  4.94196106e+12]
+Total Potentially Incorrect: 0.0
+Saving 'hardcylinders.laptop.300.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -7.74521697e-05  -9.15928629e-01  -8.33708316e-05
+   -4.01341168e-01   9.04729494e-09  -3.06655303e-07]
+ [  0.00000000e+00   3.42558026e-05   4.01341165e-01   3.55955838e-05
+   -9.15928635e-01  -6.98578609e-09   3.91673561e-05]
+ [  0.00000000e+00  -1.89775469e-05   1.60026215e-05  -7.36163364e-06
+   -3.57514289e-05  -6.56798743e-07  -9.99999999e-01]
+ [  0.00000000e+00   7.00845150e-01  -1.24013752e-04   7.13313435e-01
+   -4.08032708e-07  -5.83585416e-05  -1.85534056e-05]
+ [  0.00000000e+00   7.13313327e-01   3.12038896e-06  -7.00845085e-01
+    8.08083223e-07  -5.13945686e-04  -8.37721379e-06]
+ [  0.00000000e+00   4.07504651e-04   5.46731993e-09  -3.18568422e-04
+   -2.39941272e-09   9.99999866e-01  -6.62186737e-07]]
+Resultant Least Square Coefficients: [   11806.03947247  1805293.19763327]
+Residual: [  6.39436709e+15]
+Increased Precision Coefficients: [  4.79336499e+03   4.84841626e+07]
+Residual: [  1.41763992e+16]
+Total Potentially Incorrect: 2108.0
+Saving 'hardcylinders.laptop.600.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   8.42438687e-05   9.26170681e-01   8.88339213e-05
+    3.77104566e-01  -1.02154486e-08  -9.03622485e-07]
+ [  0.00000000e+00   5.53366060e-05   3.77104560e-01   4.13843128e-05
+   -9.26170688e-01  -5.24237796e-09  -5.11351839e-05]
+ [  0.00000000e+00   1.19219441e-03  -2.03555037e-05   1.19955085e-03
+    4.70481009e-05  -2.93651545e-07  -9.99998569e-01]
+ [  0.00000000e+00   6.50980138e-01  -1.38643919e-04   7.59092751e-01
+    1.62692027e-05   4.37247409e-04   1.68667111e-03]
+ [  0.00000000e+00  -7.59093426e-01   1.13465889e-05   6.50981366e-01
+   -1.16393638e-05  -6.44678894e-04  -1.24102451e-04]
+ [  0.00000000e+00  -7.74010772e-04   7.93688210e-08   8.77629889e-05
+   -1.56065524e-08   9.99999697e-01  -1.11115054e-06]]
+Resultant Least Square Coefficients: [   10978.8191866   3392925.49898764]
+Residual: [  2.06129446e+16]
+Increased Precision Coefficients: [  4.23353966e+03   9.67463337e+07]
+Residual: [  2.59175915e+16]
+Total Potentially Incorrect: 4558.0
+Saving 'hardcylinders.laptop.800.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -8.68573790e-05  -9.28265314e-01  -9.13822618e-05
+   -3.71918661e-01   7.46824022e-09  -8.00649303e-07]
+ [  0.00000000e+00  -4.41903686e-05  -3.71918660e-01   6.64398971e-06
+    9.28265321e-01   3.23619460e-09  -4.24303097e-05]
+ [  0.00000000e+00   2.43906764e-03  -1.70538808e-05   3.56325435e-03
+    3.89666250e-05   6.93133929e-07   9.99990676e-01]
+ [  0.00000000e+00   4.19124721e-01  -1.15383210e-04   9.07918641e-01
+   -3.29698206e-05   2.62891528e-04  -4.25745916e-03]
+ [  0.00000000e+00   9.07925159e-01  -5.35950767e-05  -4.19131287e-01
+    2.47156135e-05   5.88868583e-04  -7.21028501e-04]
+ [ -0.00000000e+00   6.44834763e-04  -7.00416699e-08  -8.12666109e-06
+    6.14024149e-09  -9.99999792e-01  -8.50713827e-07]]
+Resultant Least Square Coefficients: [   10669.98068833  4327100.41118976]
+Residual: [  4.44505892e+16]
+Increased Precision Coefficients: [  4.05601214e+03   1.28024211e+08]
+Residual: [  5.76116310e+16]
+Total Potentially Incorrect: 4639.0
+Computing overall Least Squares Fit
+Overall Resultant Least Square Coefficients for laptop, hardcylinders: (numQuads, numResultants, constant)
+(array([  1.95463479e+03,   1.07989471e+04,   2.53275817e+06]), array([  5.14873538e+17]), 3, array([  1.61995346e+06,   1.44952943e+05,   1.76338951e+02]))
+Overall Multi-precision Least Square Coefficients for laptop, hardcylinders: (numQuads, numResultants, constant)
+(array([    2332.79614786,    10145.68924219,  2254940.0333752 ]), array([  1.14384734e+18]), 3, array([  1.72221807e+06,   1.44874116e+05,   1.76310478e+02]))
+Total Potentially Incorrect: 34104.0
+
+
+
+Saving 'cylinders.laptop.2.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   6.95954042e-06   5.06297936e-01   2.64610895e-05
+    8.62358374e-01  -5.95979972e-10  -6.58219859e-04]
+ [  0.00000000e+00   1.31924755e-05   8.62358624e-01   3.95324548e-05
+   -5.06297808e-01  -1.46260814e-09   3.62294332e-04]
+ [  0.00000000e+00  -3.22381574e-07   2.08279230e-05  -4.16988587e-06
+    7.51050458e-04   3.52200081e-09   9.99999718e-01]
+ [  0.00000000e+00  -6.65950669e-03   4.75864368e-05  -9.99977824e-01
+    2.79603825e-06  -7.02056624e-06  -4.17503254e-06]
+ [ -0.00000000e+00  -9.99977790e-01   1.45836605e-05   6.65950530e-03
+   -6.96581303e-07   2.64506181e-04  -2.94386632e-07]
+ [  0.00000000e+00   2.64453562e-04  -1.96042185e-09  -8.78189109e-06
+   -2.53323433e-11   9.99999965e-01  -3.47330634e-09]]
+Resultant Least Square Coefficients: [ 67919.47250704  34763.27529091]
+Residual: [  1.05543972e+12]
+Increased Precision Coefficients: [    8892.03345915  1641080.5638598 ]
+Residual: [  1.20748004e+14]
+Total Potentially Incorrect: 1.0
+Saving 'hardEllipsoids.laptop.400.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   7.49690256e-05   9.23439197e-01   8.03101205e-05
+    3.83744755e-01  -1.39531258e-08  -2.67132932e-07]
+ [ -0.00000000e+00   3.89885694e-05   3.83744751e-01   3.98617315e-05
+   -9.23439203e-01  -1.19350622e-08   2.59287927e-05]
+ [  0.00000000e+00  -4.93537413e-04  -9.62292653e-06  -4.34584929e-04
+    2.40399951e-05   9.17358919e-07   9.99999783e-01]
+ [  0.00000000e+00   7.13583004e-01  -1.22755433e-04   7.00570329e-01
+    9.37560659e-06  -2.52906994e-04   6.56636184e-04]
+ [  0.00000000e+00  -7.00570464e-01  -4.85382839e-06   7.13583218e-01
+   -7.93917287e-07   1.22616139e-04  -3.56453703e-05]
+ [ -0.00000000e+00   2.66371842e-04  -1.29768418e-08   8.96827206e-05
+   -3.22041540e-09   9.99999961e-01  -7.46919863e-07]]
+Resultant Least Square Coefficients: [   12289.28511651  1906437.00658729]
+Residual: [  1.09103746e+16]
+Increased Precision Coefficients: [  4.74203796e+03   6.52807706e+07]
+Residual: [  3.18528908e+16]
+Total Potentially Incorrect: 2070.0
+Saving 'hardEllipsoids.laptop.200.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -7.08415528e-05  -9.12491671e-01  -7.68862435e-05
+   -4.09095270e-01   1.50333878e-09  -3.05627553e-06]
+ [  0.00000000e+00   4.72570981e-05   4.09095263e-01   5.03940220e-05
+   -9.12491675e-01  -2.52372216e-09   6.43729442e-05]
+ [  0.00000000e+00  -9.66932233e-05   2.91427182e-05  -1.22342903e-04
+   -5.74926123e-05   4.50046954e-07  -9.99999986e-01]
+ [  0.00000000e+00   6.95460722e-01  -1.23623730e-04   7.18564085e-01
+    2.02663977e-05   3.58459001e-05  -1.55162309e-04]
+ [  0.00000000e+00   7.18564053e-01   2.78789652e-06  -6.95460667e-01
+    5.66718567e-08  -4.03745162e-04   1.56042989e-05]
+ [ -0.00000000e+00   2.65187410e-04   7.94811557e-09  -3.06546426e-04
+   -2.36557878e-09   9.99999918e-01   4.61909246e-07]]
+Resultant Least Square Coefficients: [   12832.84657956  1061398.67197488]
+Residual: [  4.68883560e+15]
+Increased Precision Coefficients: [  5.25564901e+03   3.25727488e+07]
+Residual: [  1.30754427e+16]
+Total Potentially Incorrect: 170.0
+Saving 'hardEllipsoids.laptop.700.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -7.70440045e-05  -9.25257402e-01  -8.15089279e-05
+   -3.79339857e-01   9.32546149e-09  -3.75990846e-07]
+ [ -0.00000000e+00  -5.35110648e-05  -3.79339851e-01  -4.13075966e-05
+    9.25257408e-01   3.91248722e-09  -3.67570406e-05]
+ [  0.00000000e+00   7.02416741e-04   1.42105728e-05   1.79960414e-04
+   -3.38515241e-05   1.64406902e-07  -9.99999736e-01]
+ [  0.00000000e+00   6.18791133e-01  -1.28233222e-04   7.85555267e-01
+    1.83070921e-05   3.28454819e-04   5.76015866e-04]
+ [  0.00000000e+00  -7.85554997e-01   1.55874240e-05   6.18791466e-01
+   -1.14328745e-05  -5.22945995e-04  -4.40428606e-04]
+ [ -0.00000000e+00   6.14048002e-04  -6.03804905e-08  -6.55750896e-05
+    1.20688040e-08  -9.99999809e-01   2.55108606e-07]]
+Resultant Least Square Coefficients: [   11977.42409117  3176032.92201053]
+Residual: [  2.90097772e+16]
+Increased Precision Coefficients: [  4.62297437e+03   1.18528689e+08]
+Residual: [  5.19110929e+16]
+Total Potentially Incorrect: 2140.0
+Saving 'hardEllipsoids.laptop.100.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -6.44782305e-05  -9.10943137e-01  -7.07174632e-05
+   -4.12531928e-01   5.08011144e-11   1.01224779e-05]
+ [ -0.00000000e+00  -3.07175325e-05  -4.12531925e-01  -3.30099572e-05
+    9.10943138e-01   8.50005692e-11  -8.56853378e-05]
+ [  0.00000000e+00  -5.93873045e-05   2.61377538e-05  -8.42824926e-05
+   -8.22304734e-05  -4.37990640e-08  -9.99999991e-01]
+ [  0.00000000e+00  -6.92641372e-01   1.05744322e-04  -7.21282128e-01
+   -1.59623986e-06  -2.24669175e-06   1.01928456e-04]
+ [ -0.00000000e+00  -7.21282132e-01  -2.54613251e-06   6.92641374e-01
+   -3.77233142e-07  -1.14983156e-04  -1.55425705e-05]
+ [ -0.00000000e+00   8.44914506e-05  -2.72997288e-11  -7.80215892e-05
+    1.07036938e-10  -9.99999993e-01   4.53571891e-08]]
+Resultant Least Square Coefficients: [  14067.72406966  620968.52090802]
+Residual: [  1.62240249e+15]
+Increased Precision Coefficients: [  5.76360058e+03   1.64521731e+07]
+Residual: [  4.03987027e+15]
+Total Potentially Incorrect: 4.0
+Saving 'hardEllipsoids.laptop.900.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -8.50215164e-05  -9.23304701e-01  -9.01950842e-05
+   -3.84068242e-01   8.17456507e-09   7.59649667e-07]
+ [  0.00000000e+00   4.91093204e-05   3.84068238e-01   2.20378383e-05
+   -9.23304707e-01  -4.11006070e-09   6.09877698e-05]
+ [  0.00000000e+00  -1.96353965e-05   2.30113541e-05  -3.13354425e-03
+   -5.65572346e-05   9.50136309e-07  -9.99995088e-01]
+ [  0.00000000e+00  -3.09992308e-01   1.17335539e-04  -9.50734344e-01
+    9.82479387e-06  -2.22591666e-04   2.98527155e-03]
+ [  0.00000000e+00  -9.50738783e-01   6.41485052e-05   3.09990933e-01
+   -1.65484942e-05  -6.89659760e-04  -9.52705095e-04]
+ [ -0.00000000e+00  -7.24688156e-04   7.94628709e-08   2.16570933e-06
+   -9.82742635e-09   9.99999737e-01   9.57586340e-07]]
+Resultant Least Square Coefficients: [   10829.60301543  3800201.687765  ]
+Residual: [  3.45939725e+16]
+Increased Precision Coefficients: [  4.20759992e+03   1.45034815e+08]
+Residual: [  1.23135386e+17]
+Total Potentially Incorrect: 2146.0
+Saving 'hardEllipsoids.laptop.1000.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   8.46019982e-05   9.25230609e-01   8.95359912e-05
+    3.79405198e-01  -7.46388725e-09   4.74599898e-07]
+ [ -0.00000000e+00  -4.99847317e-05  -3.79405196e-01  -1.13061764e-06
+    9.25230617e-01   2.49501256e-09  -8.72020800e-06]
+ [  0.00000000e+00  -3.81948356e-04  -3.71250532e-06   2.44978294e-05
+    7.88192644e-06   1.25096006e-06   9.99999927e-01]
+ [  0.00000000e+00   2.52688575e-01  -1.05140000e-04   9.67547639e-01
+   -2.82800095e-05   1.80062886e-04   7.28107814e-05]
+ [  0.00000000e+00   9.67547315e-01  -7.30450172e-05  -2.52688656e-01
+    2.20123653e-05   6.99719460e-04   3.75742137e-04]
+ [  0.00000000e+00   7.22511229e-04  -7.78999340e-08  -2.59172019e-06
+    9.79678715e-09  -9.99999739e-01   1.52698495e-06]]
+Resultant Least Square Coefficients: [   10904.86425816  4135045.5193334 ]
+Residual: [  4.23300388e+16]
+Increased Precision Coefficients: [  4.18917095e+03   1.63494373e+08]
+Residual: [  1.19071018e+17]
+Total Potentially Incorrect: 2136.0
+Saving 'hardEllipsoids.laptop.500.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   7.86273807e-05   9.21235264e-01   8.37171871e-05
+    3.89005880e-01  -1.27868886e-08  -6.60707545e-07]
+ [ -0.00000000e+00   4.50249609e-05   3.89005875e-01   4.45644043e-05
+   -9.21235271e-01  -9.40056904e-09   1.08281142e-05]
+ [  0.00000000e+00   1.46093828e-04   3.57242924e-06   1.90163529e-04
+   -1.02290543e-05   7.39474085e-08  -9.99999971e-01]
+ [  0.00000000e+00   7.14249651e-01  -1.30358135e-04   6.99890965e-01
+    1.37226367e-05   1.09313115e-05   2.37440603e-04]
+ [  0.00000000e+00   6.99890858e-01   4.51277059e-06  -7.14249539e-01
+    1.56048975e-06   6.17029082e-04  -3.35744334e-05]
+ [  0.00000000e+00   4.39660792e-04  -1.40768224e-08  -4.33062081e-04
+    4.79807940e-09  -9.99999810e-01  -9.20683819e-08]]
+Resultant Least Square Coefficients: [   11689.85198829  2289614.99651711]
+Residual: [  1.39034822e+16]
+Increased Precision Coefficients: [  4.61355652e+03   8.04188075e+07]
+Residual: [  3.80219594e+16]
+Total Potentially Incorrect: 2199.0
+Saving 'hardEllipsoids.laptop.10.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -3.88468330e-05  -8.90063524e-01  -4.61974430e-05
+   -4.55836496e-01   0.00000000e+00   9.28871828e-05]
+ [  0.00000000e+00  -3.60879681e-05  -4.55836502e-01  -4.23431577e-05
+    8.90063496e-01   0.00000000e+00  -2.29867284e-04]
+ [  0.00000000e+00   1.27979546e-06   2.21063050e-05   5.98665998e-07
+   -2.46937826e-04   0.00000000e+00  -9.99999969e-01]
+ [  0.00000000e+00   6.74406516e-01  -7.90244256e-05   7.38360241e-01
+    2.19990435e-05   0.00000000e+00   1.29795427e-06]
+ [ -0.00000000e+00  -7.38360243e-01  -3.07193815e-06   6.74406518e-01
+    5.73166518e-07   0.00000000e+00  -5.41415296e-07]
+ [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00
+    0.00000000e+00  -1.00000000e+00   0.00000000e+00]]
+Resultant Least Square Coefficients: [ 22285.00043116  71768.32065418]
+Residual: [  4.66360945e+13]
+Increased Precision Coefficients: [    9029.93578623  1637042.92791185]
+Residual: [  1.32585116e+14]
+Total Potentially Incorrect: 0.0
+Saving 'hardEllipsoids.laptop.300.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -7.48592719e-05  -9.15369401e-01  -8.07073484e-05
+   -4.02615012e-01   1.04674684e-08   7.62709613e-07]
+ [ -0.00000000e+00  -4.52896706e-05  -4.02615007e-01  -4.73944116e-05
+    9.15369407e-01   1.22748790e-08   3.75127658e-06]
+ [  0.00000000e+00   8.57076561e-05  -2.21659011e-06   7.23931475e-06
+    3.12777428e-06   1.06402680e-06  -9.99999996e-01]
+ [ -0.00000000e+00   7.04141378e-01  -1.27096150e-04   7.10059761e-01
+    1.57009126e-05  -1.90055513e-04   6.54907819e-05]
+ [  0.00000000e+00  -7.10058545e-01  -3.85273052e-06   7.04140627e-01
+   -3.68119708e-07   1.68429332e-03  -5.57581586e-05]
+ [  0.00000000e+00  -1.32977464e-03   3.14019094e-09   1.05103010e-03
+    3.42095522e-09  -9.99998564e-01  -1.17038841e-06]]
+Resultant Least Square Coefficients: [   12188.99657233  1501176.67758029]
+Residual: [  8.57468582e+15]
+Increased Precision Coefficients: [  4.93848273e+03   4.85914961e+07]
+Residual: [  2.31333527e+16]
+Total Potentially Incorrect: 1297.0
+Saving 'hardEllipsoids.laptop.600.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   7.99948527e-05   9.24363021e-01   8.46972136e-05
+    3.81514079e-01  -1.08572177e-08   1.23801555e-06]
+ [  0.00000000e+00   5.97921561e-05   3.81514072e-01   5.59032835e-05
+   -9.24363027e-01  -4.86907280e-09  -1.19775240e-05]
+ [  0.00000000e+00  -1.90712155e-04   3.44914812e-06  -5.49833866e-05
+   -1.15496853e-05   5.34124357e-07   9.99999980e-01]
+ [  0.00000000e+00   6.81723390e-01  -1.38842283e-04   7.31609959e-01
+    3.10362756e-05   1.96064354e-04   1.70240066e-04]
+ [  0.00000000e+00   7.31609822e-01  -2.87465149e-06  -6.81723417e-01
+    4.90717010e-06   4.90282791e-04   1.02043230e-04]
+ [ -0.00000000e+00   4.92357326e-04  -4.05232083e-08  -1.90794683e-04
+    8.84345009e-09  -9.99999861e-01   6.17532526e-07]]
+Resultant Least Square Coefficients: [   11518.18858609  2781779.26420118]
+Residual: [  2.62268725e+16]
+Increased Precision Coefficients: [  4.46466542e+03   9.85475661e+07]
+Residual: [  5.19299158e+16]
+Total Potentially Incorrect: 2177.0
+Saving 'hardEllipsoids.laptop.800.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -8.36145092e-05  -9.24981918e-01  -8.82755804e-05
+   -3.80011101e-01   9.02712521e-09  -2.76981830e-07]
+ [  0.00000000e+00   5.79645097e-05   3.80011094e-01   3.74087556e-05
+   -9.24981920e-01  -3.70695991e-09   1.04934109e-04]
+ [ -0.00000000e+00   7.00098968e-04   4.02110296e-05  -1.54717044e-03
+   -9.69431018e-05   6.64775518e-07  -9.99998553e-01]
+ [  0.00000000e+00   4.56596814e-01  -1.30621302e-04   8.89673036e-01
+    1.08105143e-05   3.22171294e-04  -1.05682048e-03]
+ [  0.00000000e+00  -8.89673137e-01   4.46859465e-05   4.56595537e-01
+   -1.90783471e-05  -6.74457016e-04  -1.32928909e-03]
+ [  0.00000000e+00   7.47149348e-04  -8.19530889e-08  -2.13279856e-05
+    1.62843847e-08  -9.99999721e-01  -1.08703847e-07]]
+Resultant Least Square Coefficients: [   11030.61342034  3497128.28740387]
+Residual: [  3.06109621e+16]
+Increased Precision Coefficients: [  4.26503592e+03   1.29653052e+08]
+Residual: [  7.38550643e+16]
+Total Potentially Incorrect: 2173.0
+Computing overall Least Squares Fit
+Overall Resultant Least Square Coefficients for laptop, hardEllipsoids: (numQuads, numResultants, constant)
+(array([    2167.01128533,    11346.34593   ,  1566511.30789062]), array([  4.33417409e+17]), 3, array([  9.28414304e+05,   1.69947621e+05,   1.75913379e+02]))
+Overall Multi-precision Least Square Coefficients for laptop, hardEllipsoids: (numQuads, numResultants, constant)
+(array([    2339.06761649,    10664.36243516,  1350947.30245368]), array([  6.97974068e+17]), 3, array([  9.87476438e+05,   1.69788805e+05,   1.75851245e+02]))
+Total Potentially Incorrect: 16512.0
+
+
+
+Saving 'packedEll.laptop.1331.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.18403098e-06   2.41428418e-02   1.36052568e-06
+    9.99708519e-01   2.17083644e-11  -2.59224837e-05]
+ [ -0.00000000e+00  -4.16759426e-05  -9.99707219e-01  -4.79236055e-05
+    2.41427687e-02   5.48002772e-10  -1.61211473e-03]
+ [  0.00000000e+00  -7.19546065e-04  -1.61094858e-03  -8.22796548e-04
+    6.48361813e-05   2.35170320e-08   9.99998103e-01]
+ [  0.00000000e+00  -6.78963318e-01   6.52657453e-05  -7.34171380e-01
+    1.98809272e-07  -4.08002749e-06  -1.09251601e-03]
+ [  0.00000000e+00   7.34165482e-01   1.99075116e-06  -6.78957795e-01
+    5.61678271e-09  -4.16621999e-03  -3.03750000e-05]
+ [  0.00000000e+00   3.05595126e-03   9.14547565e-09  -2.83170753e-03
+   -1.22453029e-11   9.99991321e-01  -1.54523872e-07]]
+Resultant Least Square Coefficients: [   16738.69056997  3931865.72628892]
+Residual: [  2.86409932e+14]
+Increased Precision Coefficients: [  1.55501792e+04   2.12148292e+08]
+Residual: [  3.49872024e+16]
+Total Potentially Incorrect: 8.0
+Saving 'hardcylinders.soliton.400.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.33424083e-04   9.40226792e-01   1.42644807e-04
+    3.40548883e-01  -2.43412677e-08  -4.70432355e-06]
+ [ -0.00000000e+00  -8.41163880e-05  -3.40548863e-01  -8.14480482e-05
+    9.40226801e-01   4.53796268e-08  -1.47898746e-04]
+ [  0.00000000e+00   4.29551816e-04   4.57899799e-05   5.40236590e-04
+   -1.40630803e-04   4.21987649e-07  -9.99999751e-01]
+ [  0.00000000e+00  -7.23090978e-01   2.23257958e-04  -6.90752422e-01
+   -4.37714877e-05   9.92771394e-05  -6.83758525e-04]
+ [ -0.00000000e+00   6.90752648e-01   1.05993181e-05  -7.23091121e-01
+    2.98327172e-06  -1.20898814e-05  -9.39261899e-05]
+ [ -0.00000000e+00   8.01373476e-05   1.62847027e-08   5.98336181e-05
+   -2.99368300e-08   9.99999995e-01   4.88740177e-07]]
+Resultant Least Square Coefficients: [    7040.90368429  2153085.93154834]
+Residual: [  2.01750800e+15]
+Increased Precision Coefficients: [  2.38282587e+03   3.54203539e+07]
+Residual: [  2.80434236e+15]
+Total Potentially Incorrect: 4252.0
+Saving 'hardcylinders.soliton.200.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.25234240e-04  -9.36971875e-01  -1.35692296e-04
+   -3.49404740e-01   8.83007137e-10   3.19640437e-06]
+ [  0.00000000e+00  -9.20537150e-05  -3.49404653e-01  -9.47576624e-05
+    9.36971705e-01  -3.68124216e-09  -6.28679332e-04]
+ [  0.00000000e+00  -1.89542667e-04   2.16729818e-04  -2.05218360e-04
+   -5.90188228e-04  -1.23114435e-07  -9.99999763e-01]
+ [ -0.00000000e+00  -7.17348384e-01   2.18834260e-04  -6.96714515e-01
+   -5.91442564e-05  -2.27097928e-04   2.79029164e-04]
+ [  0.00000000e+00  -6.96704289e-01  -1.07880871e-05   7.17335996e-01
+    6.39799859e-08   5.67459662e-03  -1.51584064e-05]
+ [  0.00000000e+00   3.79066858e-03   1.10484423e-07  -4.22888307e-03
+   -1.01096758e-08   9.99983874e-01   2.62684871e-08]]
+Resultant Least Square Coefficients: [    7475.35360835  1163719.82312849]
+Residual: [  4.44618665e+14]
+Increased Precision Coefficients: [  2.56966650e+03   1.76702079e+07]
+Residual: [  6.32860517e+14]
+Total Potentially Incorrect: 134.0
+Saving 'hardcylinders.soliton.700.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.44333830e-04  -9.39059168e-01  -1.51728623e-04
+   -3.43755487e-01   1.47083368e-08   2.19392811e-06]
+ [  0.00000000e+00   8.03581237e-05   3.43755478e-01   2.75493600e-05
+   -9.39059188e-01  -1.91040125e-08   7.32639064e-05]
+ [ -0.00000000e+00  -5.07306228e-04  -2.31872032e-05   9.56533733e-04
+    6.95150228e-05   5.82493386e-08   9.99999411e-01]
+ [  0.00000000e+00   5.34921692e-01  -2.15651021e-04   8.44901313e-01
+   -8.42200785e-06   4.67962192e-04  -5.36812260e-04]
+ [  0.00000000e+00  -8.44900930e-01   5.65944981e-05   5.34921330e-01
+   -3.59637798e-05  -8.36888272e-04  -9.40290493e-04]
+ [ -0.00000000e+00  -9.57411215e-04   1.68660332e-07   5.22874879e-05
+   -3.90442784e-08   9.99999540e-01  -5.93958454e-07]]
+Resultant Least Square Coefficients: [    6498.46581646  3677491.26646417]
+Residual: [  8.68447502e+15]
+Increased Precision Coefficients: [  2.26038655e+03   6.21334907e+07]
+Residual: [  9.91444644e+15]
+Total Potentially Incorrect: 4566.0
+Saving 'hardcylinders.soliton.100.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.15280592e-04   9.33896514e-01   1.26139205e-04
+    3.57543384e-01  -7.51325881e-12   5.30196290e-06]
+ [  0.00000000e+00   8.33315217e-05   3.57543226e-01   8.61756855e-05
+   -9.33896145e-01  -4.85728446e-09  -9.04203587e-04]
+ [ -0.00000000e+00   6.91802664e-05   3.18320492e-04   7.08686776e-05
+   -8.46323234e-04   6.14961853e-08   9.99999586e-01]
+ [  0.00000000e+00  -7.19583564e-01   2.02139093e-04  -6.94405818e-01
+   -5.09915794e-05  -3.25574584e-05   9.88851473e-05]
+ [  0.00000000e+00  -6.94401530e-01  -1.14905613e-05   7.19578949e-01
+    4.17110311e-08   3.55700827e-03  -2.95325268e-06]
+ [  0.00000000e+00   2.44657965e-03   4.91775979e-08  -2.58217270e-03
+   -6.29002977e-09   9.99993673e-01  -4.77766608e-08]]
+Resultant Least Square Coefficients: [   8094.33033111  675596.95349803]
+Residual: [  9.31916109e+13]
+Increased Precision Coefficients: [  2.83022798e+03   8.92212731e+06]
+Residual: [  9.00291008e+13]
+Total Potentially Incorrect: 3.0
+Saving 'hardcylinders.soliton.900.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.45140623e-04  -9.42090330e-01  -1.54337033e-04
+   -3.35359158e-01   1.09604550e-08  -9.04540992e-07]
+ [  0.00000000e+00  -6.32870289e-05  -3.35359170e-01   1.06547952e-04
+    9.42090341e-01   2.18887680e-08  -3.89450893e-05]
+ [  0.00000000e+00   1.70708734e-04  -1.38084984e-05  -1.19642052e-03
+    3.65703081e-05   4.94055373e-07   9.99999269e-01]
+ [ -0.00000000e+00   2.88661377e-01  -1.50611158e-04   9.57430572e-01
+   -1.42459684e-04   2.53034820e-04   1.09621637e-03]
+ [  0.00000000e+00   9.57430704e-01  -1.19571379e-04  -2.88661101e-01
+    5.43790720e-05   9.69821289e-04  -5.08806338e-04]
+ [  0.00000000e+00  -1.00157864e-03   1.71745983e-07   3.76870179e-05
+   -3.36543139e-08   9.99999498e-01  -2.77983981e-07]]
+Resultant Least Square Coefficients: [    6482.47038353  4646533.40461809]
+Residual: [  1.61172238e+16]
+Increased Precision Coefficients: [  2.16651336e+03   8.29128365e+07]
+Residual: [  1.75173643e+16]
+Total Potentially Incorrect: 4697.0
+Saving 'hardcylinders.soliton.1000.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.50018295e-04   9.39560077e-01   1.60541495e-04
+    3.42384013e-01  -1.02125354e-08   7.22115821e-07]
+ [ -0.00000000e+00   6.15819390e-05   3.42384033e-01  -1.68865972e-04
+   -9.39560078e-01  -2.12535769e-08  -4.26502554e-05]
+ [  0.00000000e+00   1.37510641e-04  -1.40393550e-05   9.97462817e-04
+    4.01075081e-05   8.40712537e-08  -9.99999492e-01]
+ [  0.00000000e+00   2.19964423e-01  -1.26371188e-04   9.75507334e-01
+   -2.07005846e-04   1.68346837e-04   1.00327374e-03]
+ [  0.00000000e+00   9.75507421e-01  -1.37606972e-04  -2.19964520e-01
+    5.33306481e-05   9.23257636e-04  -8.52596742e-05]
+ [  0.00000000e+00   9.37675412e-04  -1.65194306e-07  -3.88602806e-05
+    3.08649377e-08  -9.99999560e-01   6.11100539e-09]]
+Resultant Least Square Coefficients: [    6254.95226447  5135819.76188831]
+Residual: [  1.82152699e+16]
+Increased Precision Coefficients: [  2.12467698e+03   8.86842987e+07]
+Residual: [  2.32018204e+16]
+Total Potentially Incorrect: 4594.0
+Saving 'hardcylinders.soliton.500.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.37095276e-04   9.39252453e-01   1.45489249e-04
+    3.43227024e-01  -2.10791470e-08  -1.64673709e-06]
+ [ -0.00000000e+00  -8.07366801e-05  -3.43227006e-01  -7.27352476e-05
+    9.39252467e-01   4.11069803e-08   1.15440146e-04]
+ [  0.00000000e+00  -5.15834026e-04  -4.10158619e-05  -4.47311460e-04
+    1.07839147e-04  -5.92631762e-07  -9.99999760e-01]
+ [  0.00000000e+00   7.14853812e-01  -2.24900679e-04   6.99273474e-01
+    3.34983708e-05   3.46998384e-04  -6.81526490e-04]
+ [  0.00000000e+00  -6.99273302e-01  -6.10912689e-06   7.14854041e-01
+   -6.98793264e-06  -7.39838702e-04   4.09465030e-05]
+ [ -0.00000000e+00  -7.65403124e-04   1.07403798e-07   2.86229757e-04
+   -4.81048305e-08   9.99999666e-01  -3.25854111e-07]]
+Resultant Least Square Coefficients: [    6844.83604905  2660835.07755088]
+Residual: [  3.36823937e+15]
+Increased Precision Coefficients: [  2.35449909e+03   4.41885190e+07]
+Residual: [  4.71467994e+15]
+Total Potentially Incorrect: 4515.0
+Saving 'hardcylinders.soliton.10.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -7.74162260e-05  -9.29273254e-01  -8.97560475e-05
+   -3.69393021e-01   0.00000000e+00  -4.99593488e-05]
+ [  0.00000000e+00  -7.58641081e-05  -3.69348844e-01  -8.65720229e-05
+    9.29164232e-01   0.00000000e+00  -1.53378010e-02]
+ [ -0.00000000e+00   4.30363714e-06   5.71209617e-03   4.96040634e-06
+   -1.42345556e-02   0.00000000e+00  -9.99882368e-01]
+ [  0.00000000e+00  -6.86289085e-01   1.52561239e-04  -7.27328856e-01
+   -6.32355340e-05   0.00000000e+00  -4.79037517e-06]
+ [ -0.00000000e+00   7.27328866e-01   6.48314864e-06  -6.86289094e-01
+   -1.98451395e-06   0.00000000e+00  -2.08856777e-07]
+ [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00
+    0.00000000e+00   1.00000000e+00   0.00000000e+00]]
+Resultant Least Square Coefficients: [  11841.16036819  137068.20758705]
+Residual: [  2.23792268e+12]
+Increased Precision Coefficients: [   3997.64613635  943828.06373791]
+Residual: [  2.37459455e+12]
+Total Potentially Incorrect: 0.0
+Saving 'hardcylinders.soliton.300.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.30672546e-04  -9.40749787e-01  -1.40653613e-04
+   -3.39101461e-01   1.54596877e-08   4.03660805e-07]
+ [  0.00000000e+00  -9.83454392e-05  -3.39101435e-01  -9.79657080e-05
+    9.40749796e-01   4.98786912e-08   1.35706652e-04]
+ [  0.00000000e+00   1.56848796e-05  -4.64030105e-05   1.50429799e-05
+    1.27530551e-04  -1.16992728e-07  -9.99999991e-01]
+ [ -0.00000000e+00  -7.23603517e-01   2.27341657e-04  -6.90215815e-01
+   -6.55708304e-05  -1.48880505e-04  -2.17514311e-05]
+ [  0.00000000e+00   6.90214328e-01   1.19188587e-05  -7.23601467e-01
+    1.09819194e-06  -2.25784190e-03  -5.93425410e-08]
+ [  0.00000000e+00   1.45066810e-03   9.22100801e-08  -1.73654183e-03
+   -4.89488456e-08   9.99997440e-01  -1.20372160e-07]]
+Resultant Least Square Coefficients: [    7192.16485139  1647509.4930235 ]
+Residual: [  1.28439511e+15]
+Increased Precision Coefficients: [  2.40580576e+03   2.64760957e+07]
+Residual: [  1.47499117e+15]
+Total Potentially Incorrect: 2120.0
+Saving 'hardcylinders.soliton.600.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.41095207e-04  -9.42069898e-01  -1.48770884e-04
+   -3.35416554e-01   1.72065805e-08   1.68534701e-06]
+ [ -0.00000000e+00   8.54240552e-05   3.35416539e-01   6.11017125e-05
+   -9.42069920e-01  -1.92067316e-08   2.67511820e-05]
+ [  0.00000000e+00  -1.00344992e-03  -7.07509827e-06  -9.20265989e-04
+    2.57264383e-05  -1.10343684e-06   9.99999073e-01]
+ [  0.00000000e+00   6.54265197e-01  -2.27213937e-04   7.56263779e-01
+    2.75179752e-05   5.16232017e-04   1.35248570e-03]
+ [  0.00000000e+00  -7.56264005e-01   1.70879254e-05   6.54266167e-01
+   -2.00611035e-05  -7.16226079e-04  -1.56774450e-04]
+ [  0.00000000e+00  -8.79410091e-04   1.52178236e-07   7.81939340e-05
+   -4.08682859e-08   9.99999610e-01   2.92954041e-07]]
+Resultant Least Square Coefficients: [    6668.19451989  3230960.65352036]
+Residual: [  7.23223121e+15]
+Increased Precision Coefficients: [  2.24909894e+03   5.28532557e+07]
+Residual: [  7.54825533e+15]
+Total Potentially Incorrect: 4567.0
+Saving 'hardcylinders.soliton.800.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.43004723e-04   9.44847716e-01   1.50303372e-04
+    3.27509923e-01  -1.22895859e-08  -3.46873971e-07]
+ [  0.00000000e+00   7.33916692e-05   3.27509923e-01  -3.33436502e-05
+   -9.44847734e-01  -1.75179181e-08   6.20629317e-05]
+ [  0.00000000e+00   4.30375752e-04  -2.00693994e-05   1.84735533e-05
+    5.87618157e-05   4.54307126e-07   9.99999905e-01]
+ [  0.00000000e+00   3.97801350e-01  -1.83582463e-04   9.17471463e-01
+   -6.51251013e-05   3.55618238e-04  -1.88153050e-04]
+ [  0.00000000e+00   9.17470926e-01  -9.38624073e-05  -3.97801569e-01
+    5.27428294e-05   9.21650654e-04  -3.87513870e-04]
+ [  0.00000000e+00  -9.87053769e-04   1.69151900e-07   4.03645029e-05
+   -3.80043077e-08   9.99999512e-01  -3.02429474e-08]]
+Resultant Least Square Coefficients: [    6598.68174335  4275301.77206498]
+Residual: [  1.30788020e+16]
+Increased Precision Coefficients: [  2.17356678e+03   7.11541626e+07]
+Residual: [  1.26190890e+16]
+Total Potentially Incorrect: 4652.0
+Computing overall Least Squares Fit
+Overall Resultant Least Square Coefficients for soliton, hardcylinders: (numQuads, numResultants, constant)
+(array([    3221.50407575,     6533.97191855,  1506112.40480851]), array([  1.86898459e+17]), 3, array([  1.61342570e+06,   1.44908510e+05,   1.76343281e+02]))
+Overall Multi-precision Least Square Coefficients for soliton, hardcylinders: (numQuads, numResultants, constant)
+(array([    3440.35846666,     6135.23621952,  1347255.13424846]), array([  4.35266288e+17]), 3, array([  1.71600582e+06,   1.44824721e+05,   1.76316649e+02]))
+Total Potentially Incorrect: 34100.0
+
+
+
+Saving 'cylinders.soliton.2.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   2.02957446e-05   8.54219391e-01   7.19336401e-05
+    5.19910883e-01   0.00000000e+00  -1.37848608e-03]
+ [ -0.00000000e+00  -1.36389296e-05  -5.19909351e-01  -2.21132012e-05
+    8.54201342e-01   0.00000000e+00  -5.85943125e-03]
+ [  0.00000000e+00  -6.54957293e-07   1.86887901e-03  -2.16744564e-05
+   -5.72192721e-03   0.00000000e+00  -9.99981883e-01]
+ [  0.00000000e+00  -4.43252348e-04  -7.28926292e-05   9.99999899e-01
+   -1.86344593e-05   0.00000000e+00  -2.17041596e-05]
+ [  0.00000000e+00  -9.99999901e-01   2.44591139e-05  -4.43250571e-04
+   -1.08640624e-06   0.00000000e+00   7.16504887e-07]
+ [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00
+    0.00000000e+00   1.00000000e+00   0.00000000e+00]]
+Resultant Least Square Coefficients: [ 41595.6032505   35264.60314845]
+Residual: [  7.58170631e+10]
+Increased Precision Coefficients: [   4704.18210826  883317.98380589]
+Residual: [  1.38721101e+13]
+Total Potentially Incorrect: 0.0
+Saving 'hardEllipsoids.soliton.400.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.30965067e-04  -9.35506240e-01  -1.40330598e-04
+   -3.53310117e-01   2.43713340e-08  -1.19261508e-06]
+ [ -0.00000000e+00   1.06318943e-04   3.53310089e-01   1.04478481e-04
+   -9.35506246e-01  -6.36901675e-08   1.49208371e-04]
+ [ -0.00000000e+00   9.80689343e-05  -5.38712477e-05   1.36878237e-04
+    1.39175809e-04   2.78120219e-07   9.99999975e-01]
+ [  0.00000000e+00   7.29189136e-01  -2.31818143e-04   6.84312114e-01
+    7.17196543e-05  -2.22724811e-04  -1.65200650e-04]
+ [  0.00000000e+00   6.84312168e-01   1.30968893e-05  -7.29189031e-01
+    1.28582446e-06   4.61972075e-04   3.27007432e-05]
+ [ -0.00000000e+00  -1.53724637e-04  -1.23651544e-08   4.89278292e-04
+   -3.56308915e-08   9.99999868e-01  -3.30011837e-07]]
+Resultant Least Square Coefficients: [    7130.46881842  1853389.65762618]
+Residual: [  2.58354530e+15]
+Increased Precision Coefficients: [  2.50681277e+03   3.56904796e+07]
+Residual: [  3.79142615e+15]
+Total Potentially Incorrect: 2002.0
+Saving 'hardEllipsoids.soliton.200.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.21868556e-04  -9.35804382e-01  -1.32273074e-04
+   -3.52519681e-01   2.66787309e-09   2.75846373e-06]
+ [  0.00000000e+00   1.32391185e-04   3.52519648e-01   1.32040451e-04
+   -9.35804390e-01   4.59977533e-10   8.34709590e-05]
+ [  0.00000000e+00  -1.78045658e-04  -2.67868122e-05  -1.66422711e-04
+    7.90576890e-05  -2.23180800e-07   9.99999967e-01]
+ [  0.00000000e+00  -7.22379863e-01   2.33885873e-04  -6.91496341e-01
+   -1.11682731e-04  -1.29626301e-04  -2.43682236e-04]
+ [  0.00000000e+00   6.91461724e-01   1.19073327e-05  -7.22345549e-01
+    3.87282131e-07   9.87884666e-03   2.89954617e-06]
+ [  0.00000000e+00   6.92482178e-03   8.49886227e-08  -7.04664868e-03
+    1.69151747e-08  -9.99951195e-01  -1.62956901e-07]]
+Resultant Least Square Coefficients: [    7666.60903287  1006077.04822068]
+Residual: [  7.23259640e+14]
+Increased Precision Coefficients: [  2.65586353e+03   1.78455926e+07]
+Residual: [  7.77660790e+14]
+Total Potentially Incorrect: 172.0
+Saving 'hardEllipsoids.soliton.700.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.38588506e-04   9.38669137e-01   1.46453571e-04
+    3.44819098e-01  -1.67961590e-08  -7.22344486e-07]
+ [  0.00000000e+00   1.01460043e-04   3.44819079e-01   7.42532333e-05
+   -9.38669157e-01  -1.29162568e-08  -2.94991077e-05]
+ [  0.00000000e+00  -9.06015187e-04  -1.05234400e-05  -1.08470080e-03
+    2.73769819e-05  -7.47449700e-07  -9.99999001e-01]
+ [ -0.00000000e+00   6.06833371e-01  -2.29804629e-04   7.94827680e-01
+    4.40927353e-05   4.12190464e-04  -1.41194856e-03]
+ [  0.00000000e+00  -7.94828185e-01   3.22464994e-05   6.06834205e-01
+   -2.60651044e-05  -6.31760801e-04   6.18923418e-05]
+ [ -0.00000000e+00   7.52273107e-04  -1.35307332e-07  -5.57528815e-05
+    4.09535205e-08  -9.99999715e-01   1.26356494e-07]]
+Resultant Least Square Coefficients: [    6755.99708749  3120179.14128658]
+Residual: [  8.86214727e+15]
+Increased Precision Coefficients: [  2.34075690e+03   6.20033767e+07]
+Residual: [  1.18518090e+16]
+Total Potentially Incorrect: 2204.0
+Saving 'hardEllipsoids.soliton.100.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.11860540e-04   9.31595799e-01   1.22676922e-04
+    3.63495858e-01  -1.83219830e-10   3.12209954e-06]
+ [  0.00000000e+00   1.53649409e-04   3.63495789e-01   1.53505332e-04
+   -9.31595725e-01   3.80623975e-09   4.11825270e-04]
+ [  0.00000000e+00   1.73170260e-04   1.52550631e-04   1.58556434e-04
+   -3.82486475e-04  -1.90578687e-08  -9.99999888e-01]
+ [  0.00000000e+00  -7.22664909e-01   2.33267076e-04  -6.91198451e-01
+   -1.42169736e-04   1.92839657e-06  -2.34648095e-04]
+ [  0.00000000e+00  -6.91195443e-01  -1.22797671e-05   7.22661769e-01
+    2.84377308e-07   2.97108587e-03  -5.11386069e-06]
+ [  0.00000000e+00   2.05500367e-03   3.48246069e-08  -2.14576673e-03
+    3.03445058e-09   9.99995586e-01  -3.41323478e-09]]
+Resultant Least Square Coefficients: [   8311.04981374  561533.51228029]
+Residual: [  2.46707099e+14]
+Increased Precision Coefficients: [  2.95227825e+03   8.96712651e+06]
+Residual: [  1.83444030e+14]
+Total Potentially Incorrect: 8.0
+Saving 'hardEllipsoids.soliton.900.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.41982294e-04   9.35839725e-01   1.50225007e-04
+    3.52425831e-01  -1.39604419e-08  -8.95293251e-08]
+ [ -0.00000000e+00   9.01635141e-05   3.52425823e-01   1.21605431e-05
+   -9.35839746e-01  -9.38825854e-09   5.81414018e-06]
+ [  0.00000000e+00  -7.33829423e-04  -1.88536585e-06   2.82471886e-04
+    5.43571393e-06  -3.12663184e-07   9.99999691e-01]
+ [  0.00000000e+00   3.48348373e-01  -1.93153227e-04   9.37365090e-01
+   -2.69972061e-05   2.48906419e-04  -9.15114166e-06]
+ [  0.00000000e+00  -9.37364509e-01   1.03871311e-04   3.48348368e-01
+   -4.66720985e-05  -7.48717829e-04  -7.86264305e-04]
+ [ -0.00000000e+00  -7.88528138e-04   1.42220236e-07   2.74985448e-05
+   -3.20886499e-08   9.99999689e-01  -2.73749270e-07]]
+Resultant Least Square Coefficients: [    6572.05357482  3880253.97300017]
+Residual: [  1.35250423e+16]
+Increased Precision Coefficients: [  2.32545992e+03   8.03710159e+07]
+Residual: [  2.32082947e+16]
+Total Potentially Incorrect: 2165.0
+Saving 'hardEllipsoids.soliton.1000.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.44075026e-04   9.38221987e-01   1.51829147e-04
+    3.46033898e-01  -1.28293225e-08  -7.64933200e-07]
+ [  0.00000000e+00  -8.62697399e-05  -3.46033896e-01   2.06187577e-05
+    9.38222007e-01   1.21405535e-08  -7.29608354e-06]
+ [  0.00000000e+00  -3.17260495e-05   1.89393454e-06  -6.03660382e-04
+   -7.06763100e-06   1.15223395e-06  -9.99999817e-01]
+ [  0.00000000e+00   2.68280639e-01  -1.74626483e-04   9.63340585e-01
+   -6.09124217e-05   1.81743693e-04  -5.90041829e-04]
+ [  0.00000000e+00  -9.63340408e-01   1.22674724e-04   2.68280686e-01
+   -4.92314999e-05  -8.34590848e-04  -1.31387841e-04]
+ [  0.00000000e+00   8.52753674e-04  -1.50356132e-07  -4.88242450e-05
+    3.69607348e-08  -9.99999635e-01  -1.14981553e-06]]
+Resultant Least Square Coefficients: [    6492.47781264  4359374.06693519]
+Residual: [  1.57737393e+16]
+Increased Precision Coefficients: [  2.25566118e+03   8.92103122e+07]
+Residual: [  3.00421617e+16]
+Total Potentially Incorrect: 2148.0
+Saving 'hardEllipsoids.soliton.500.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.33650309e-04  -9.36111662e-01  -1.42342754e-04
+   -3.51702884e-01   2.19170006e-08   3.16853683e-06]
+ [  0.00000000e+00  -1.02387006e-04  -3.51702861e-01  -9.63716850e-05
+    9.36111679e-01   4.39997335e-08   5.61320189e-05]
+ [  0.00000000e+00  -5.80890979e-04  -2.25395543e-05  -4.47183297e-04
+    5.13851153e-05   3.06396573e-07  -9.99999730e-01]
+ [ -0.00000000e+00   7.24305820e-01  -2.31959173e-04   6.89478414e-01
+    6.30970826e-05   7.96051389e-05  -7.29057649e-04]
+ [  0.00000000e+00  -6.89478414e-01  -9.97115174e-06   7.24305969e-01
+   -4.59581905e-06  -6.10927285e-04   7.66140819e-05]
+ [ -0.00000000e+00   4.78879547e-04  -4.83720007e-08  -3.87612472e-04
+    4.13267074e-08  -9.99999810e-01  -4.11236398e-07]]
+Resultant Least Square Coefficients: [    6990.74191141  2238784.88362178]
+Residual: [  3.95334434e+15]
+Increased Precision Coefficients: [  2.45933545e+03   4.44679035e+07]
+Residual: [  6.02622092e+15]
+Total Potentially Incorrect: 2101.0
+Saving 'hardEllipsoids.soliton.10.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   6.69369864e-05   9.18370339e-01   7.96192807e-05
+    3.95722008e-01   0.00000000e+00  -2.99121705e-05]
+ [  0.00000000e+00  -9.97371069e-05  -3.95686211e-01  -1.03986268e-04
+    9.18286280e-01   0.00000000e+00  -1.35170422e-02]
+ [  0.00000000e+00   1.63304271e-05   5.32152002e-03   1.35508337e-05
+   -1.24254847e-02   0.00000000e+00  -9.99908640e-01]
+ [  0.00000000e+00  -7.10216879e-01   1.52241290e-04  -7.03982921e-01
+   -9.15391787e-05   0.00000000e+00  -1.91918801e-05]
+ [ -0.00000000e+00  -7.03982933e-01  -1.00853157e-05   7.10216890e-01
+   -4.10552147e-07   0.00000000e+00  -1.92105440e-06]
+ [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00
+    0.00000000e+00  -1.00000000e+00   0.00000000e+00]]
+Resultant Least Square Coefficients: [ 13576.38185018  60637.77940982]
+Residual: [  7.38185824e+12]
+Increased Precision Coefficients: [   4893.35584554  898275.30735048]
+Residual: [  4.99158585e+12]
+Total Potentially Incorrect: 0.0
+Saving 'hardEllipsoids.soliton.300.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.28218104e-04  -9.37010137e-01  -1.38231350e-04
+   -3.49302114e-01   1.78375178e-08  -4.64772562e-06]
+ [  0.00000000e+00  -1.23018851e-04  -3.49302082e-01  -1.22095782e-04
+    9.37010147e-01   6.36090253e-08  -9.75515830e-05]
+ [  0.00000000e+00  -1.40372564e-04  -3.83848849e-05  -1.28705076e-04
+    8.97649594e-05  -1.05128207e-06   9.99999977e-01]
+ [  0.00000000e+00  -7.23612801e-01   2.36872053e-04  -6.90206012e-01
+   -9.66563140e-05   2.70398409e-04  -1.90390353e-04]
+ [  0.00000000e+00  -6.90203671e-01  -1.20049362e-05   7.23611273e-01
+   -8.02600218e-07   2.37007958e-03  -3.75111204e-06]
+ [ -0.00000000e+00  -1.83150645e-03  -3.29518401e-09   1.52839017e-03
+    2.52393830e-08  -9.99997155e-01  -1.11166318e-06]]
+Resultant Least Square Coefficients: [    7294.58727135  1441021.99629523]
+Residual: [  1.75936795e+15]
+Increased Precision Coefficients: [  2.51675760e+03   2.67327936e+07]
+Residual: [  1.99586085e+15]
+Total Potentially Incorrect: 1268.0
+Saving 'hardEllipsoids.soliton.600.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.38140303e-04  -9.37679990e-01  -1.46278157e-04
+   -3.47499922e-01   1.87329679e-08   1.57716374e-07]
+ [  0.00000000e+00   1.01221698e-04   3.47499900e-01   9.01277857e-05
+   -9.37680010e-01  -2.46412111e-08   7.84973632e-06]
+ [  0.00000000e+00  -3.85441807e-04   2.78418856e-06  -8.35757752e-04
+   -7.46157300e-06   1.01186192e-06  -9.99999576e-01]
+ [  0.00000000e+00   6.86934334e-01  -2.35578595e-04   7.26718864e-01
+    5.66929330e-05   3.05455316e-04  -8.72135275e-04]
+ [  0.00000000e+00   7.26719157e-01  -3.95995275e-06  -6.86934461e-01
+    1.09569126e-05   4.76577303e-04   2.94003370e-04]
+ [  0.00000000e+00  -5.56165294e-04   9.99715041e-08   1.05398100e-04
+   -3.91272960e-08   9.99999840e-01   1.13814489e-06]]
+Resultant Least Square Coefficients: [    6770.13249362  2781002.03829257]
+Residual: [  7.46033583e+15]
+Increased Precision Coefficients: [  2.36118639e+03   5.36774398e+07]
+Residual: [  1.03188547e+16]
+Total Potentially Incorrect: 2122.0
+Saving 'hardEllipsoids.soliton.800.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   1.40701210e-04   9.39164675e-01   1.48930582e-04
+    3.43467133e-01  -1.49747249e-08   3.17370973e-07]
+ [  0.00000000e+00   9.78309388e-05   3.43467116e-01   5.88114765e-05
+   -9.39164696e-01  -1.16145421e-08   1.25018805e-05]
+ [  0.00000000e+00  -6.25567459e-07   4.66908387e-06  -4.80613633e-04
+   -1.16343056e-05   9.91179689e-07  -9.99999884e-01]
+ [ -0.00000000e+00   4.89273803e-01  -2.20693928e-04   8.72130038e-01
+    2.48636002e-05   3.42037210e-04  -4.19464689e-04]
+ [  0.00000000e+00   8.72129889e-01  -6.62326246e-05  -4.89273890e-01
+    3.59900268e-05   6.75447702e-04   2.34606094e-04]
+ [  0.00000000e+00   7.56428189e-04  -1.38270567e-07  -3.21784874e-05
+    3.85667788e-08  -9.99999713e-01  -9.76188389e-07]]
+Resultant Least Square Coefficients: [    6655.97626588  3531012.11818793]
+Residual: [  1.16673381e+16]
+Increased Precision Coefficients: [  2.28846166e+03   7.17161728e+07]
+Residual: [  1.85327483e+16]
+Total Potentially Incorrect: 2111.0
+Computing overall Least Squares Fit
+Overall Resultant Least Square Coefficients for soliton, hardEllipsoids: (numQuads, numResultants, constant)
+(array([   3199.85328537,    6725.39691695,  875747.45839722]), array([  1.11365330e+17]), 3, array([  9.20083380e+05,   1.70109993e+05,   1.75931873e+02]))
+Overall Multi-precision Least Square Coefficients for soliton, hardEllipsoids: (numQuads, numResultants, constant)
+(array([   3307.37591444,    6328.12301413,  739662.79512287]), array([  1.99910339e+17]), 3, array([  9.77698757e+05,   1.69935253e+05,   1.75866331e+02]))
+Total Potentially Incorrect: 16301.0
+
+
+
+Saving 'packedEll.soliton.1331.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   7.46723116e-06   1.19043821e-01   8.56110046e-06
+    9.92888979e-01  -1.17920000e-10  -2.10615403e-04]
+ [  0.00000000e+00   4.55168234e-05   9.92884124e-01   5.22605271e-05
+   -1.19042570e-01  -6.48466954e-10   3.15877437e-03]
+ [  0.00000000e+00   8.43774688e-04   3.11114725e-03   9.70676136e-04
+   -5.85152674e-04   2.72313953e-08  -9.99994162e-01]
+ [ -0.00000000e+00   6.67625199e-01  -7.41561017e-05   7.44496430e-01
+   -2.27658092e-06  -1.51227340e-05   1.28576829e-03]
+ [  0.00000000e+00  -7.44496996e-01  -1.07658710e-06   6.67625680e-01
+   -2.41074113e-08   4.17271118e-04   1.98573865e-05]
+ [ -0.00000000e+00  -3.20753417e-04   9.90449936e-11   2.67322142e-04
+   -3.14520208e-11  -9.99999913e-01  -3.83916812e-08]]
+Resultant Least Square Coefficients: [   10147.84813806  5323140.89465177]
+Residual: [  2.75518448e+14]
+Increased Precision Coefficients: [  6.70909259e+03   1.17119720e+08]
+Residual: [  2.66698760e+15]
+Total Potentially Incorrect: 1.0
+Saving 'hardcylinders.desktop.400.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   5.64166160e-05   9.50843292e-01   6.03141133e-05
+    3.09672453e-01  -1.03752090e-08  -2.64261320e-08]
+ [ -0.00000000e+00  -2.86875065e-05  -3.09672450e-01  -2.73166548e-05
+    9.50843295e-01   1.87667272e-08   3.41599336e-06]
+ [  0.00000000e+00  -8.98257429e-05  -1.06058581e-06  -2.54735984e-04
+    3.23715134e-06  -1.38904754e-06  -9.99999964e-01]
+ [  0.00000000e+00   7.22994949e-01  -9.06710413e-05   6.90853255e-01
+    1.21315722e-05  -1.32033901e-04  -2.40928432e-04]
+ [  0.00000000e+00  -6.90853294e-01  -4.38228754e-06   7.22994957e-01
+   -1.49941873e-06   5.45939286e-05  -1.22116502e-04]
+ [  0.00000000e+00  -1.33176117e-04  -3.94285811e-09  -5.17445629e-05
+    1.29431659e-08  -9.99999990e-01   1.41419147e-06]]
+Resultant Least Square Coefficients: [   16841.81211831  3074994.28646813]
+Residual: [  9.91561056e+15]
+Increased Precision Coefficients: [  5.12496493e+03   8.59955325e+07]
+Residual: [  1.67092177e+16]
+Total Potentially Incorrect: 4247.0
+Saving 'hardcylinders.desktop.200.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -5.26280506e-05  -9.47538080e-01  -5.70194801e-05
+   -3.19642895e-01   4.86430439e-10   8.76615314e-07]
+ [  0.00000000e+00   2.34967120e-05   3.19642892e-01   2.32286189e-05
+   -9.47538079e-01   1.35202821e-09   9.07549562e-05]
+ [  0.00000000e+00   1.34508808e-05   2.81780312e-05  -4.10519263e-06
+   -8.62739235e-05  -3.58036974e-07  -9.99999996e-01]
+ [  0.00000000e+00  -7.17476700e-01   8.39743872e-05  -6.96582460e-01
+   -6.54094273e-06  -2.32056282e-04  -6.78807477e-06]
+ [ -0.00000000e+00   6.96580357e-01   4.12241749e-06  -7.17473628e-01
+    1.07672936e-06  -2.72038153e-03   1.23159841e-05]
+ [  0.00000000e+00  -1.72847581e-03  -3.07402809e-08   2.11345622e-03
+   -2.81695130e-09  -9.99996273e-01   3.26109351e-07]]
+Resultant Least Square Coefficients: [   17992.07171487  1772905.33547919]
+Residual: [  2.20963745e+15]
+Increased Precision Coefficients: [  5.59827150e+03   4.32285560e+07]
+Residual: [  2.78419731e+15]
+Total Potentially Incorrect: 165.0
+Saving 'hardcylinders.desktop.700.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -6.01630052e-05  -9.54976127e-01  -6.33230982e-05
+   -2.96682641e-01   6.11674939e-09   2.04327182e-07]
+ [ -0.00000000e+00   3.09406597e-05   2.96682639e-01   1.02209794e-05
+   -9.54976131e-01  -7.90257523e-10   2.41123448e-05]
+ [  0.00000000e+00   1.30519963e-04  -6.96532875e-06  -3.07822764e-05
+    2.30891386e-05   9.37609809e-07   9.99999991e-01]
+ [  0.00000000e+00   4.82176134e-01  -8.77635660e-05   8.76074175e-01
+   -2.26771130e-06   4.54529435e-04  -3.59670390e-05]
+ [  0.00000000e+00  -8.76073688e-01   2.77548698e-05   4.82176350e-01
+   -1.45977256e-05  -9.17695668e-04   1.29188983e-04]
+ [ -0.00000000e+00   1.02313293e-03  -7.14440214e-08  -4.42897006e-05
+    1.13271263e-08  -9.99999476e-01   8.02705956e-07]]
+Resultant Least Square Coefficients: [   15857.53023034  5230827.63414675]
+Residual: [  4.30740384e+16]
+Increased Precision Coefficients: [  4.67474891e+03   1.50695344e+08]
+Residual: [  5.45813958e+16]
+Total Potentially Incorrect: 4594.0
+Saving 'hardcylinders.desktop.100.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   4.91621182e-05   9.45171331e-01   5.37931622e-05
+    3.26574875e-01  -4.26781747e-11  -2.59912251e-06]
+ [  0.00000000e+00   1.90748006e-05   3.26574859e-01   1.90872736e-05
+   -9.45171287e-01  -2.23036567e-09   3.13489955e-04]
+ [  0.00000000e+00  -4.68578191e-05   9.99262876e-05  -4.36494770e-05
+   -2.97150639e-04   3.34644731e-08  -9.99999949e-01]
+ [  0.00000000e+00  -7.17999270e-01   7.75574934e-05  -6.96043848e-01
+   -1.72759236e-06  -2.64443218e-05   6.40340956e-05]
+ [  0.00000000e+00   6.96036323e-01   4.30273040e-06  -7.17991330e-01
+    1.03370837e-06  -4.67843428e-03  -1.27483192e-06]
+ [ -0.00000000e+00   3.23740862e-03   2.29466234e-08  -3.37751862e-03
+    2.70628530e-09   9.99989056e-01   2.91946109e-08]]
+Resultant Least Square Coefficients: [   19211.69391288  1072282.76755793]
+Residual: [  4.84548731e+14]
+Increased Precision Coefficients: [  6.06424625e+03   2.14185021e+07]
+Residual: [  4.44755906e+14]
+Total Potentially Incorrect: 7.0
+Saving 'hardcylinders.desktop.900.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -6.18981640e-05  -9.54694681e-01  -6.57945955e-05
+   -2.97587060e-01   4.68947164e-09   3.43382926e-07]
+ [  0.00000000e+00   2.79833284e-05   2.97587061e-01  -3.45164958e-05
+   -9.54694683e-01  -2.46971986e-09   2.66249798e-05]
+ [  0.00000000e+00   2.24967751e-04   7.60293370e-06  -4.31626967e-04
+   -2.54963694e-05   6.31208680e-07  -9.99999881e-01]
+ [ -0.00000000e+00   2.30319075e-01  -6.66551169e-05   9.73115064e-01
+   -4.92188057e-05   2.33125164e-04  -3.68207487e-04]
+ [  0.00000000e+00  -9.73114554e-01   5.35096392e-05   2.30319086e-01
+   -2.01797380e-05  -1.03828697e-03  -3.18331093e-04]
+ [  0.00000000e+00   1.06406608e-03  -7.63045606e-08  -1.22799765e-05
+    1.04244316e-08  -9.99999434e-01  -3.86528293e-07]]
+Resultant Least Square Coefficients: [   15407.23977401  6594021.96312601]
+Residual: [  7.29042521e+16]
+Increased Precision Coefficients: [  4.50826488e+03   1.93753782e+08]
+Residual: [  1.04664520e+17]
+Total Potentially Incorrect: 4626.0
+Saving 'hardcylinders.desktop.1000.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   6.24805165e-05   9.54897076e-01   6.67562142e-05
+    2.96936974e-01  -4.25014544e-09  -1.75346360e-07]
+ [  0.00000000e+00   2.50584979e-05   2.96936977e-01  -6.72562569e-05
+   -9.54897076e-01  -4.67002057e-09   8.65003322e-06]
+ [  0.00000000e+00  -7.59455030e-04   2.56575436e-06  -2.59796067e-03
+   -8.09766421e-06  -1.71407308e-06  -9.99996337e-01]
+ [ -0.00000000e+00   1.75480886e-01  -5.48639048e-05   9.84479141e-01
+   -8.18198065e-05   1.68014910e-04  -2.69091756e-03]
+ [  0.00000000e+00  -9.84481977e-01   5.83795982e-05   1.75482368e-01
+   -2.00381142e-05  -1.04213875e-03   2.91776665e-04]
+ [ -0.00000000e+00   1.05545211e-03  -7.55071886e-08  -1.74653580e-05
+    1.03467973e-08  -9.99999443e-01   9.57881251e-07]]
+Resultant Least Square Coefficients: [   15266.64339422  7179658.91504337]
+Residual: [  8.80892188e+16]
+Increased Precision Coefficients: [  4.43109188e+03   2.15739563e+08]
+Residual: [  1.31288157e+17]
+Total Potentially Incorrect: 4618.0
+Saving 'hardcylinders.desktop.500.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   5.31934426e-05   9.51164818e-01   5.64560245e-05
+    3.08683468e-01  -8.19730510e-09  -3.69681967e-07]
+ [ -0.00000000e+00   2.34654740e-05   3.08683467e-01   1.99055816e-05
+   -9.51164821e-01  -2.76591352e-10  -1.22940259e-05]
+ [  0.00000000e+00   1.21902888e-04  -4.15857876e-06   8.24984873e-05
+    1.15803736e-05   1.44018457e-06  -9.99999989e-01]
+ [  0.00000000e+00   7.09624905e-01  -8.32080039e-05   7.04579589e-01
+    5.24623897e-06   2.62032731e-04   1.44632862e-04]
+ [  0.00000000e+00   7.04579363e-01   1.71430203e-06  -7.09624917e-01
+    3.08740642e-06   6.30592570e-04   2.73482143e-05]
+ [ -0.00000000e+00  -6.30247785e-04   2.86105576e-08   2.62861229e-04
+   -1.07097139e-09   9.99999767e-01   1.38504075e-06]]
+Resultant Least Square Coefficients: [   17868.33709424  3903146.52979097]
+Residual: [  1.88189828e+16]
+Increased Precision Coefficients: [  5.45974845e+03   1.15381752e+08]
+Residual: [  2.53029085e+16]
+Total Potentially Incorrect: 4460.0
+Saving 'hardcylinders.desktop.10.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -3.40717013e-05  -9.43410042e-01  -3.94966162e-05
+   -3.31628536e-01   0.00000000e+00  -6.97348105e-05]
+ [ -0.00000000e+00   1.28477112e-05   3.31611735e-01   1.34728315e-05
+   -9.43360090e-01   0.00000000e+00  -1.02663477e-02]
+ [  0.00000000e+00  -3.15187588e-06  -3.33882858e-03  -3.07475443e-06
+    9.70850041e-03   0.00000000e+00  -9.99947297e-01]
+ [  0.00000000e+00   6.98444884e-01  -5.53050287e-05   7.15663846e-01
+    3.38051609e-07   0.00000000e+00  -4.21418828e-06]
+ [ -0.00000000e+00  -7.15663847e-01  -3.09216940e-06   6.98444885e-01
+   -8.59843767e-07   0.00000000e+00   1.10119342e-07]
+ [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00
+    0.00000000e+00  -1.00000000e+00   0.00000000e+00]]
+Resultant Least Square Coefficients: [  27475.96611543  263674.7995324 ]
+Residual: [  7.29508190e+12]
+Increased Precision Coefficients: [    8330.75870574  2225455.73122865]
+Residual: [  2.69643860e+12]
+Total Potentially Incorrect: 0.0
+Saving 'hardcylinders.desktop.300.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   5.51932622e-05   9.48964419e-01   5.93991591e-05
+    3.15383139e-01  -6.55833481e-09  -2.30656393e-07]
+ [ -0.00000000e+00  -3.26547023e-05  -3.15383136e-01  -3.21332651e-05
+    9.48964421e-01   1.32683095e-08   5.79433348e-05]
+ [  0.00000000e+00   2.87137390e-04   1.84572742e-05   2.70121005e-04
+   -5.49063377e-05  -6.82786515e-07   9.99999921e-01]
+ [ -0.00000000e+00   7.22872208e-01  -9.12650851e-05   6.90981625e-01
+    1.79648944e-05   4.12627764e-06  -3.94209648e-04]
+ [  0.00000000e+00  -6.90972186e-01  -4.76485140e-06   7.22862304e-01
+   -8.83669335e-07   5.24666382e-03   3.14728014e-06]
+ [  0.00000000e+00   3.62236605e-03   3.57974810e-08  -3.79551873e-03
+   -5.99814949e-09   9.99986236e-01   6.67908781e-07]]
+Resultant Least Square Coefficients: [   17179.00675193  2479838.57842616]
+Residual: [  6.28374136e+15]
+Increased Precision Coefficients: [  5.29826450e+03   6.44132648e+07]
+Residual: [  9.71352659e+15]
+Total Potentially Incorrect: 2125.0
+Saving 'hardcylinders.desktop.600.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -5.93747375e-05  -9.54150164e-01  -6.25992984e-05
+   -2.99328344e-01   7.23037114e-09   3.57334205e-07]
+ [ -0.00000000e+00   3.42713053e-05   2.99328341e-01   2.38093088e-05
+   -9.54150168e-01  -2.28303446e-09   6.73593455e-06]
+ [  0.00000000e+00  -2.98255951e-04   1.71518743e-06  -2.98034694e-04
+   -6.53969111e-06   8.39248705e-07  -9.99999911e-01]
+ [  0.00000000e+00   6.23099494e-01  -9.39822263e-05   7.82142307e-01
+    1.24113940e-05   4.97126917e-04  -4.18948537e-04]
+ [  0.00000000e+00   7.82142034e-01  -1.06757399e-05  -6.23099762e-01
+    9.19517747e-06   7.23362719e-04  -4.75726445e-05]
+ [ -0.00000000e+00   8.75532005e-04  -6.20243479e-08  -6.19034182e-05
+    1.28301058e-08  -9.99999615e-01  -1.08193193e-06]]
+Resultant Least Square Coefficients: [   16051.860244    4635565.86722292]
+Residual: [  3.62386942e+16]
+Increased Precision Coefficients: [  4.76974095e+03   1.28331728e+08]
+Residual: [  4.40619262e+16]
+Total Potentially Incorrect: 4495.0
+Saving 'hardcylinders.desktop.800.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -6.12413805e-05  -9.54449205e-01  -6.44264030e-05
+   -2.98373436e-01   5.29589670e-09  -3.26234769e-07]
+ [  0.00000000e+00   3.10637750e-05   2.98373436e-01  -9.49001238e-06
+   -9.54449209e-01  -3.62365417e-10  -8.49154270e-08]
+ [  0.00000000e+00  -9.57916828e-04   4.25907951e-07  -1.27854747e-03
+    2.03648192e-07  -3.57341458e-08  -9.99998724e-01]
+ [  0.00000000e+00   3.15226247e-01  -7.70162006e-05   9.49015285e-01
+   -2.32526877e-05   3.15068517e-04  -1.51532360e-03]
+ [  0.00000000e+00   9.49015485e-01  -4.57762577e-05  -3.15227457e-01
+    1.97109905e-05   1.00061451e-03  -5.06045333e-04]
+ [ -0.00000000e+00   1.04891714e-03  -7.52326088e-08  -1.64162912e-05
+    1.11626165e-08  -9.99999450e-01  -9.48053483e-07]]
+Resultant Least Square Coefficients: [   15567.63551181  5983589.10168077]
+Residual: [  6.22063759e+16]
+Increased Precision Coefficients: [  4.61793015e+03   1.72702327e+08]
+Residual: [  8.23797798e+16]
+Total Potentially Incorrect: 4626.0
+Computing overall Least Squares Fit
+Overall Resultant Least Square Coefficients for desktop, hardcylinders: (numQuads, numResultants, constant)
+(array([  2.29246845e+03,   1.57945744e+04,   3.84726264e+06]), array([  1.46631612e+18]), 3, array([  1.61103255e+06,   1.44995496e+05,   1.76330908e+02]))
+Overall Multi-precision Least Square Coefficients for desktop, hardcylinders: (numQuads, numResultants, constant)
+(array([  2.86977475e+03,   1.48316137e+04,   3.44129139e+06]), array([  2.90904110e+18]), 3, array([  1.71322601e+06,   1.44926176e+05,   1.76301462e+02]))
+Total Potentially Incorrect: 33963.0
+
+
+
+Saving 'cylinders.desktop.2.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -1.00292172e-05  -9.34541315e-01  -3.48687660e-05
+   -3.55854644e-01   0.00000000e+00  -3.32290130e-05]
+ [ -0.00000000e+00   4.36138373e-06   3.55854566e-01  -5.88910825e-05
+   -9.34541035e-01   0.00000000e+00  -7.60908424e-04]
+ [  0.00000000e+00   8.72484291e-08  -2.39718878e-04  -3.72426957e-06
+    7.22925308e-04   0.00000000e+00  -9.99999710e-01]
+ [  0.00000000e+00  -8.97364084e-04  -1.16207265e-05   9.99999595e-01
+   -6.74420809e-05   0.00000000e+00  -3.77031733e-06]
+ [  0.00000000e+00  -9.99999597e-01   1.09351476e-05  -8.97363990e-04
+   -4.46365556e-07   0.00000000e+00  -8.68504440e-08]
+ [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00
+    0.00000000e+00   1.00000000e+00   0.00000000e+00]]
+Resultant Least Square Coefficients: [ 93005.95152997  42651.29203537]
+Residual: [  1.75271114e+11]
+Increased Precision Coefficients: [    9802.67683161  2075337.59098461]
+Residual: [  3.82997065e+12]
+Total Potentially Incorrect: 0.0
+Saving 'hardEllipsoids.desktop.400.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -5.43026909e-05  -9.48538577e-01  -5.81867619e-05
+   -3.16661587e-01   9.97573371e-09  -2.85736202e-07]
+ [ -0.00000000e+00   4.03835172e-05   3.16661583e-01   3.90200550e-05
+   -9.48538580e-01  -2.19318805e-08   3.70407616e-05]
+ [ -0.00000000e+00   5.48979497e-05   1.19933150e-05   5.29026183e-05
+   -3.50419676e-05  -7.13931857e-07  -9.99999996e-01]
+ [  0.00000000e+00   7.30367135e-01  -9.31000328e-05   6.83054733e-01
+    2.81161493e-05  -2.55673487e-04   7.62291230e-05]
+ [  0.00000000e+00  -6.83054782e-01  -5.41748545e-06   7.30367040e-01
+   -8.44089255e-07  -3.89075714e-04   1.14026406e-06]
+ [ -0.00000000e+00  -7.90244828e-05  -9.49510840e-09   4.58807152e-04
+   -1.08091825e-08   9.99999892e-01  -6.93997700e-07]]
+Resultant Least Square Coefficients: [   17441.20117107  2629009.80045562]
+Residual: [  1.30396370e+16]
+Increased Precision Coefficients: [  5.41721052e+03   8.65763953e+07]
+Residual: [  2.39953120e+16]
+Total Potentially Incorrect: 1980.0
+Saving 'hardEllipsoids.desktop.200.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[ -0.00000000e+00  -5.06486410e-05  -9.44491899e-01  -5.49682141e-05
+   -3.28534697e-01   1.09930222e-09   1.31217858e-06]
+ [  0.00000000e+00   4.73983786e-05   3.28534692e-01   4.67336596e-05
+   -9.44491901e-01  -1.34930889e-09  -3.37475897e-06]
+ [  0.00000000e+00   1.88659491e-04   2.32440026e-06   1.73989316e-04
+   -2.74649197e-06   5.71148844e-07   9.99999967e-01]
+ [ -0.00000000e+00  -7.23366967e-01   9.23167061e-05  -6.90463720e-01
+   -3.83549536e-05  -8.09833889e-05   2.56603089e-04]
+ [  0.00000000e+00   6.90461254e-01   4.87958938e-06  -7.23364691e-01
+    5.55209025e-07   2.60405618e-03  -4.40583825e-06]
+ [  0.00000000e+00   1.85658701e-03   3.75036865e-09  -1.82777231e-03
+    5.46361190e-09  -9.99996606e-01   5.38897022e-07]]
+Resultant Least Square Coefficients: [   18621.60604257  1496865.44707016]
+Residual: [  3.79851696e+15]
+Increased Precision Coefficients: [  5.95693325e+03   4.36045850e+07]
+Residual: [  4.45209505e+15]
+Total Potentially Incorrect: 169.0
+Saving 'hardEllipsoids.desktop.700.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   5.76995439e-05   9.52142222e-01   6.10609679e-05
+    3.05655331e-01  -6.88912663e-09   8.26434174e-08]
+ [  0.00000000e+00   3.99074534e-05   3.05655327e-01   3.01677345e-05
+   -9.52142226e-01  -4.32343496e-09   5.31899811e-06]
+ [  0.00000000e+00   3.52872971e-04  -1.72932358e-06   1.72915079e-05
+    5.04654094e-06   5.72829191e-07   9.99999938e-01]
+ [  0.00000000e+00   5.67180915e-01  -9.35548920e-05   8.23593098e-01
+    1.98331616e-05   4.04870372e-04  -2.14384489e-04]
+ [  0.00000000e+00  -8.23592770e-01   1.70871978e-05   5.67181101e-01
+   -1.10620359e-05  -6.84927438e-04   2.80816707e-04]
+ [  0.00000000e+00   7.93736486e-04  -5.74630127e-08  -5.50294619e-05
+    1.76202745e-08  -9.99999683e-01   2.93692230e-07]]
+Resultant Least Square Coefficients: [   16465.96320951  4394526.80763331]
+Residual: [  4.52776876e+16]
+Increased Precision Coefficients: [  4.97411049e+03   1.52763213e+08]
+Residual: [  7.47563253e+16]
+Total Potentially Incorrect: 2170.0
+Saving 'hardEllipsoids.desktop.100.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   4.69339587e-05   9.44259481e-01   5.14765642e-05
+    3.29202107e-01  -1.84865158e-11   3.95217738e-07]
+ [  0.00000000e+00  -5.15837807e-05  -3.29202101e-01  -5.04644113e-05
+    9.44259479e-01  -8.87020952e-10   9.37105404e-05]
+ [  0.00000000e+00   5.59962979e-05   3.04697540e-05   5.11003625e-05
+   -8.86137416e-05   9.11306141e-08   9.99999993e-01]
+ [  0.00000000e+00  -7.23258439e-01   8.93771804e-05  -6.90577450e-01
+   -4.52650317e-05   9.44051494e-06   7.57818183e-05]
+ [  0.00000000e+00  -6.90503180e-01  -4.83855657e-06   7.23180454e-01
+   -7.59245986e-07  -1.46761393e-02   1.71225607e-06]
+ [ -0.00000000e+00   1.01281837e-02   7.21401962e-08  -1.06211604e-02
+    9.86479791e-09  -9.99892300e-01   6.67238273e-08]]
+Resultant Least Square Coefficients: [  20084.34769803  862441.50703891]
+Residual: [  1.24055944e+15]
+Increased Precision Coefficients: [  6.37655530e+03   2.16192380e+07]
+Residual: [  8.15677918e+14]
+Total Potentially Incorrect: 2.0
+Saving 'hardEllipsoids.desktop.900.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -5.91048404e-05  -9.53736653e-01  -6.26553695e-05
+   -3.00643292e-01   5.72321804e-09   5.04567692e-07]
+ [ -0.00000000e+00   3.42960672e-05   3.00643290e-01   6.08266886e-06
+   -9.53736657e-01  -2.78592775e-09  -9.57813393e-06]
+ [  0.00000000e+00  -8.86308623e-04   3.55697886e-06  -2.22555598e-03
+   -8.96752659e-06  -6.48212486e-07   9.99997131e-01]
+ [  0.00000000e+00   2.87650682e-01  -7.81552772e-05   9.57732391e-01
+   -8.20862008e-06   2.25977439e-04   2.38644153e-03]
+ [  0.00000000e+00  -9.57734569e-01   4.61471358e-05   2.87652063e-01
+   -1.80563565e-05  -8.60260129e-04  -2.08664120e-04]
+ [ -0.00000000e+00   8.88904354e-04  -6.36582145e-08  -3.10282581e-05
+    1.46204136e-08  -9.99999604e-01   7.05767982e-08]]
+Resultant Least Square Coefficients: [   16097.64889176  5459402.66372637]
+Residual: [  6.84760137e+16]
+Increased Precision Coefficients: [  4.75519225e+03   1.94875107e+08]
+Residual: [  1.41193755e+17]
+Total Potentially Incorrect: 2198.0
+Saving 'hardEllipsoids.desktop.1000.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   5.95849553e-05   9.53560159e-01   6.31568532e-05
+    3.01202615e-01  -5.34300868e-09   4.67914874e-07]
+ [  0.00000000e+00  -3.24525169e-05  -3.01202614e-01   2.67539138e-06
+    9.53560163e-01   1.65114157e-09  -2.48070072e-06]
+ [  0.00000000e+00   4.53244971e-04  -1.22141515e-06  -3.61174110e-05
+    2.23123058e-06   5.44354694e-07   9.99999897e-01]
+ [ -0.00000000e+00   2.33730454e-01  -7.33368674e-05   9.72301408e-01
+   -1.79386452e-05   1.90550063e-04  -7.08203039e-05]
+ [  0.00000000e+00  -9.72300892e-01   5.08597185e-05   2.33730542e-01
+   -1.76797822e-05  -8.96674172e-04   4.49132867e-04]
+ [ -0.00000000e+00   9.16375082e-04  -6.51718414e-08  -2.43080758e-05
+    1.24011485e-08  -9.99999580e-01   1.28134030e-07]]
+Resultant Least Square Coefficients: [   15963.22998211  5893293.6304081 ]
+Residual: [  7.74827343e+16]
+Increased Precision Coefficients: [  4.71852226e+03   2.17093691e+08]
+Residual: [  1.77791450e+17]
+Total Potentially Incorrect: 2143.0
+Saving 'hardEllipsoids.desktop.500.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -5.54594956e-05  -9.49606579e-01  -5.90683979e-05
+   -3.13444315e-01   9.05650182e-09   5.31505109e-07]
+ [ -0.00000000e+00   4.03518627e-05   3.13444311e-01   3.72960850e-05
+   -9.49606582e-01  -1.46204921e-08   5.15674556e-06]
+ [  0.00000000e+00   2.37231694e-04   1.08896878e-06   1.05761910e-04
+   -5.05672260e-06  -8.14600834e-07  -9.99999966e-01]
+ [  0.00000000e+00   7.18865130e-01  -9.40699536e-05   6.95149516e-01
+    2.68000123e-05   7.43260141e-05   2.44057643e-04]
+ [  0.00000000e+00   6.95149349e-01   3.32388488e-06  -7.18865056e-01
+    2.40312217e-06   6.36468059e-04   8.88823921e-05]
+ [ -0.00000000e+00   4.95870644e-04  -1.80600127e-08  -4.05867125e-04
+    1.45705773e-08  -9.99999795e-01   8.89311554e-07]]
+Resultant Least Square Coefficients: [   17094.73238256  3190418.45319463]
+Residual: [  1.96367932e+16]
+Increased Precision Coefficients: [  5.27983979e+03   1.08022809e+08]
+Residual: [  3.79514654e+16]
+Total Potentially Incorrect: 2104.0
+Saving 'hardEllipsoids.desktop.10.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -2.90418431e-05  -9.32184539e-01  -3.45453585e-05
+   -3.61983400e-01   0.00000000e+00   3.18475885e-05]
+ [ -0.00000000e+00  -6.52174430e-05  -3.61888637e-01  -6.25286145e-05
+    9.31938496e-01   0.00000000e+00  -2.29618424e-02]
+ [  0.00000000e+00  -5.04815474e-05  -8.28212075e-03  -4.55292162e-05
+    2.14161952e-02   0.00000000e+00   9.99736339e-01]
+ [  0.00000000e+00  -7.15906427e-01   7.51231258e-05  -6.98196228e-01
+   -6.93955360e-05   0.00000000e+00  -6.58373829e-05]
+ [  0.00000000e+00   6.98196233e-01   3.85167591e-06  -7.15906432e-01
+    2.38671174e-06   0.00000000e+00   2.63284745e-06]
+ [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00
+    0.00000000e+00  -1.00000000e+00   0.00000000e+00]]
+Resultant Least Square Coefficients: [ 31838.37443044  97364.60271205]
+Residual: [  3.27813709e+13]
+Increased Precision Coefficients: [   10384.20974526  2167268.6255169 ]
+Residual: [  1.09523449e+13]
+Total Potentially Incorrect: 0.0
+Saving 'hardEllipsoids.desktop.300.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -5.32309881e-05  -9.48670392e-01  -5.73952590e-05
+   -3.16266472e-01   7.45561591e-09  -2.26648435e-07]
+ [ -0.00000000e+00  -4.55952490e-05  -3.16266468e-01  -4.47704002e-05
+    9.48670394e-01   2.59063671e-08   2.94576815e-05]
+ [  0.00000000e+00  -4.75990310e-04  -9.03758130e-06  -4.80672795e-04
+    2.79930398e-05  -1.15972778e-06  -9.99999771e-01]
+ [  0.00000000e+00   7.25753940e-01  -9.43208456e-05   6.87953984e-01
+    3.59242897e-05  -2.59020160e-04  -6.76130604e-04]
+ [  0.00000000e+00  -6.87953518e-01  -5.13191067e-06   7.25753855e-01
+   -5.24494116e-07   1.13924622e-03  -2.13922200e-05]
+ [ -0.00000000e+00  -9.71733462e-04   3.32873682e-09   6.48619385e-04
+    1.22835430e-08  -9.99999318e-01   1.31048962e-06]]
+Resultant Least Square Coefficients: [   17792.67017837  2117175.91027541]
+Residual: [  9.10544542e+15]
+Increased Precision Coefficients: [  5.48686713e+03   6.51952358e+07]
+Residual: [  1.22271141e+16]
+Total Potentially Incorrect: 1246.0
+Saving 'hardEllipsoids.desktop.600.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   5.67706122e-05   9.52494459e-01   6.00954749e-05
+    3.04555904e-01  -7.75102801e-09  -3.76102459e-07]
+ [  0.00000000e+00  -4.06812172e-05  -3.04555899e-01  -3.56360589e-05
+    9.52494458e-01   4.47064193e-09  -9.60958748e-05]
+ [  0.00000000e+00  -3.07950659e-04  -2.89108966e-05   3.38304783e-04
+    9.16440065e-05  -6.77432443e-08   9.99999891e-01]
+ [  0.00000000e+00   6.66637061e-01  -9.50615079e-05   7.45382354e-01
+    2.59592553e-05   4.04340829e-04  -4.68801984e-05]
+ [  0.00000000e+00  -7.45382052e-01   4.15993526e-06   6.66637095e-01
+   -5.61003255e-06  -6.10870055e-04  -4.55066868e-04]
+ [ -0.00000000e+00  -7.24880372e-04   4.97208553e-08   1.05840172e-04
+   -1.58148240e-08   9.99999732e-01  -1.91287533e-07]]
+Resultant Least Square Coefficients: [   16739.03082857  3867147.36035021]
+Residual: [  3.94782979e+16]
+Increased Precision Coefficients: [  5.03387139e+03   1.29568224e+08]
+Residual: [  6.46110782e+16]
+Total Potentially Incorrect: 2175.0
+Saving 'hardEllipsoids.desktop.800.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00  -5.87266599e-05  -9.52576853e-01  -6.20554218e-05
+   -3.04298096e-01   6.26059760e-09  -3.00591038e-09]
+ [  0.00000000e+00   3.88134410e-05   3.04298094e-01   2.22283726e-05
+   -9.52576857e-01   3.90385739e-10  -7.79846190e-06]
+ [  0.00000000e+00  -5.22334548e-04  -2.38795859e-06   8.06893269e-04
+    7.42141626e-06  -9.59508234e-07  -9.99999538e-01]
+ [  0.00000000e+00   4.13395300e-01  -8.79913821e-05   9.10551447e-01
+    9.97894863e-06   3.33480560e-04   5.18787390e-04]
+ [  0.00000000e+00  -9.10551105e-01   3.44609797e-05   4.13394977e-01
+   -1.64526612e-05  -7.88463804e-04   8.09178850e-04]
+ [  0.00000000e+00   8.55796699e-04  -6.23572888e-08  -2.22965526e-05
+    1.40160371e-08  -9.99999634e-01   4.94505244e-07]]
+Resultant Least Square Coefficients: [   16180.63937381  4932964.59829286]
+Residual: [  5.90407867e+16]
+Increased Precision Coefficients: [  4.86379342e+03   1.73144824e+08]
+Residual: [  1.09988208e+17]
+Total Potentially Incorrect: 2164.0
+Computing overall Least Squares Fit
+Overall Resultant Least Square Coefficients for desktop, hardEllipsoids: (numQuads, numResultants, constant)
+(array([    3334.32954777,    16462.7025559 ,  2017654.24913048]), array([  5.85981642e+17]), 3, array([  9.24502980e+05,   1.69948823e+05,   1.75954431e+02]))
+Overall Multi-precision Least Square Coefficients for desktop, hardEllipsoids: (numQuads, numResultants, constant)
+(array([    3571.14656541,    15464.39616323,  1716434.07421125]), array([  1.14890094e+18]), 3, array([  9.83806451e+05,   1.69792766e+05,   1.75896511e+02]))
+Total Potentially Incorrect: 16351.0
+
+
+
+Saving 'packedEll.desktop.1331.results.png'
+Plot Created
+PCA Components of [numQuadrics, numResultants, resultantTime_ns, numMPComparisons, mpTime_ns, correct?, counter
+ [[  0.00000000e+00   2.54019643e-06   7.36365358e-02   2.94807230e-06
+    9.97285143e-01  -2.77266355e-11  -6.84464957e-05]
+ [  0.00000000e+00  -3.64135134e-05  -9.97285111e-01  -4.18322600e-05
+    7.36365159e-02   9.17865179e-11  -2.59863569e-04]
+ [  0.00000000e+00   1.75458712e-06   2.54117913e-04  -1.46410648e-06
+   -8.73961241e-05  -4.87165807e-08  -9.99999964e-01]
+ [  0.00000000e+00  -7.18303659e-01   5.53953364e-05  -6.95729725e-01
+   -2.03996150e-07  -1.75459104e-05  -2.27608325e-07]
+ [  0.00000000e+00  -6.95727407e-01  -4.72670317e-06   7.18301200e-01
+   -2.42368048e-09   2.60031289e-03  -2.27371147e-06]
+ [ -0.00000000e+00   1.79651172e-03   1.33688727e-08  -1.88002143e-03
+    1.93579770e-11   9.99996619e-01  -4.28083341e-08]]
+Resultant Least Square Coefficients: [   24536.0587182  5242272.4233729]
+Residual: [  1.75811935e+14]
+Increased Precision Coefficients: [  1.53760833e+04   2.83424708e+08]
+Residual: [  1.71114699e+16]
+Total Potentially Incorrect: 3.0
