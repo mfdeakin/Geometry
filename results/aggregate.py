@@ -30,40 +30,24 @@ def validateFName(fname):
         return None
     return [testMachine, testName, testSize]
 
-def createPlot(data, resLSqr, mpLSqr, fname):
+def createPlot(data, fname):
     numQuads = data.T[0]
     resNum = data.T[1]
     resTimes = data.T[2]
     mpNum = data.T[3]
     mpTimes = data.T[4]
-    fig = plt.figure()
-    fig.suptitle(fname)
+    plt.suptitle(fname)
     plt.scatter(resNum, resTimes, c = "blue",
                label = "Resultant Method")
     plt.scatter(mpNum, mpTimes, c = "red",
                 label = "Increased Precision Method")
-    maxValue = max(max(mpNum) * mpLSqr[0][0] + mpLSqr[0][1],
-                   max(resNum) * resLSqr[0][0] + resLSqr[0][1],
-                   max(mpTimes), max(resTimes))
+    maxValue = max(max(mpTimes), max(resTimes))
     plt.axes().set_ylim(bottom = 0,
                         top =  maxValue * 1.0625)
     plt.yticks(np.arange(0, maxValue + 1, maxValue / 10.0))
     plt.axes().yaxis.get_major_formatter().set_powerlimits((0, 3))
-    # ax = fig.add_subplot(111, projection='3d')
-    # ax.scatter(numQuads, resNum, resTimes, c = "blue",
-    #            label = "Resultant Method")
-    # ax.scatter(numQuads, mpNum, mpTimes, c = "red",
-    #             label = "Increased Precision Method")
-    # ax.plot_wireframe(numQuads, resNum,
-    #                   numQuads * resLSqr[0][0] +
-    #                   resNum * resLSqr[0][1] + resLSqr[0][2])
-    # ax.plot_wireframe(numQuads, mpNum,
-    #                   numQuads * mpLSqr[0][0] +
-    #                   mpNum * mpLSqr[0][1] + mpLSqr[0][2])
-    # ax.axes().set_xlim(left = 0, right = max(max(mpNum), max(resNum)) * 1.0625)
-    plt.show()
     print("Saving '" + fname + "'")
-    fig.savefig(fname, format = "png", dpi = 300)
+    plt.savefig(fname, format = "png", dpi = 300)
     plt.close()
 
 def aggregateData():
@@ -97,20 +81,57 @@ def analyzeData(datum):
                 mtShape = (mtData.shape[0] + testData.shape[0],
                            testData.shape[1])
                 mtData = np.append(mtData, testData)
+                mtData = mtData.reshape(mtShape)
                 resNum = testData.T[1]
                 resTimes = testData.T[2]
-                resLSqr = np.linalg.lstsq(np.vstack([resNum,
-                                                     np.ones(len(resNum))]).T,
-                                          resTimes)
+                resIndep = np.vstack([resNum,
+                                      np.ones(len(resNum))]).T
+                resLSqr = np.linalg.lstsq(resIndep, resTimes)
                 mpNum = testData.T[3]
                 mpTimes = testData.T[4]
-                mpLSqr = np.linalg.lstsq(np.vstack([mpNum,
-                                                    np.ones(len(mpNum))]).T,
-                                         mpTimes)
-                print(resLSqr[0])
+                mpIndep = np.vstack([mpNum,
+                                     np.ones(len(mpNum))]).T
+                mpLSqr = np.linalg.lstsq(mpIndep, mpTimes)
                 plotFName = (test + "." + machine + "." +
                              str(size) + ".results.png")
-                createPlot(testData, resLSqr, mpLSqr, plotFName)
+                if len(datum[machine][test].keys()) == 1:
+                    print("Test Results: " + machine + ", " + test)
+                    createPlot(testData, plotFName)
+                    try:
+                        pca = sklearn.decomposition.PCA(6).fit(testData)
+                        print("PCA Components of " +
+                              "[numQuadrics, numResultants, " +
+                              "resultantTime_ns, numMPComparisons, " +
+                              "mpTime_ns, correct?, counter\n",
+                              pca.components_)
+                    except np.linalg.linalg.LinAlgError:
+                        print("Could not compute the PCA of " + plotFName)
+                    print("Resultant Least Square:", resLSqr)
+                    print("Increased Precision Least Square:", mpLSqr)
+                    print()
+            if len(datum[machine][test].keys()) > 1:
+                numQuads = mtData.T[0]
+                resNum = mtData.T[1]
+                resTimes = mtData.T[2]
+                resIndep = np.vstack([numQuads, resNum,
+                                   np.ones(len(resNum))]).T
+                resLSqr = np.linalg.lstsq(resIndep, resTimes)
+                mpNum = mtData.T[3]
+                mpTimes = mtData.T[4]
+                mpIndep = np.vstack([numQuads, mpNum,
+                                     np.ones(len(mpNum))]).T
+                mpLSqr = np.linalg.lstsq(mpIndep, mpTimes)
+                numIncorrect = len(resNum) - np.sum(mtData.T[5])
+                adjuster = np.identity(mtData.shape[1])
+                adjuster[2][0] = -resLSqr[0][0]
+                adjuster[4][0] = -mpLSqr[0][0]
+                sizeAdjusted = adjuster.dot(mtData.T).T
+                plotFName = test + "." + machine + ".all.png"
+                createPlot(mtData, plotFName)
+                plotFName = test + "." + machine + ".adjusted.png"
+                createPlot(sizeAdjusted, plotFName)
+                print("Overall Test Results: " + machine + ", " + test)
+                createPlot(testData, plotFName)
                 try:
                     pca = sklearn.decomposition.PCA(6).fit(testData)
                     print("PCA Components of " +
@@ -120,10 +141,10 @@ def analyzeData(datum):
                           pca.components_)
                 except np.linalg.linalg.LinAlgError:
                     print("Could not compute the PCA of " + plotFName)
-                print("Resultant Least Square Coefficients:", resLSqr[0])
-                print("Average Residual:", resLSqr[1][0] / len(resNum))
-                print("Increased Precision Coefficients:", mpLSqr[0])
-                print("Average Residual:", mpLSqr[1][0] / len(mpNum))
+                print("Resultant Least Square:", resLSqr)
+                print("Increased Precision Least Square:", mpLSqr)
+                print()
+                
 
 if __name__ == "__main__":
     datum = aggregateData()
