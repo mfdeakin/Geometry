@@ -25,10 +25,10 @@ class IntersectionBase<dim, fptype, true> {
   Line<dim, fptype> l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
-  int numIP;
+  mutable int numIP;
 
   static constexpr const int numPartialProds = 6;
-  Array<mpfr::mpreal, numPartialProds> partialProds;
+  mutable Array<mpfr::mpreal, numPartialProds> partialProds;
 
   IntersectionBase()
       : q(),
@@ -81,7 +81,7 @@ class IntersectionBase<dim, fptype, true> {
         partialProds[0]);
   }
 
-  const mpfr::mpreal &getPartialProd(int idx) {
+  const mpfr::mpreal &getPartialProd(int idx) const {
     if(!ppReady()) {
       const unsigned prevPrec =
           mpfr::mpreal::get_default_prec();
@@ -116,7 +116,7 @@ class IntersectionBase<dim, fptype, true> {
   }
 
   mpfr::mpreal resultantDet(
-      IntersectionBase<dim, fptype, true> &i) {
+      const IntersectionBase<dim, fptype, true> &i) const {
     assert(l == i.l);
     /* The fastest way to compute our determinant
      * 1.0(0 0 5 5)+1.0(2 2 3 3)+1.0(1 1 3 5)+1.0(4 4 0 2)+
@@ -181,7 +181,7 @@ class IntersectionBase<dim, fptype, true> {
   }
 
   fptype accurateCompare(
-      IntersectionBase<dim, fptype, true> &i) {
+      const IntersectionBase<dim, fptype, true> &i) const {
     /* Only works when there are two roots for both quadrics
      * Also requires the differences of roots to be
      * greater than the minimum precision.
@@ -221,7 +221,8 @@ class IntersectionBase<dim, fptype, true> {
     }
   }
 
-  fptype compare(IntersectionBase<dim, fptype, true> &i) {
+  fptype compare(
+      const IntersectionBase<dim, fptype, true> &i) const {
     fptype delta = intPos - i.intPos;
     if(MathFuncs::MathFuncs<fptype>::fabs(delta) <
            absErrMargin &&
@@ -238,10 +239,10 @@ class IntersectionBase<dim, fptype, true> {
       return delta;
   }
 
-  int incPrecCount() { return numIP; }
+  int incPrecCount() const { return numIP; }
 
   static bool cmp(
-      IntersectionBase<dim, fptype, true> &lhs,
+      const IntersectionBase<dim, fptype, true> &lhs,
       const IntersectionBase<dim, fptype, true> &rhs) {
     fptype diff = lhs.compare(rhs);
     if(diff < 0) return true;
@@ -256,7 +257,7 @@ class IntersectionBase<dim, fptype, false> {
   Line<dim, fptype> l;
   fptype intPos, otherIntPos;
   fptype absErrMargin;
-  int numIP;
+  mutable int numIP;
 
   IntersectionBase() {}
 
@@ -292,16 +293,16 @@ class IntersectionBase<dim, fptype, false> {
   }
 
   fptype compare(
-      const IntersectionBase<dim, fptype, false> &i) {
+      const IntersectionBase<dim, fptype, false> &i) const {
     numIP++;
     fptype delta = intPos - i.intPos;
     return delta;
   }
 
-  int incPrecCount() { return numIP; }
+  int incPrecCount() const { return numIP; }
 
   static bool cmp(
-      IntersectionBase<dim, fptype, false> &lhs,
+      const IntersectionBase<dim, fptype, false> &lhs,
       const IntersectionBase<dim, fptype, false> &rhs) {
     fptype diff = lhs.compare(rhs);
     if(diff < 0) return true;
