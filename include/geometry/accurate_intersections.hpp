@@ -98,10 +98,6 @@ class IntersectionBase<dim, fptype, true> {
       Line<dim, mpfr::mpreal> line(l);
       Polynomial<2, mpfr::mpreal> lqInt =
           quad.calcLineDistPoly(line);
-      partialProds[0] =
-          mpfr::mult(lqInt.get(0), lqInt.get(0), partPrec);
-      partialProds[1] =
-          mpfr::mult(lqInt.get(1), lqInt.get(1), partPrec);
       partialProds[2] =
           mpfr::mult(lqInt.get(2), lqInt.get(2), partPrec);
       partialProds[3] =
@@ -110,6 +106,11 @@ class IntersectionBase<dim, fptype, true> {
           mpfr::mult(lqInt.get(0), lqInt.get(2), partPrec);
       partialProds[5] =
           mpfr::mult(lqInt.get(1), lqInt.get(2), partPrec);
+      partialProds[1] = mpfr::sub(
+          mpfr::mult(lqInt.get(1), lqInt.get(1), partPrec),
+          partialProds[4], partPrec);
+      partialProds[0] =
+          mpfr::mult(lqInt.get(0), lqInt.get(0), partPrec);
       mpfr::mpreal::set_default_prec(prevPrec);
     }
     return partialProds[idx];
@@ -127,12 +128,13 @@ class IntersectionBase<dim, fptype, true> {
      * 18 FLOPs, which is nice,
      * but we can do better with caching
      *
+     * ((4 4)-(3 5))(0 2)+((1 1)-(0 2))(3 5)
      * Amortize like so:
-     * (0 0)(5 5)+(2 2)(3 3)+(1 1)(3 5)+(4 4)(0 2)+
-     * -(1 2)(3 4)-(0 1)(4 5)-2.0(0 2)(3 5)
+     * (0 0)(5 5)+(2 2)(3 3)+((1 1)-(0 2))(3 5)+
+     * ((4 4)-(3 5))(0 2)-(1 2)(3 4)-(0 1)(4 5)
      * where all partial products (0 0), (2 2), etc. are
      * computed only once.
-     * This brings us to 14 FLOPs per comparison,
+     * This brings us to 11 FLOPs per comparison,
      * plus some small constant for the initial computation
      */
     const unsigned prevPrec =
@@ -143,18 +145,17 @@ class IntersectionBase<dim, fptype, true> {
     constexpr const unsigned partPrec = 2 * coeffPrec;
     constexpr const unsigned detPrec = 2 * partPrec;
     /* Now compute the larger terms */
-    constexpr const int numTerms = 7;
-    mpfr::mpreal detTerms[numTerms] = {
+    mpfr::mpreal detTerms[] = {
         //(0 0)(5 5)
         mpfr::mult(getPartialProd(0), i.getPartialProd(2),
                    detPrec),
         //(2 2)(3 3)
         mpfr::mult(getPartialProd(2), i.getPartialProd(0),
                    detPrec),
-        //(1 1)(3 5)
+        //((1 1)-(0 2))(3 5)
         mpfr::mult(getPartialProd(1), i.getPartialProd(4),
                    detPrec),
-        //(0 2)(4 4)
+        //(0 2)((4 4)-(3 5))
         mpfr::mult(getPartialProd(4), i.getPartialProd(1),
                    detPrec),
         //-(1 2)(3 4)
@@ -162,12 +163,9 @@ class IntersectionBase<dim, fptype, true> {
                     detPrec),
         //-(0 1)(4 5)
         -mpfr::mult(getPartialProd(3), i.getPartialProd(5),
-                    detPrec),
-        //-2.0(0 2)(3 5)
-        -mpfr::mult(getPartialProd(4), i.getPartialProd(4),
-                    detPrec)
-            << 1,
-    };
+                    detPrec)};
+    constexpr const int numTerms =
+        sizeof(detTerms) / sizeof(detTerms[0]);
     /* There are only 4 terms to sum,
      * which isn't enough for compensated summation to be
      * worthwhile in my experience
