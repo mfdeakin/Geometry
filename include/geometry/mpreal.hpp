@@ -306,6 +306,8 @@ class mpreal {
   const mpreal operator++(int);
 
   // -
+  friend mpreal sub(const mpreal &lhs, const mpreal &rhs,
+                    int finalPrec);
   mpreal &operator-=(const mpreal &v);
   mpreal &operator-=(const mpz_t v);
   mpreal &operator-=(const mpq_t v);
@@ -1658,6 +1660,18 @@ inline const mpreal mpreal::operator--(int) {
 
 //////////////////////////////////////////////////////////////////////////
 // - Subtraction
+inline mpreal sub(const mpreal &lhs, const mpreal &rhs,
+                  int finalPrec = -1) {
+  if(finalPrec < 0) {
+    finalPrec =
+        std::max(lhs.getPrecision(), rhs.getPrecision());
+  }
+  mpreal diff(0, finalPrec);
+  mpfr_sub(diff.mpfr_ptr(), lhs.mpfr_srcptr(),
+           rhs.mpfr_srcptr(), mpreal::get_default_rnd());
+  return diff;
+}
+
 inline mpreal &mpreal::operator-=(const mpreal &v) {
   mpfr_sub(mpfr_ptr(), mpfr_srcptr(), v.mpfr_srcptr(),
            mpreal::get_default_rnd());
