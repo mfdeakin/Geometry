@@ -29,6 +29,7 @@ class IntersectionBase<dim, fptype, true> {
 
   static constexpr const int numPartialProds = 6;
   mutable Array<mpfr::mpreal, numPartialProds> partialProds;
+  mpfr::mpreal center;
 
   IntersectionBase()
       : q(),
@@ -81,6 +82,14 @@ class IntersectionBase<dim, fptype, true> {
         partialProds[0]);
   }
 
+  const mpfr::mpreal &getCenter() const {
+    if(MathFuncs::MathFuncs<mpfr::mpreal>::isnan(center)) {
+      center =
+          mpfr::div(lqInt.get(1), lqInt.get(2), partPrec);
+    }
+    return center;
+  }
+
   const mpfr::mpreal &getPartialProd(int idx) const {
     if(!ppReady()) {
       const unsigned prevPrec =
@@ -106,6 +115,7 @@ class IntersectionBase<dim, fptype, true> {
           mpfr::mult(lqInt.get(0), lqInt.get(2), partPrec);
       partialProds[5] =
           mpfr::mult(lqInt.get(1), lqInt.get(2), partPrec);
+      /* This is also the discriminant */
       partialProds[1] = mpfr::sub(
           mpfr::mult(lqInt.get(1), lqInt.get(1), partPrec),
           partialProds[4], partPrec);
@@ -178,17 +188,72 @@ class IntersectionBase<dim, fptype, true> {
     return det;
   }
 
+  fptype accurateEqualDiscs(
+      const IntersectionBase<dim, fptype, true> &i) const {
+    /* For equal discriminants,
+     * we can just compare the discriminants
+     * to the difference in centers
+     */
+    const mpfr::mpreal centralDiff =
+        getCenter() - i.getCenter();
+    if(mpfr::iszero(centralDiff)) {
+      /* If the ccenters are on top of each other,
+       * then the roots must be as well
+       */
+      return 0.0;
+    }
+    bool rootSign1 = MathFuncs::MathFuncs<fptype>::signbit(
+        intPos - otherIntPos);
+    bool rootSign2 = MathFuncs::MathFuncs<fptype>::signbit(
+        i.intPos - i.otherIntPos);
+    bool cdSign =
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+            centralDiff);
+    /* For the case of ++,
+     * the sign of the central difference gives the result
+     * For the case of --,
+     * the negative sign of the central difference gives the
+     * result
+     * For the cases of -+, +-,
+     * comparing the squared central difference to the sum
+     * of the discriminants gives the result
+     */
+    if(rootSign1 == rootSign2) {
+      bool finalSign = cdSign ^ rootSign1;
+      if(finalSign == 0) {
+        return fptype(1.0);
+      } else {
+        return fptype(-1.0);
+      }
+    } else {
+      /* The central difference squared divided by four
+       * compared to the discriminant will give us the
+       * result */
+      mpfr::mpreal centralDiffSqr =
+          mpfr::sqr(centralDiff) >> 2;
+      if(centralDiffSqr < getPartialProd(1)) {
+        /* If centralDiff < 0, and we are comparing +-,
+         * 
+         */
+      } else {
+      }
+    }
+    return NAN;
+  }
+
   fptype accurateCompare(
       const IntersectionBase<dim, fptype, true> &i) const {
-    /* Only works when there are two roots for both quadrics
-     * Also requires the differences of roots to be
-     * greater than the minimum precision.
-     */
-
     /* Keep track of the number of precision increases
      * required for statistics
      */
     numIP++;
+    /* First determine which root is more likely */
+    if(getPartialProd(1) > i.getPartialProd(1)) {
+      return -i.accurateCompare(*this);
+    }
+    if(getPartialProd(1) == i.getPartialProd(1)) {
+      return accurateEqualDiscs(i)
+    }
     mpfr::mpreal det = resultantDet(i);
     /* Now compute the signs of the other resultant terms.
      * Since the sign flips with each negative, just
@@ -270,6 +335,7 @@ class IntersectionBase<dim, fptype, false> {
         otherIntPos(otherIntPos),
         absErrMargin(absErrMargin),
         numIP(0) {}
+
   IntersectionBase(
       const IntersectionBase<dim, fptype, false> &i)
       : q(i.q),

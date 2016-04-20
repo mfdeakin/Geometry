@@ -16,7 +16,7 @@ struct fp {
   unsigned sign : 1;
   static constexpr const unsigned eBits = e, pBits = p,
                                   precision = p + 1;
-  static constexpr const int centralExp =
+  static constexpr const unsigned long centralExp =
       (1 << (e - 1)) - 1;
 } __attribute__((packed));
 
@@ -45,16 +45,20 @@ struct fpconvert;
 template <>
 struct fpconvert<float> : public fp32 {
   static constexpr const float epsilon = FLT_EPSILON;
+  static constexpr const char *fpname = "Single Precision";
 };
 
 template <>
 struct fpconvert<double> : public fp64 {
   static constexpr const double epsilon = DBL_EPSILON;
+  static constexpr const char *fpname = "Double Precision";
 };
 
 template <>
 struct fpconvert<long double> : public fp79 {
   static constexpr const long double epsilon = LDBL_EPSILON;
+  static constexpr const char *fpname =
+      "Extended Double Precision";
 };
 
 template <typename fptype>
