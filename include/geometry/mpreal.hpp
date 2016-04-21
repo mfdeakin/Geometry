@@ -2888,11 +2888,11 @@ inline mp_exp_t mpreal::get_emax_max(void) {
   return y;
 
 inline const mpreal sqr(const mpreal &v, int finalPrec,
-                        mp_rnd_t r = mpreal) {
+                        mp_rnd_t r = mpreal::get_default_rnd()) {
   if(finalPrec < 0) {
     finalPrec = 2 * v.getPrecision();
   }
-  mpreal y(0, final_prec);
+  mpreal y(0, finalPrec);
   mpfr_sqr(y.mpfr_ptr(), v.mpfr_srcptr(), r);
   return y;
 }

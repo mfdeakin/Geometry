@@ -29,7 +29,7 @@ class IntersectionBase<dim, fptype, true> {
 
   static constexpr const int numPartialProds = 6;
   mutable Array<mpfr::mpreal, numPartialProds> partialProds;
-  mpfr::mpreal center;
+  mutable mpfr::mpreal center;
 
   IntersectionBase()
       : q(),
@@ -83,9 +83,8 @@ class IntersectionBase<dim, fptype, true> {
   }
 
   const mpfr::mpreal &getCenter() const {
-    if(MathFuncs::MathFuncs<mpfr::mpreal>::isnan(center)) {
-      center =
-          mpfr::div(lqInt.get(1), lqInt.get(2), partPrec);
+    if(!ppReady()) {
+      getPartialProd(0);
     }
     return center;
   }
@@ -107,6 +106,8 @@ class IntersectionBase<dim, fptype, true> {
       Line<dim, mpfr::mpreal> line(l);
       Polynomial<2, mpfr::mpreal> lqInt =
           quad.calcLineDistPoly(line);
+      center =
+          mpfr::div(lqInt.get(1), lqInt.get(2), partPrec);
       partialProds[2] =
           mpfr::mult(lqInt.get(2), lqInt.get(2), partPrec);
       partialProds[3] =
@@ -214,7 +215,7 @@ class IntersectionBase<dim, fptype, true> {
      */
     if(rootSign1 == rootSign2) {
       if(mpfr::iszero(centralDiff)) {
-        /* If the ccenters are on top of each other,
+        /* If the centers are on top of each other,
          * then the roots must be as well
          */
         return 0.0;
@@ -266,7 +267,8 @@ class IntersectionBase<dim, fptype, true> {
         i.intPos - i.otherIntPos);
     mpfr::mpreal centralDiff = getCenter() - i.getCenter();
     bool cdSign =
-        MathFuncs::MathFuncs<fptype>::signbit(centralDiff);
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+            centralDiff);
     /* If they're not on the same side of the center, the
      * result must be the sign of the central difference
      */
@@ -305,8 +307,7 @@ class IntersectionBase<dim, fptype, true> {
               centralDiff);
       if(signbit) {
         return fptype(-1.0);
-      }
-      else {
+      } else {
         return fptype(1.0);
       }
     }
