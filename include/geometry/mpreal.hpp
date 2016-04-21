@@ -438,6 +438,7 @@ class mpreal {
   std::ostream &output(std::ostream &os) const;
 
   // Math Functions
+  friend const mpreal sqr(const mpreal &v, int finalPrec);
   friend const mpreal sqr(const mpreal &v,
                           mp_rnd_t rnd_mode);
   friend const mpreal sqrt(const mpreal &v,
@@ -2885,6 +2886,16 @@ inline mp_exp_t mpreal::get_emax_max(void) {
   mpreal y(0, mpfr_get_prec(x.mpfr_srcptr())); \
   mpfr_##f(y.mpfr_ptr(), x.mpfr_srcptr(), r);  \
   return y;
+
+inline const mpreal sqr(const mpreal &v, int finalPrec = -1,
+                        mp_rnd_t r = mpreal) {
+  if(finalPrec < 0) {
+    finalPrec = 2 * v.getPrecision();
+  }
+  mpreal y(0, final_prec);
+  mpfr_sqr(y.mpfr_ptr(), v.mpfr_srcptr(), r);
+  return y;
+}
 
 inline const mpreal sqr(
     const mpreal &x,

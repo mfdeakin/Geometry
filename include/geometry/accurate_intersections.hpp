@@ -196,12 +196,6 @@ class IntersectionBase<dim, fptype, true> {
      */
     const mpfr::mpreal centralDiff =
         getCenter() - i.getCenter();
-    if(mpfr::iszero(centralDiff)) {
-      /* If the ccenters are on top of each other,
-       * then the roots must be as well
-       */
-      return 0.0;
-    }
     bool rootSign1 = MathFuncs::MathFuncs<fptype>::signbit(
         intPos - otherIntPos);
     bool rootSign2 = MathFuncs::MathFuncs<fptype>::signbit(
@@ -219,8 +213,13 @@ class IntersectionBase<dim, fptype, true> {
      * of the discriminants gives the result
      */
     if(rootSign1 == rootSign2) {
-      bool finalSign = cdSign ^ rootSign1;
-      if(finalSign == 0) {
+      if(mpfr::iszero(centralDiff)) {
+        /* If the ccenters are on top of each other,
+         * then the roots must be as well
+         */
+        return 0.0;
+      }
+      if(cdSign == 0) {
         return fptype(1.0);
       } else {
         return fptype(-1.0);
@@ -228,17 +227,35 @@ class IntersectionBase<dim, fptype, true> {
     } else {
       /* The central difference squared divided by four
        * compared to the discriminant will give us the
-       * result */
+       * result
+       */
       mpfr::mpreal centralDiffSqr =
           mpfr::sqr(centralDiff) >> 2;
-      if(centralDiffSqr < getPartialProd(1)) {
-        /* If centralDiff < 0, and we are comparing +-,
-         * 
+      /* This must be computed to the full precision to
+       * verify it's not zero
+       */
+      mpfr::mpreal cmpSign =
+          mpfr::sub(getPartialProd(1), centralDiffSqr,
+                    centralDiffSqr.getPrecision());
+      if(mpfr::iszero(cmpSign)) {
+        /* The central difference is twice the square root
+         * of the discriminant, so the roots are on top of
+         * each other
          */
-      } else {
+        return fptype(0.0);
+      }
+      bool cmpDistSign =
+          MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+              cmpSign);
+      bool finalSign = rootSign1 ^ cmpDistSign;
+      if(finalSign == 0) {
+        return fptype(1.0);
+      }
+      else {
+        return fptype(-1.0);
       }
     }
-    return NAN;
+    return fptype(NAN);
   }
 
   fptype accurateCompare(
