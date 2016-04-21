@@ -288,9 +288,27 @@ class IntersectionBase<dim, fptype, true> {
             centraldiscdiff);
     if(cmpSign == rootSign) {
       return fptype(1.0);
-    }
-    else {
+    } else {
       return fptype(-1.0);
+    }
+  }
+
+  fptype accurateCompare_TwoRepeated(
+      const IntersectionBase<dim, fptype, true> &i) const {
+    mpfr::mpreal centralDiff =
+        mpfr::sub(getCenter(), i.getCenter(), -1);
+    if(mpfr::iszero(centralDiff)) {
+      return fptype(0.0);
+    } else {
+      bool signbit =
+          MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+              centralDiff);
+      if(signbit) {
+        return fptype(-1.0);
+      }
+      else {
+        return fptype(1.0);
+      }
     }
   }
 
@@ -310,8 +328,7 @@ class IntersectionBase<dim, fptype, true> {
     if(mpfr::iszero(getPartialProd(1))) {
       if(mpfr::iszero(i.getPartialProd(1))) {
         return accurateCompare_TwoRepeated(i);
-      }
-      else {
+      } else {
         return accurateCompare_OneRepeated(i);
       }
     }
