@@ -2887,7 +2887,7 @@ inline mp_exp_t mpreal::get_emax_max(void) {
   mpfr_##f(y.mpfr_ptr(), x.mpfr_srcptr(), r);  \
   return y;
 
-inline const mpreal sqr(const mpreal &v, int finalPrec = -1,
+inline const mpreal sqr(const mpreal &v, int finalPrec,
                         mp_rnd_t r = mpreal) {
   if(finalPrec < 0) {
     finalPrec = 2 * v.getPrecision();

@@ -188,7 +188,7 @@ class IntersectionBase<dim, fptype, true> {
     return det;
   }
 
-  fptype accurateEqualDiscs(
+  fptype accurateCompare_EqualDiscs(
       const IntersectionBase<dim, fptype, true> &i) const {
     /* For equal discriminants,
      * we can just compare the discriminants
@@ -230,7 +230,7 @@ class IntersectionBase<dim, fptype, true> {
        * result
        */
       mpfr::mpreal centralDiffSqr =
-          mpfr::sqr(centralDiff) >> 2;
+          mpfr::sqr(centralDiff, -1) >> 2;
       /* This must be computed to the full precision to
        * verify it's not zero
        */
@@ -250,12 +250,48 @@ class IntersectionBase<dim, fptype, true> {
       bool finalSign = rootSign1 ^ cmpDistSign;
       if(finalSign == 0) {
         return fptype(1.0);
-      }
-      else {
+      } else {
         return fptype(-1.0);
       }
     }
     return fptype(NAN);
+  }
+
+  fptype accurateCompare_OneRepeated(
+      const IntersectionBase<dim, fptype, true> &i) const {
+    /* We just need to compare the squared difference of
+     * centers divided by four to the other discriminant
+     */
+    bool rootSign = MathFuncs::MathFuncs<fptype>::signbit(
+        i.intPos - i.otherIntPos);
+    mpfr::mpreal centralDiff = getCenter() - i.getCenter();
+    bool cdSign =
+        MathFuncs::MathFuncs<fptype>::signbit(centralDiff);
+    /* If they're not on the same side of the center, the
+     * result must be the sign of the central difference
+     */
+    if(cdSign != rootSign) {
+      if(cdSign == 1 && rootSign == 0) {
+        return fptype(-1.0);
+      } else {
+        return fptype(1.0);
+      }
+    }
+    mpfr::mpreal centraldiscdiff =
+        mpfr::sub(mpfr::sqr(centralDiff, -1),
+                  i.getPartialProd(1), -1);
+    if(mpfr::iszero(centraldiscdiff)) {
+      return fptype(0.0);
+    }
+    bool cmpSign =
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+            centraldiscdiff);
+    if(cmpSign == rootSign) {
+      return fptype(1.0);
+    }
+    else {
+      return fptype(-1.0);
+    }
   }
 
   fptype accurateCompare(
@@ -269,7 +305,15 @@ class IntersectionBase<dim, fptype, true> {
       return -i.accurateCompare(*this);
     }
     if(getPartialProd(1) == i.getPartialProd(1)) {
-      return accurateEqualDiscs(i)
+      return accurateCompare_EqualDiscs(i);
+    }
+    if(mpfr::iszero(getPartialProd(1))) {
+      if(mpfr::iszero(i.getPartialProd(1))) {
+        return accurateCompare_TwoRepeated(i);
+      }
+      else {
+        return accurateCompare_OneRepeated(i);
+      }
     }
     mpfr::mpreal det = resultantDet(i);
     /* Now compute the signs of the other resultant terms.
