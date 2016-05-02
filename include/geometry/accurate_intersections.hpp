@@ -77,6 +77,12 @@ class IntersectionBase<dim, fptype, true> {
     return *this;
   }
 
+  bool isUndetermined(const fptype &i1,
+                      const fptype &i2) const {
+    return MathFuncs::MathFuncs<fptype>::fabs(i1 - i2) <
+           absErrMargin;
+  }
+
   bool ppReady() const {
     return !MathFuncs::MathFuncs<mpfr::mpreal>::isnan(
         partialProds[0]);
@@ -313,6 +319,51 @@ class IntersectionBase<dim, fptype, true> {
     }
   }
 
+  fptype accurateCompare_One(
+      const IntersectionBase<dim, fptype, true> &i,
+      const mpfr::mpreal resultant) const {
+    /* Since this is the only undetermined root,
+     * the resultant will determine the sign
+     */
+    if(mpfr::iszero(resultant)) {
+      return fptype(0.0);
+    }
+    /* So just compute the signs of the resultant terms.
+     * Since the sign flips with each negative, just
+     * use XOR on one bit to keep track of the final sign
+     */
+    constexpr const int numPartialTerms = 3;
+    fptype partResTerms[numPartialTerms] = {
+        intPos - i.otherIntPos, otherIntPos - i.intPos,
+        otherIntPos - i.otherIntPos};
+    int numNeg = resultant < 0;
+    for(int i = 0; i < numPartialTerms; i++) {
+      if(partResTerms[i] < 0.0)
+        numNeg ^= 1;
+      else if(partResTerms[i] == 0.0)
+        /* Zero, so the sign of this difference can't be
+         * determined with this method
+         */
+        return 0.0;
+    }
+    /* The sign of the product of the resultant and the
+     * known differences of roots has the sign of the
+     * final difference of the root
+     */
+    if(numNeg == 0) {
+      return 1.0;
+    } else {
+      return -1.0;
+    }
+  }
+
+  fptype accurateCompare_Multi(
+      const IntersectionBase<dim, fptype, true> &i,
+      const mpfr::mpreal &resultant) const {
+		
+    return fptype(NAN);
+  }
+
   fptype accurateCompare(
       const IntersectionBase<dim, fptype, true> &i) const {
     /* Keep track of the number of precision increases
@@ -333,34 +384,15 @@ class IntersectionBase<dim, fptype, true> {
         return accurateCompare_OneRepeated(i);
       }
     }
-    mpfr::mpreal det = resultantDet(i);
-    /* Now compute the signs of the other resultant terms.
-     * Since the sign flips with each negative, just
-     * use XOR on one bit to keep track of the final sign
-     */
-    constexpr const int numPartialTerms = 3;
-    fptype partResTerms[numPartialTerms] = {
-        intPos - i.otherIntPos, otherIntPos - i.intPos,
-        otherIntPos - i.otherIntPos};
-    int numNeg = det < 0;
-    for(int i = 0; i < numPartialTerms; i++) {
-      if(partResTerms[i] < 0.0)
-        numNeg ^= 1;
-      else if(partResTerms[i] == 0.0)
-        /* Zero, so the sign of this difference can't be
-         * determined with this method
-         */
-        return 0.0;
-    }
-    /* The sign of the product of the resultant and the
-     * known differences of roots has the sign of the
-     * final difference of the root
-     */
-    if(numNeg == 0) {
-      return 1.0;
+    const mpfr::mpreal resultant = resultantDet(i);
+    if(isUndetermined(intPos, i.otherIntPos) ||
+       isUndetermined(otherIntPos, i.intPos) ||
+       isUndetermined(otherIntPos, i.otherIntPos)) {
+      accurateCompare_Multi(i, resultant);
     } else {
-      return -1.0;
+      return accurateCompare_One(i, resultant);
     }
+    return fptype(NAN);
   }
 
   fptype compare(
