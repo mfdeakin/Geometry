@@ -506,21 +506,26 @@ class IntersectionBase<dim, fptype, true> {
       return -i.accurateCompare(*this);
     }
     if(getDiscriminant() == i.getDiscriminant()) {
-      return accurateCompare_EqualDiscs(i);
+      fptype ret = accurateCompare_EqualDiscs(i);
+      return ret;
     }
     if(mpfr::iszero(getDiscriminant())) {
       if(mpfr::iszero(i.getDiscriminant())) {
-        return accurateCompare_TwoRepeated(i);
+        fptype ret = accurateCompare_TwoRepeated(i);
+        return ret;
       } else {
-        return accurateCompare_OneRepeated(i);
+        fptype ret = accurateCompare_OneRepeated(i);
+        return ret;
       }
     }
     if(isUndetermined(intPos, i.otherIntPos) ||
        isUndetermined(otherIntPos, i.intPos) ||
        isUndetermined(otherIntPos, i.otherIntPos)) {
-      accurateCompare_Multi(i);
+      fptype ret = accurateCompare_Multi(i);
+			return ret;
     } else {
-      return accurateCompare_One(i);
+      fptype ret = accurateCompare_One(i);
+			return ret;
     }
     return fptype(NAN);
   }

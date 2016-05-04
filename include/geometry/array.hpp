@@ -42,7 +42,7 @@ struct Array {
     return *this;
   }
 
-  CUDA_CALLABLE int size() const { return sz; }
+  CUDA_CALLABLE static constexpr int size() { return sz; }
 };
 
 #endif
