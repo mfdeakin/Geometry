@@ -1,5 +1,4 @@
 
-
 #include "geometry.hpp"
 #include "quadric.hpp"
 #include "line.hpp"
@@ -362,36 +361,40 @@ class IntersectionBase<dim, fptype, true> {
     }
   }
 
+  fptype accurateCompare_EqCenter(
+      const IntersectionBase<dim, fptype, true> &i) const {
+    if(getDiscriminant() == i.getDiscriminant()) {
+      return fptype(0.0);
+    } else {
+      /* The discriminant must be less than the other
+       * intersections discriminant, so the root we are
+       * comparing against determines the sign
+       */
+      if(i.intPos < i.otherIntPos) {
+        return fptype(1.0);
+      } else {
+        return fptype(-1.0);
+      }
+    }
+  }
+
   fptype accurateCompare_Multi(
       const IntersectionBase<dim, fptype, true> &i) const {
     mpfr::mpreal centralDiff = getCenter() - i.getCenter();
     if(mpfr::iszero(centralDiff)) {
-      if(getDiscriminant() == i.getDiscriminant()) {
-        return fptype(0.0);
-      } else {
-        /* The discriminant must be less than the other
-         * intersections discriminant, so the root we are
-         * comparing against determines the sign
-         */
-        if(i.intPos < i.otherIntPos) {
-          return fptype(1.0);
-        } else {
-          return fptype(-1.0);
-        }
-      }
+      return accurateCompare_EqCenter(i);
     }
     /* Now use the central difference and the sides being
      * used for the roots to determine the case we're
      * solving
      */
-    bool centralDiffNeg =
+    int centralDiffNeg =
         MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
             centralDiff);
-    bool intNeg = MathFuncs::MathFuncs<fptype>::signbit(
+    int intNeg = MathFuncs::MathFuncs<fptype>::signbit(
         intPos - otherIntPos);
-    bool otherIntNeg =
-        MathFuncs::MathFuncs<fptype>::signbit(
-            i.intPos - i.otherIntPos);
+    int otherIntNeg = MathFuncs::MathFuncs<fptype>::signbit(
+        i.intPos - i.otherIntPos);
     if(centralDiffNeg != (intNeg && otherIntNeg)) {
       /* This case is obvious with a picture */
       if(centralDiffNeg) {
@@ -400,15 +403,96 @@ class IntersectionBase<dim, fptype, true> {
         return fptype(1.0);
       }
     }
-    const mpfr::mpreal resultant = resultantDet(i);
-    if(mpfr::iszero(resultant)) {
-      return fptype(0.0);
-    }
-    bool resultantNeg =
-        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
-            resultant);
 
-    return fptype(NAN);
+    /* First dimension is the central difference sign (+,-);
+     * Second dimension is the resultant <0, =0, >0;
+     * Third dimension is whether the central difference
+     * squared is less than the larger discriminant (<, >=);
+     * Fourth dimension is the choice of root pairs
+     * from ++, +-, -+, --
+     */
+    constexpr const fptype caseTable[2][3][2][4] = {
+        {/* central difference sign is positive */
+         {
+             /* resultant <0 */
+             {/* central difference squared is less than
+                 the larger discriminant */
+              fptype(1.0), fptype(1.0), fptype(-1.0),
+              fptype(-1.0)},
+             {/* central difference squared is at least
+               * the larger discriminant */
+              fptype(1.0), fptype(1.0), fptype(-1.0),
+              fptype(-1.0)},
+         },
+         {
+             /* resultant =0 */
+             {/* central difference squared is less than
+                 the larger discriminant */
+              fptype(0.0), fptype(1.0), fptype(-1.0),
+              fptype(1.0)},
+             {/* central difference squared is at least
+               * the larger discriminant */
+              fptype(1.0), fptype(1.0), fptype(0.0),
+              fptype(1.0)},
+         },
+         {
+             /* resultant >0 */
+             {/* central difference squared is less than
+                 the larger discriminant */
+              fptype(-1.0), fptype(1.0), fptype(-1.0),
+              fptype(1.0)},
+             {/* central difference squared is at least
+               * the larger discriminant */
+              fptype(1.0), fptype(1.0), fptype(1.0),
+              fptype(1.0)},
+         }},
+        {/* central difference sign is negative */
+         {
+             /* resultant <0 */
+             {/* central difference squared is less than
+                 the larger discriminant */
+              fptype(-1.0), fptype(1.0), fptype(-1.0),
+              fptype(-1.0)},
+             {/* central difference squared is at least
+               * the larger discriminant */
+              fptype(-1.0), fptype(1.0), fptype(-1.0),
+              fptype(-1.0)},
+         },
+         {
+             /* resultant =0 */
+             {/* central difference squared is less than
+               * the larger discriminant */
+              fptype(-1.0), fptype(1.0), fptype(-1.0),
+              fptype(0.0)},
+             {/* central difference squared is at least
+               * the larger discriminant */
+              fptype(-1.0), fptype(0.0), fptype(-1.0),
+              fptype(-1.0)},
+         },
+         {
+             /* resultant >0 */
+             {/* central difference squared is less than
+               * the larger discriminant */
+              fptype(-1.0), fptype(1.0), fptype(-1.0),
+              fptype(1.0)},
+             {/* central difference squared is at least
+               * the larger discriminant */
+              fptype(-1.0), fptype(-1.0), fptype(-1.0),
+              fptype(-1.0)},
+         }}};
+    const mpfr::mpreal resultant = resultantDet(i);
+    int resultantDim =
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+            resultant) *
+            2 +
+        mpfr::iszero(resultant);
+    const unsigned cdSqrPrec =
+        centralDiff.getPrecision() * 2;
+    mpfr::mpreal cdSqr = mpfr::sqr(centralDiff, cdSqrPrec);
+    int cdSqrCmpDim = cdSqr >= i.getDiscriminant();
+    int rootSignDim = 2 * intNeg + otherIntNeg;
+    return caseTable[centralDiffNeg][resultantDim]
+                    [cdSqrCmpDim][rootSignDim];
   }
 
   fptype accurateCompare(
