@@ -379,362 +379,347 @@ class IntersectionBase<dim, fptype, true> {
           return fptype(-1.0);
         }
       }
-      /* Now use the central difference and the sides being
-       * used for the roots to determine the case we're
-       * solving
-       */
-      bool centralDiffNeg =
-          MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
-              centralDiff);
-      bool intNeg = MathFuncs::MathFuncs<fptype>::signbit(
-          intPos - otherIntPos);
-      bool otherIntNeg =
-          MathFuncs::MathFuncs<fptype>::signbit(
-              i.intPos - i.otherIntPos);
-      if(centralDiffNeg != (intNeg && otherIntNeg)) {
-        /* This case is obvious with a picture */
-        if(centralDiffNeg) {
-          return fptype(-1.0);
-        } else {
-          return fptype(1.0);
-        }
-      }
-      const mpfr::mpreal resultant = resultantDet(i);
-      if(mpfr::iszero(resultant)) {
-        return fptype(0.0);
-      }
-      bool resultantNeg =
-          MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
-              resultant);
-      
-      return fptype(NAN);
     }
-
-    fptype accurateCompare(
-        const IntersectionBase<dim, fptype, true> &i)
-        const {
-      /* Keep track of the number of precision increases
-       * required for statistics
-       */
-      numIP++;
-      /* First determine which root is more likely */
-      if(getDiscriminant() > i.getDiscriminant()) {
-        return -i.accurateCompare(*this);
-      }
-      if(getDiscriminant() == i.getDiscriminant()) {
-        return accurateCompare_EqualDiscs(i);
-      }
-      if(mpfr::iszero(getDiscriminant())) {
-        if(mpfr::iszero(i.getDiscriminant())) {
-          return accurateCompare_TwoRepeated(i);
-        } else {
-          return accurateCompare_OneRepeated(i);
-        }
-      }
-      if(isUndetermined(intPos, i.otherIntPos) ||
-         isUndetermined(otherIntPos, i.intPos) ||
-         isUndetermined(otherIntPos, i.otherIntPos)) {
-        accurateCompare_Multi(i);
+    /* Now use the central difference and the sides being
+     * used for the roots to determine the case we're
+     * solving
+     */
+    bool centralDiffNeg =
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+            centralDiff);
+    bool intNeg = MathFuncs::MathFuncs<fptype>::signbit(
+        intPos - otherIntPos);
+    bool otherIntNeg =
+        MathFuncs::MathFuncs<fptype>::signbit(
+            i.intPos - i.otherIntPos);
+    if(centralDiffNeg != (intNeg && otherIntNeg)) {
+      /* This case is obvious with a picture */
+      if(centralDiffNeg) {
+        return fptype(-1.0);
       } else {
-        return accurateCompare_One(i);
+        return fptype(1.0);
       }
-      return fptype(NAN);
     }
+    const mpfr::mpreal resultant = resultantDet(i);
+    if(mpfr::iszero(resultant)) {
+      return fptype(0.0);
+    }
+    bool resultantNeg =
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+            resultant);
 
-    fptype compare(
-        const IntersectionBase<dim, fptype, true> &i)
-        const {
-      fptype delta = intPos - i.intPos;
-      if(MathFuncs::MathFuncs<fptype>::fabs(delta) <
-             absErrMargin &&
-         i.q != q &&
-         !MathFuncs::MathFuncs<fptype>::isnan(
-             otherIntPos) &&
-         !MathFuncs::MathFuncs<fptype>::isnan(
-             i.otherIntPos)) {
-        fptype cmp = accurateCompare(i);
-        if(cmp == 0.0)
-          return delta;
-        else
-          return cmp;
-      } else
+    return fptype(NAN);
+  }
+
+  fptype accurateCompare(
+      const IntersectionBase<dim, fptype, true> &i) const {
+    /* Keep track of the number of precision increases
+     * required for statistics
+     */
+    numIP++;
+    /* First determine which root is more likely */
+    if(getDiscriminant() > i.getDiscriminant()) {
+      return -i.accurateCompare(*this);
+    }
+    if(getDiscriminant() == i.getDiscriminant()) {
+      return accurateCompare_EqualDiscs(i);
+    }
+    if(mpfr::iszero(getDiscriminant())) {
+      if(mpfr::iszero(i.getDiscriminant())) {
+        return accurateCompare_TwoRepeated(i);
+      } else {
+        return accurateCompare_OneRepeated(i);
+      }
+    }
+    if(isUndetermined(intPos, i.otherIntPos) ||
+       isUndetermined(otherIntPos, i.intPos) ||
+       isUndetermined(otherIntPos, i.otherIntPos)) {
+      accurateCompare_Multi(i);
+    } else {
+      return accurateCompare_One(i);
+    }
+    return fptype(NAN);
+  }
+
+  fptype compare(
+      const IntersectionBase<dim, fptype, true> &i) const {
+    fptype delta = intPos - i.intPos;
+    if(MathFuncs::MathFuncs<fptype>::fabs(delta) <
+           absErrMargin &&
+       i.q != q &&
+       !MathFuncs::MathFuncs<fptype>::isnan(otherIntPos) &&
+       !MathFuncs::MathFuncs<fptype>::isnan(
+           i.otherIntPos)) {
+      fptype cmp = accurateCompare(i);
+      if(cmp == 0.0)
         return delta;
-    }
-
-    int incPrecCount() const { return numIP; }
-
-    static bool cmp(
-        const IntersectionBase<dim, fptype, true> &lhs,
-        const IntersectionBase<dim, fptype, true> &rhs) {
-      fptype diff = lhs.compare(rhs);
-      if(diff < 0) return true;
-      return false;
-    }
-  };
-
-  template <int dim, typename fptype>
-  class IntersectionBase<dim, fptype, false> {
-   public:
-    Quadric<dim, fptype> q;
-    Line<dim, fptype> l;
-    fptype intPos, otherIntPos;
-    fptype absErrMargin;
-    mutable int numIP;
-
-    IntersectionBase() {}
-
-    IntersectionBase(const Quadric<dim, fptype> &quad,
-                     const Line<dim, fptype> &line,
-                     fptype intPos = NAN,
-                     fptype otherIntPos = NAN,
-                     fptype absErrMargin = defAbsPrecision)
-        : q(quad),
-          l(line),
-          intPos(intPos),
-          otherIntPos(otherIntPos),
-          absErrMargin(absErrMargin),
-          numIP(0) {}
-
-    IntersectionBase(
-        const IntersectionBase<dim, fptype, false> &i)
-        : q(i.q),
-          l(i.l),
-          intPos(i.intPos),
-          otherIntPos(i.otherIntPos),
-          absErrMargin(i.absErrMargin),
-          numIP(i.numIP) {}
-
-    IntersectionBase<dim, fptype, false> operator=(
-        const IntersectionBase<dim, fptype, false> &i) {
-      q = i.q;
-      l = i.l;
-      intPos = i.intPos;
-      otherIntPos = i.otherIntPos;
-      absErrMargin = i.absErrMargin;
-      numIP = i.numIP;
-      return *this;
-    }
-
-    fptype compare(const IntersectionBase<dim, fptype,
-                                          false> &i) const {
-      numIP++;
-      fptype delta = intPos - i.intPos;
+      else
+        return cmp;
+    } else
       return delta;
-    }
+  }
 
-    int incPrecCount() const { return numIP; }
+  int incPrecCount() const { return numIP; }
 
-    static bool cmp(
-        const IntersectionBase<dim, fptype, false> &lhs,
-        const IntersectionBase<dim, fptype, false> &rhs) {
-      fptype diff = lhs.compare(rhs);
-      if(diff < 0) return true;
-      return false;
-    }
+  static bool cmp(
+      const IntersectionBase<dim, fptype, true> &lhs,
+      const IntersectionBase<dim, fptype, true> &rhs) {
+    fptype diff = lhs.compare(rhs);
+    if(diff < 0) return true;
+    return false;
+  }
+};
+
+template <int dim, typename fptype>
+class IntersectionBase<dim, fptype, false> {
+ public:
+  Quadric<dim, fptype> q;
+  Line<dim, fptype> l;
+  fptype intPos, otherIntPos;
+  fptype absErrMargin;
+  mutable int numIP;
+
+  IntersectionBase() {}
+
+  IntersectionBase(const Quadric<dim, fptype> &quad,
+                   const Line<dim, fptype> &line,
+                   fptype intPos = NAN,
+                   fptype otherIntPos = NAN,
+                   fptype absErrMargin = defAbsPrecision)
+      : q(quad),
+        l(line),
+        intPos(intPos),
+        otherIntPos(otherIntPos),
+        absErrMargin(absErrMargin),
+        numIP(0) {}
+
+  IntersectionBase(
+      const IntersectionBase<dim, fptype, false> &i)
+      : q(i.q),
+        l(i.l),
+        intPos(i.intPos),
+        otherIntPos(i.otherIntPos),
+        absErrMargin(i.absErrMargin),
+        numIP(i.numIP) {}
+
+  IntersectionBase<dim, fptype, false> operator=(
+      const IntersectionBase<dim, fptype, false> &i) {
+    q = i.q;
+    l = i.l;
+    intPos = i.intPos;
+    otherIntPos = i.otherIntPos;
+    absErrMargin = i.absErrMargin;
+    numIP = i.numIP;
+    return *this;
+  }
+
+  fptype compare(
+      const IntersectionBase<dim, fptype, false> &i) const {
+    numIP++;
+    fptype delta = intPos - i.intPos;
+    return delta;
+  }
+
+  int incPrecCount() const { return numIP; }
+
+  static bool cmp(
+      const IntersectionBase<dim, fptype, false> &lhs,
+      const IntersectionBase<dim, fptype, false> &rhs) {
+    fptype diff = lhs.compare(rhs);
+    if(diff < 0) return true;
+    return false;
+  }
+};
+
+template <int dim, typename fptype>
+class Intersection
+    : public IntersectionBase<
+          dim, fptype,
+          !std::is_same<fptype, mpfr::mpreal>::value> {
+ public:
+  struct IntersectionData {
+    typename Quadric<dim, fptype>::QuadricData quad;
+    typename Line<dim, fptype>::LineData line;
+    fptype intPos;
+    fptype otherIntPos;
+    fptype absErrMargin;
   };
-
-  template <int dim, typename fptype>
-  class Intersection
-      : public IntersectionBase<
+  Intersection()
+      : IntersectionBase<
             dim, fptype,
-            !std::is_same<fptype, mpfr::mpreal>::value> {
-   public:
-    struct IntersectionData {
-      typename Quadric<dim, fptype>::QuadricData quad;
-      typename Line<dim, fptype>::LineData line;
-      fptype intPos;
-      fptype otherIntPos;
-      fptype absErrMargin;
-    };
-    Intersection()
-        : IntersectionBase<
-              dim, fptype,
-              !std::is_same<fptype,
-                            mpfr::mpreal>::value>() {}
+            !std::is_same<fptype, mpfr::mpreal>::value>() {}
 
-    Intersection(const Quadric<dim, fptype> &quad,
-                 const Line<dim, fptype> &line,
-                 fptype intPos = NAN,
-                 fptype otherIntPos = NAN,
-                 fptype absErrMargin = defAbsPrecision)
-        : IntersectionBase<
-              dim, fptype,
-              !std::is_same<fptype, mpfr::mpreal>::value>(
-              quad, line, intPos, otherIntPos,
-              absErrMargin) {}
-
-    Intersection(
-        const IntersectionBase<
+  Intersection(const Quadric<dim, fptype> &quad,
+               const Line<dim, fptype> &line,
+               fptype intPos = NAN,
+               fptype otherIntPos = NAN,
+               fptype absErrMargin = defAbsPrecision)
+      : IntersectionBase<
             dim, fptype,
-            !std::is_same<fptype, mpfr::mpreal>::value> &i)
-        : IntersectionBase<
-              dim, fptype,
-              !std::is_same<fptype, mpfr::mpreal>::value>(
-              i) {}
+            !std::is_same<fptype, mpfr::mpreal>::value>(
+            quad, line, intPos, otherIntPos, absErrMargin) {
+  }
 
-    Intersection(const Intersection<dim, fptype> &i)
-        : IntersectionBase<
-              dim, fptype,
-              !std::is_same<fptype, mpfr::mpreal>::value>(
-              static_cast<IntersectionBase<
-                  dim, fptype,
-                  !std::is_same<fptype,
-                                mpfr::mpreal>::value>>(i)) {
-    }
+  Intersection(
+      const IntersectionBase<
+          dim, fptype,
+          !std::is_same<fptype, mpfr::mpreal>::value> &i)
+      : IntersectionBase<
+            dim, fptype,
+            !std::is_same<fptype, mpfr::mpreal>::value>(i) {
+  }
+
+  Intersection(const Intersection<dim, fptype> &i)
+      : IntersectionBase<
+            dim, fptype,
+            !std::is_same<fptype, mpfr::mpreal>::value>(
+            static_cast<IntersectionBase<
+                dim, fptype,
+                !std::is_same<fptype,
+                              mpfr::mpreal>::value>>(i)) {}
 
 #ifdef __CUDACC__
-    std::shared_ptr<IntersectionData> cudaCopy() const {
-      IntersectionData *cudaMem = NULL;
-      cudaError_t err =
-          cudaMalloc(&cudaMem, sizeof(*cudaMem));
-      auto safeMem = std::shared_ptr<IntersectionData>(
-          cudaMem, cudaFree);
-      err = cudaCopy(cudaMem);
-      return safeMem;
-    }
+  std::shared_ptr<IntersectionData> cudaCopy() const {
+    IntersectionData *cudaMem = NULL;
+    cudaError_t err =
+        cudaMalloc(&cudaMem, sizeof(*cudaMem));
+    auto safeMem = std::shared_ptr<IntersectionData>(
+        cudaMem, cudaFree);
+    err = cudaCopy(cudaMem);
+    return safeMem;
+  }
 
-    cudaError_t cudaCopy(
-        std::shared_ptr<IntersectionData> cudaMem) const {
-      cudaError_t err = cudaMemcpy(
-          &cudaMem->intPos, &this->intPos,
-          sizeof(this->intPos), cudaMemcpyHostToDevice);
-      err = cudaMemcpy(&cudaMem->otherIntPos,
-                       &this->otherIntPos,
-                       sizeof(this->otherIntPos),
-                       cudaMemcpyHostToDevice);
-      err = cudaMemcpy(&cudaMem->absErrMargin,
-                       &this->otherIntPos,
-                       sizeof(this->absErrMargin),
-                       cudaMemcpyHostToDevice);
-      err = this->q.cudaCopy(&cudaMem->quad);
-      err = this->l.cudaCopy(&cudaMem->line);
-      return err;
-    }
+  cudaError_t cudaCopy(
+      std::shared_ptr<IntersectionData> cudaMem) const {
+    cudaError_t err = cudaMemcpy(
+        &cudaMem->intPos, &this->intPos,
+        sizeof(this->intPos), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(
+        &cudaMem->otherIntPos, &this->otherIntPos,
+        sizeof(this->otherIntPos), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(
+        &cudaMem->absErrMargin, &this->otherIntPos,
+        sizeof(this->absErrMargin), cudaMemcpyHostToDevice);
+    err = this->q.cudaCopy(&cudaMem->quad);
+    err = this->l.cudaCopy(&cudaMem->line);
+    return err;
+  }
 
-    cudaError_t cudaCopy(IntersectionData *cudaMem) const {
-      cudaError_t err = cudaMemcpy(
-          &cudaMem->intPos, &this->intPos,
-          sizeof(this->intPos), cudaMemcpyHostToDevice);
-      err = cudaMemcpy(&cudaMem->otherIntPos,
-                       &this->otherIntPos,
-                       sizeof(this->otherIntPos),
-                       cudaMemcpyHostToDevice);
-      err = cudaMemcpy(&cudaMem->absErrMargin,
-                       &this->absErrMargin,
-                       sizeof(this->absErrMargin),
-                       cudaMemcpyHostToDevice);
-      err = this->q.cudaCopy(&cudaMem->quad);
-      err = this->l.cudaCopy(&cudaMem->line);
-      return err;
-    }
+  cudaError_t cudaCopy(IntersectionData *cudaMem) const {
+    cudaError_t err = cudaMemcpy(
+        &cudaMem->intPos, &this->intPos,
+        sizeof(this->intPos), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(
+        &cudaMem->otherIntPos, &this->otherIntPos,
+        sizeof(this->otherIntPos), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(
+        &cudaMem->absErrMargin, &this->absErrMargin,
+        sizeof(this->absErrMargin), cudaMemcpyHostToDevice);
+    err = this->q.cudaCopy(&cudaMem->quad);
+    err = this->l.cudaCopy(&cudaMem->line);
+    return err;
+  }
 
-    cudaError_t cudaRetrieve(
-        std::shared_ptr<IntersectionData> cudaMem) {
-      cudaError_t err = cudaMemcpy(
-          &this->intPos, &cudaMem->intPos,
-          sizeof(this->intPos), cudaMemcpyDeviceToHost);
-      err = cudaMemcpy(&this->otherIntPos,
-                       &cudaMem->otherIntPos,
-                       sizeof(this->otherIntPos),
-                       cudaMemcpyDeviceToHost);
-      err = cudaMemcpy(&this->absErrMargin,
-                       &cudaMem->absErrMargin,
-                       sizeof(this->absErrMargin),
-                       cudaMemcpyDeviceToHost);
-      err = this->q.cudaRetrieve(&cudaMem->quad);
-      err = this->l.cudaRetrieve(&cudaMem->line);
-      return err;
-    }
+  cudaError_t cudaRetrieve(
+      std::shared_ptr<IntersectionData> cudaMem) {
+    cudaError_t err = cudaMemcpy(
+        &this->intPos, &cudaMem->intPos,
+        sizeof(this->intPos), cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(
+        &this->otherIntPos, &cudaMem->otherIntPos,
+        sizeof(this->otherIntPos), cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(
+        &this->absErrMargin, &cudaMem->absErrMargin,
+        sizeof(this->absErrMargin), cudaMemcpyDeviceToHost);
+    err = this->q.cudaRetrieve(&cudaMem->quad);
+    err = this->l.cudaRetrieve(&cudaMem->line);
+    return err;
+  }
 
-    cudaError_t cudaRetrieve(IntersectionData *cudaMem) {
-      cudaError_t err = cudaMemcpy(
-          &this->intPos, &cudaMem->intPos,
-          sizeof(this->intPos), cudaMemcpyDeviceToHost);
-      err = cudaMemcpy(&this->otherIntPos,
-                       &cudaMem->otherIntPos,
-                       sizeof(this->otherIntPos),
-                       cudaMemcpyDeviceToHost);
-      err = cudaMemcpy(&this->absErrMargin,
-                       &cudaMem->absErrMargin,
-                       sizeof(this->absErrMargin),
-                       cudaMemcpyDeviceToHost);
-      err = this->q.cudaRetrieve(&cudaMem->quad);
-      err = this->l.cudaRetrieve(&cudaMem->line);
-      return err;
-    }
+  cudaError_t cudaRetrieve(IntersectionData *cudaMem) {
+    cudaError_t err = cudaMemcpy(
+        &this->intPos, &cudaMem->intPos,
+        sizeof(this->intPos), cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(
+        &this->otherIntPos, &cudaMem->otherIntPos,
+        sizeof(this->otherIntPos), cudaMemcpyDeviceToHost);
+    err = cudaMemcpy(
+        &this->absErrMargin, &cudaMem->absErrMargin,
+        sizeof(this->absErrMargin), cudaMemcpyDeviceToHost);
+    err = this->q.cudaRetrieve(&cudaMem->quad);
+    err = this->l.cudaRetrieve(&cudaMem->line);
+    return err;
+  }
 #endif
 
-    friend std::ostream &operator<<(
-        std::ostream &os,
-        const Intersection<dim, fptype> &i) {
-      os << i.q << "\n" << i.l << "\n(" << i.intPos << ", "
-         << i.otherIntPos << ")";
-      return os;
-    }
-
-   private:
-    static constexpr const bool isMPFR =
-        std::is_same<fptype, mpfr::mpreal>::value;
-  };
-
-  template <typename Iter>
-  void quicksortInt(Iter start, Iter end) {
-    const auto pivot = *start;
-    Iter bot = start, top = end;
-    bool prevPivot = false;
-    /* First rearrange the elements [start, end)
-     * into lesser and greater parts, [start, p), [p+1, end)
-     */
-    for(; bot != top;) {
-      if(!prevPivot)
-        bot++;
-      else
-        top--;
-      prevPivot = !prevPivot;
-      for(; pivot.compare(*bot) < 0.0 && bot != top;
-          bot++) {
-      }
-      for(; pivot.compare(*top) > 0.0 && bot != top;
-          top--) {
-      }
-      if(bot == top) break;
-      std::iter_swap(bot, top);
-    }
-    if(bot != end) {
-      /* Now rearrange the part larger than the pivot */
-      quicksortInt(bot, end);
-    }
-    /* Put the pivot into the correct place,
-     * and then rearrange the part smaller than the pivot */
-    bot--;
-    std::iter_swap(start, bot);
-    if(start != bot) quicksortInt(start, bot);
+  friend std::ostream &operator<<(
+      std::ostream &os,
+      const Intersection<dim, fptype> &i) {
+    os << i.q << "\n" << i.l << "\n(" << i.intPos << ", "
+       << i.otherIntPos << ")";
+    return os;
   }
 
-  template <int dim, typename fptype>
-  std::shared_ptr<std::list<Intersection<dim, fptype>>>
-  sortIntersections(const Line<dim, fptype> &line,
-                    std::list<Quadric<dim, fptype>> &quads,
-                    fptype absErrMargin = defAbsPrecision) {
-    using IP = Intersection<dim, fptype>;
-    std::shared_ptr<std::list<IP>> inter(new std::list<IP>);
-    for(auto q : quads) {
-      auto intPos = q.calcLineDistToIntersect(line);
-      for(int k = 0; k < 2; k++) {
-        if(!MathFuncs::MathFuncs<fptype>::isnan(
-               intPos[k])) {
-          Intersection<dim, fptype> i(q, line, intPos[k],
-                                      intPos[1 - k],
-                                      absErrMargin);
-          inter->push_back(i);
-        }
+ private:
+  static constexpr const bool isMPFR =
+      std::is_same<fptype, mpfr::mpreal>::value;
+};
+
+template <typename Iter>
+void quicksortInt(Iter start, Iter end) {
+  const auto pivot = *start;
+  Iter bot = start, top = end;
+  bool prevPivot = false;
+  /* First rearrange the elements [start, end)
+   * into lesser and greater parts, [start, p), [p+1, end)
+   */
+  for(; bot != top;) {
+    if(!prevPivot)
+      bot++;
+    else
+      top--;
+    prevPivot = !prevPivot;
+    for(; pivot.compare(*bot) < 0.0 && bot != top; bot++) {
+    }
+    for(; pivot.compare(*top) > 0.0 && bot != top; top--) {
+    }
+    if(bot == top) break;
+    std::iter_swap(bot, top);
+  }
+  if(bot != end) {
+    /* Now rearrange the part larger than the pivot */
+    quicksortInt(bot, end);
+  }
+  /* Put the pivot into the correct place,
+   * and then rearrange the part smaller than the pivot */
+  bot--;
+  std::iter_swap(start, bot);
+  if(start != bot) quicksortInt(start, bot);
+}
+
+template <int dim, typename fptype>
+std::shared_ptr<std::list<Intersection<dim, fptype>>>
+sortIntersections(const Line<dim, fptype> &line,
+                  std::list<Quadric<dim, fptype>> &quads,
+                  fptype absErrMargin = defAbsPrecision) {
+  using IP = Intersection<dim, fptype>;
+  std::shared_ptr<std::list<IP>> inter(new std::list<IP>);
+  for(auto q : quads) {
+    auto intPos = q.calcLineDistToIntersect(line);
+    for(int k = 0; k < 2; k++) {
+      if(!MathFuncs::MathFuncs<fptype>::isnan(intPos[k])) {
+        Intersection<dim, fptype> i(q, line, intPos[k],
+                                    intPos[1 - k],
+                                    absErrMargin);
+        inter->push_back(i);
       }
     }
-    inter->sort([](IP &lhs, IP &rhs) {
-      return lhs.compare(rhs) < 0.0;
-    });
-    /* TODO: Fix this */
-    // quicksortInt(inter->begin(), inter->end());
-    return inter;
   }
+  inter->sort([](IP &lhs, IP &rhs) {
+    return lhs.compare(rhs) < 0.0;
+  });
+  /* TODO: Fix this */
+  // quicksortInt(inter->begin(), inter->end());
+  return inter;
+}
 }
