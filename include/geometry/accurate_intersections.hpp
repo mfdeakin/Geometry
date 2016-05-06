@@ -404,7 +404,8 @@ class IntersectionBase<dim, fptype, true> {
         intPos - otherIntPos);
     int otherIntNeg = MathFuncs::MathFuncs<fptype>::signbit(
         i.intPos - i.otherIntPos);
-    if(centralDiffNeg != (intNeg && otherIntNeg)) {
+    if(centralDiffNeg != intNeg &&
+       centralDiffNeg != otherIntNeg) {
       /* This case is obvious with a picture */
       if(centralDiffNeg) {
         return fptype(-1.0);
