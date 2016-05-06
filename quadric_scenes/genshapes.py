@@ -136,6 +136,22 @@ def genAxialCylinders(numCyls, eps = (2 ** -8)):
              for i in range(1, numCyls + 1)]
     return scene
 
+def genSingleAmbiguousEllipsoids(numEllipsoids):
+    x, y, z = 0.5, 0.5, 0.5
+    radius = 0.5
+    epsilon = radius / (2 * numEllipsoids + 1)
+    defEll = canonicalShapes["ellipsoid"]
+    scene = []
+    while radius > 0:
+        scene.append(applyTForm(applyTForm(defEll,
+                                           scaleMtx(1 / radius,
+                                                    1 / radius,
+                                                    1 / radius)),
+                                translateMtx(-x, -y, -z)))
+        x = x + epsilon
+        radius -= 2 * epsilon
+    return scene
+
 def genCenteredEllipsoids(numElls, eps = (2 ** -8)):
     defEll = canonicalShapes["ellipsoid"]
     scene = [applyTForm(applyTForm(defEll,
@@ -156,5 +172,5 @@ if __name__ == "__main__":
     print("Generating " + sys.argv[2] +
           " centered ellipsoids in " +
           sys.argv[1])
-    cyls = genCenteredEllipsoids(int(sys.argv[2]))
+    cyls = genSingleAmbiguousEllipsoids(int(sys.argv[2]))
     writeScene(sys.argv[1], cyls)

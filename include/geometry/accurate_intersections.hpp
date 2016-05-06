@@ -30,6 +30,7 @@ class IntersectionBase<dim, fptype, true> {
   static constexpr const int numPartialProds = 6;
   mutable Array<mpfr::mpreal, numPartialProds> partialProds;
   mutable mpfr::mpreal center;
+  mutable mpfr::mpreal scaledDisc;
 
   IntersectionBase()
       : q(),
@@ -96,7 +97,10 @@ class IntersectionBase<dim, fptype, true> {
   }
 
   const mpfr::mpreal &getDiscriminant() const {
-    return getPartialProd(1);
+    if(!ppReady()) {
+      getPartialProd(1);
+    }
+    return scaledDisc;
   }
 
   const mpfr::mpreal &getPartialProd(int idx) const {
@@ -111,6 +115,7 @@ class IntersectionBase<dim, fptype, true> {
           GenericFP::fpconvert<fptype>::precision;
       constexpr const unsigned coeffPrec = 3 * machPrec;
       constexpr const int partPrec = 2 * coeffPrec;
+      constexpr const int discPrec = 2 * partPrec;
       mpfr::mpreal::set_default_prec(coeffPrec);
       Quadric<dim, mpfr::mpreal> quad(q);
       Line<dim, mpfr::mpreal> line(l);
@@ -118,6 +123,10 @@ class IntersectionBase<dim, fptype, true> {
           quad.calcLineDistPoly(line);
       center =
           mpfr::div(lqInt.get(1), lqInt.get(2), partPrec);
+      scaledDisc = mpfr::sub(
+          mpfr::sqr(center, discPrec),
+          mpfr::div(lqInt.get(0), lqInt.get(2), partPrec),
+          discPrec);
       partialProds[2] =
           mpfr::mult(lqInt.get(2), lqInt.get(2), partPrec);
       partialProds[3] =
@@ -127,9 +136,9 @@ class IntersectionBase<dim, fptype, true> {
       partialProds[5] =
           mpfr::mult(lqInt.get(1), lqInt.get(2), partPrec);
       /* This is also the discriminant */
-      partialProds[1] = mpfr::sub(
-          mpfr::mult(lqInt.get(1), lqInt.get(1), partPrec),
-          partialProds[4], partPrec);
+      partialProds[1] =
+          mpfr::sub(mpfr::sqr(lqInt.get(1), partPrec),
+                    partialProds[4], partPrec);
       partialProds[0] =
           mpfr::mult(lqInt.get(0), lqInt.get(0), partPrec);
       mpfr::mpreal::set_default_prec(prevPrec);
@@ -414,15 +423,15 @@ class IntersectionBase<dim, fptype, true> {
     constexpr const fptype caseTable[2][3][2][4] = {
         {/* central difference sign is positive */
          {
-             /* resultant <0 */
+             /* resultant >0 */
              {/* central difference squared is less than
                  the larger discriminant */
-              fptype(1.0), fptype(1.0), fptype(-1.0),
-              fptype(-1.0)},
+              fptype(-1.0), fptype(1.0), fptype(-1.0),
+              fptype(1.0)},
              {/* central difference squared is at least
                * the larger discriminant */
-              fptype(1.0), fptype(1.0), fptype(-1.0),
-              fptype(-1.0)},
+              fptype(1.0), fptype(1.0), fptype(1.0),
+              fptype(1.0)},
          },
          {
              /* resultant =0 */
@@ -436,26 +445,26 @@ class IntersectionBase<dim, fptype, true> {
               fptype(1.0)},
          },
          {
-             /* resultant >0 */
-             {/* central difference squared is less than
-                 the larger discriminant */
-              fptype(-1.0), fptype(1.0), fptype(-1.0),
-              fptype(1.0)},
-             {/* central difference squared is at least
-               * the larger discriminant */
-              fptype(1.0), fptype(1.0), fptype(1.0),
-              fptype(1.0)},
-         }},
-        {/* central difference sign is negative */
-         {
              /* resultant <0 */
              {/* central difference squared is less than
                  the larger discriminant */
-              fptype(-1.0), fptype(1.0), fptype(-1.0),
+              fptype(1.0), fptype(1.0), fptype(-1.0),
               fptype(-1.0)},
              {/* central difference squared is at least
                * the larger discriminant */
+              fptype(1.0), fptype(1.0), fptype(-1.0),
+              fptype(-1.0)},
+         }},
+        {/* central difference sign is negative */
+         {
+             /* resultant >0 */
+             {/* central difference squared is less than
+               * the larger discriminant */
               fptype(-1.0), fptype(1.0), fptype(-1.0),
+              fptype(1.0)},
+             {/* central difference squared is at least
+               * the larger discriminant */
+              fptype(-1.0), fptype(-1.0), fptype(-1.0),
               fptype(-1.0)},
          },
          {
@@ -470,22 +479,24 @@ class IntersectionBase<dim, fptype, true> {
               fptype(-1.0)},
          },
          {
-             /* resultant >0 */
+             /* resultant <0 */
              {/* central difference squared is less than
-               * the larger discriminant */
+                 the larger discriminant */
               fptype(-1.0), fptype(1.0), fptype(-1.0),
-              fptype(1.0)},
+              fptype(-1.0)},
              {/* central difference squared is at least
                * the larger discriminant */
-              fptype(-1.0), fptype(-1.0), fptype(-1.0),
+              fptype(-1.0), fptype(1.0), fptype(-1.0),
               fptype(-1.0)},
          }}};
     const mpfr::mpreal resultant = resultantDet(i);
     int resultantDim =
         MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
             resultant) *
-            2 +
-        mpfr::iszero(resultant);
+        2;
+    if(mpfr::iszero(resultant)) {
+      resultantDim = 1;
+    }
     const unsigned cdSqrPrec =
         centralDiff.getPrecision() * 2;
     mpfr::mpreal cdSqr = mpfr::sqr(centralDiff, cdSqrPrec);
@@ -522,10 +533,10 @@ class IntersectionBase<dim, fptype, true> {
        isUndetermined(otherIntPos, i.intPos) ||
        isUndetermined(otherIntPos, i.otherIntPos)) {
       fptype ret = accurateCompare_Multi(i);
-			return ret;
+      return ret;
     } else {
       fptype ret = accurateCompare_One(i);
-			return ret;
+      return ret;
     }
     return fptype(NAN);
   }
