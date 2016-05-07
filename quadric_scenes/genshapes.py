@@ -142,7 +142,7 @@ def genSingleAmbiguousEllipsoids(numEllipsoids):
     epsilon = radius / (2 * numEllipsoids + 1)
     defEll = canonicalShapes["ellipsoid"]
     scene = []
-    while radius > 0:
+    for i in range(numEllipsoids):
         scene.append(applyTForm(applyTForm(defEll,
                                            scaleMtx(1 / radius,
                                                     1 / radius,

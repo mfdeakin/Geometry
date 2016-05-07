@@ -160,8 +160,7 @@ std::shared_ptr<std::list<Geometry::Intersection<
 runTest(std::list<Geometry::Quadric<dim, fptype>> &quads,
         Geometry::Line<dim, fptype> &line,
         Timer::Timer &timer) {
-  constexpr const double eps =
-      std::numeric_limits<double>::infinity();
+  const double eps = 0.75 / (2 * quads.size());
   timer.startTimer();
   auto inter =
       Geometry::sortIntersections(line, quads, fptype(eps));
