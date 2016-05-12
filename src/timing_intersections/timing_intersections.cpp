@@ -1,14 +1,15 @@
 
+#include "accurate_intersections_approx.hpp"
+#include "accurate_intersections_resultant.hpp"
 #include "geometry.hpp"
-#include "quadric.hpp"
 #include "line.hpp"
-#include "accurate_intersections.hpp"
+#include "quadric.hpp"
 #include "quadric_classify.hpp"
 #include "timer.hpp"
 
-#include <list>
 #include <fstream>
 #include <iomanip>
+#include <list>
 #include <random>
 
 #include <signal.h>
@@ -157,16 +158,16 @@ template <int dim, typename fptype>
 using randLineGen =
     Geometry::Line<dim, fptype> (*)(rngAlg &rng);
 
-template <int dim, typename fptype>
-std::shared_ptr<std::list<Geometry::Intersection<
-    dim, fptype>>> __attribute__((noinline))
+template <int dim, typename fptype, typename cmpAlg>
+std::shared_ptr<std::list<cmpAlg>> __attribute__((noinline))
 runTest(std::list<Geometry::Quadric<dim, fptype>> &quads,
         Geometry::Line<dim, fptype> &line,
         Timer::Timer &timer) {
   const double eps = 0.75 / (2 * quads.size());
   timer.startTimer();
   auto inter =
-      Geometry::sortIntersections(line, quads, fptype(eps));
+      Geometry::sortIntersections<dim, fptype, cmpAlg>(
+          line, quads, fptype(eps));
   timer.stopTimer();
   return inter;
 }
@@ -185,44 +186,38 @@ void intersectionTest(
   using Vf = Geometry::Vector<dim, fptype>;
   using Pf = Geometry::Point<dim, fptype>;
   using Lf = Geometry::Line<dim, fptype>;
-  using Qm = Geometry::Quadric<dim, mpfr::mpreal>;
-  using Lm = Geometry::Line<dim, mpfr::mpreal>;
-  constexpr const int machPrec =
-      GenericFP::fpconvert<fptype>::precision;
-  constexpr const int precMult = 24;
-  constexpr const int truthPrec = precMult * machPrec;
-  mpfr::mpreal::set_default_prec(truthPrec);
-  std::list<Qm> truthQuads;
-  /* Generate the quadrics */
-  for(auto q : quads) {
-    Qm quadMP(q);
-    truthQuads.push_back(quadMP);
-  }
+
   std::random_device rd;
   rngAlg engine(rd());
-  Timer::Timer fp_time, mp_time;
+
+  constexpr const int numTestTypes = 2;
+  Timer::Timer testTimes[numTestTypes];
   struct TimeArr {
     int fpns;
     int mpns;
     bool correct;
     int resNumIP;
     int mpNumIP;
-  } *times = new struct TimeArr[numTests];
+  } *times = new struct TimeArr[numTestTypes];
   /* Run the tests */
   int t;
   for(t = 0; t < numTests && globals.run; t++) {
     Lf line = rlgf(engine);
-    Lm truthLine(line);
-    constexpr const fptype eps =
-        std::numeric_limits<fptype>::infinity();
     /* Then sort the intersections */
-    auto inter = runTest(quads, line, fp_time);
-    auto truth = runTest(truthQuads, truthLine, mp_time);
-    times[t].fpns = fp_time.instant_ns();
-    times[t].mpns = mp_time.instant_ns();
-    times[t].correct = validateResults(inter, truth);
-    times[t].resNumIP = countIP(inter);
-    times[t].mpNumIP = countIP(truth);
+    auto resultant = runTest<
+        dim, fptype,
+        Geometry::IntersectionResultant<dim, fptype>>(
+        quads, line, testTimes[0]);
+    auto approximate = runTest<
+        dim, fptype,
+        Geometry::IntersectionApproximate<dim, fptype>>(
+        quads, line, testTimes[1]);
+    times[t].fpns = testTimes[0].instant_ns();
+    times[t].mpns = testTimes[1].instant_ns();
+    times[t].correct =
+        validateResults(resultant, approximate);
+    times[t].resNumIP = countIP(resultant);
+    times[t].mpNumIP = countIP(approximate);
   }
   /* Output all of the results */
   results << "Test #, Resultants, FP Time (ns), "
@@ -242,14 +237,16 @@ void intersectionTest(
   results << "\n"
           << "Total resultant computations: " << resTotIP
           << "\n"
-          << "Total FP Time (s): " << fp_time.elapsed_s()
-          << "." << std::setw(9) << std::setfill('0')
-          << fp_time.elapsed_ns() << "\n"
+          << "Total Resultant Time (s): "
+          << testTimes[0].elapsed_s() << "." << std::setw(9)
+          << std::setfill('0') << testTimes[0].elapsed_ns()
+          << "\n"
           << "Total increased precision computations: "
           << MPTotIP << "\n"
-          << "Total MP Time (s): " << mp_time.elapsed_s()
-          << "." << std::setw(9) << std::setfill('0')
-          << mp_time.elapsed_ns() << "\n";
+          << "Total Approximate Time (s): "
+          << testTimes[1].elapsed_s() << "." << std::setw(9)
+          << std::setfill('0') << testTimes[1].elapsed_ns()
+          << "\n";
   results << "Total potentially incorrect: " << totIncorrect
           << "\n";
   delete[] times;
@@ -269,8 +266,7 @@ void lockCPU() {
 }
 
 template <int dim, typename fptype>
-Geometry::Line<dim, fptype> defRandLine(
-    rngAlg &rng) {
+Geometry::Line<dim, fptype> defRandLine(rngAlg &rng) {
   constexpr const fptype minPos = 0, maxPos = 2;
   std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
@@ -289,8 +285,7 @@ Geometry::Line<dim, fptype> defRandLine(
 }
 
 template <int dim, typename fptype>
-Geometry::Line<dim, fptype> cylRandLine(
-    rngAlg &rng) {
+Geometry::Line<dim, fptype> cylRandLine(rngAlg &rng) {
   constexpr const fptype minPos = 0.375, maxPos = 0.625;
   std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
