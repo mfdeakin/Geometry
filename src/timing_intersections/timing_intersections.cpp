@@ -9,6 +9,7 @@
 #include <list>
 #include <fstream>
 #include <iomanip>
+#include <random>
 
 #include <signal.h>
 #include <unistd.h>
@@ -150,9 +151,11 @@ int countIP(List inter) {
   return numIP;
 }
 
+using rngAlg = std::mt19937_64;
+
 template <int dim, typename fptype>
 using randLineGen =
-    Geometry::Line<dim, fptype> (*)(std::mt19937_64 &rng);
+    Geometry::Line<dim, fptype> (*)(rngAlg &rng);
 
 template <int dim, typename fptype>
 std::shared_ptr<std::list<Geometry::Intersection<
@@ -196,7 +199,7 @@ void intersectionTest(
     truthQuads.push_back(quadMP);
   }
   std::random_device rd;
-  std::mt19937_64 engine(rd());
+  rngAlg engine(rd());
   Timer::Timer fp_time, mp_time;
   struct TimeArr {
     int fpns;
@@ -267,7 +270,7 @@ void lockCPU() {
 
 template <int dim, typename fptype>
 Geometry::Line<dim, fptype> defRandLine(
-    std::mt19937_64 &rng) {
+    rngAlg &rng) {
   constexpr const fptype minPos = 0, maxPos = 2;
   std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
@@ -287,7 +290,7 @@ Geometry::Line<dim, fptype> defRandLine(
 
 template <int dim, typename fptype>
 Geometry::Line<dim, fptype> cylRandLine(
-    std::mt19937_64 &rng) {
+    rngAlg &rng) {
   constexpr const fptype minPos = 0.375, maxPos = 0.625;
   std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
