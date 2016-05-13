@@ -1,5 +1,6 @@
 
 #include "accurate_intersections_approx.hpp"
+#include "accurate_intersections_incprec.hpp"
 #include "accurate_intersections_resultant.hpp"
 #include "geometry.hpp"
 #include "line.hpp"
@@ -160,10 +161,10 @@ using randLineGen =
 
 template <int dim, typename fptype, typename cmpAlg>
 std::shared_ptr<std::list<cmpAlg>> __attribute__((noinline))
-runTest(std::list<Geometry::Quadric<dim, fptype>> &quads,
-        Geometry::Line<dim, fptype> &line,
-        Timer::Timer &timer) {
-  const double eps = 0.75 / (2 * quads.size());
+runTest(
+    std::list<Geometry::Quadric<dim, fptype>> &quads,
+    Geometry::Line<dim, fptype> &line, Timer::Timer &timer,
+    double eps = std::numeric_limits<fptype>::infinity()) {
   timer.startTimer();
   auto inter =
       Geometry::sortIntersections<dim, fptype, cmpAlg>(
@@ -190,15 +191,17 @@ void intersectionTest(
   std::random_device rd;
   rngAlg engine(rd());
 
-  constexpr const int numTestTypes = 2;
+  const double eps = 0.75 / (2 * quads.size());
+
+  constexpr const int numTestTypes = 3;
   Timer::Timer testTimes[numTestTypes];
   struct TimeArr {
-    int fpns;
-    int mpns;
-    bool correct;
-    int resNumIP;
-    int mpNumIP;
-  } *times = new struct TimeArr[numTestTypes];
+    struct TestData {
+      long long ns;
+      int numIP;
+      bool correct;
+    } mpTime, fpTime, resTime;
+  } *times = new struct TimeArr[numTests];
   /* Run the tests */
   int t;
   for(t = 0; t < numTests && globals.run; t++) {
@@ -207,48 +210,73 @@ void intersectionTest(
     auto resultant = runTest<
         dim, fptype,
         Geometry::IntersectionResultant<dim, fptype>>(
-        quads, line, testTimes[0]);
-    auto approximate = runTest<
+        quads, line, testTimes[0], eps);
+    auto fpApproximate = runTest<
         dim, fptype,
         Geometry::IntersectionApproximate<dim, fptype>>(
-        quads, line, testTimes[1]);
-    times[t].fpns = testTimes[0].instant_ns();
-    times[t].mpns = testTimes[1].instant_ns();
-    times[t].correct =
-        validateResults(resultant, approximate);
-    times[t].resNumIP = countIP(resultant);
-    times[t].mpNumIP = countIP(approximate);
+        quads, line, testTimes[1], eps);
+    auto mpApproximate = runTest<
+        dim, fptype,
+        Geometry::IntersectionIncreasedPrec<dim, fptype>>(
+        quads, line, testTimes[2], eps);
+
+    times[t].resTime.ns = testTimes[0].instant_ns();
+    times[t].fpTime.ns = testTimes[1].instant_ns();
+    times[t].mpTime.ns = testTimes[2].instant_ns();
+
+    times[t].resTime.correct =
+        validateResults(resultant, mpApproximate);
+    times[t].fpTime.correct =
+        validateResults(fpApproximate, mpApproximate);
+
+    times[t].resTime.numIP = countIP(resultant);
+    times[t].fpTime.numIP = countIP(fpApproximate);
+    times[t].mpTime.numIP = countIP(mpApproximate);
   }
   /* Output all of the results */
-  results << "Test #, Resultants, FP Time (ns), "
-             "Increased Precs, MP Time (ns), Correct\n";
+  results << "Test #, Approximate Times (ns), Approximates "
+             "Correct, Resultants, Resultant Time (ns), "
+             "Resultants Correct, Increased Precs, MP Time "
+             "(ns)\n";
   int resTotIP = 0;
-  int MPTotIP = 0;
-  int totIncorrect = 0;
+  int fpTotIP = 0;
+  int mpTotIP = 0;
+  int resTotIncorrect = 0;
+  int fpTotIncorrect = 0;
   for(int i = 0; i < t; i++) {
-    results << i + 1 << ", " << times[i].resNumIP << ", "
-            << times[i].fpns << ", " << times[i].mpNumIP
-            << ", " << times[i].mpns << ", "
-            << times[i].correct << "\n";
-    resTotIP += times[i].resNumIP;
-    MPTotIP += times[i].mpNumIP;
-    totIncorrect += 1 - times[i].correct;
+    results << i + 1 << ", " << times[i].fpTime.ns << ", "
+            << times[i].fpTime.correct << ", "
+            << times[i].resTime.numIP << ", "
+            << times[i].resTime.ns << ", "
+            << times[i].resTime.correct << ", "
+            << times[i].mpTime.numIP << ", "
+            << times[i].mpTime.ns << "\n";
+    resTotIP += times[i].resTime.numIP;
+    mpTotIP += times[i].mpTime.numIP;
+    resTotIncorrect += 1 - times[i].resTime.correct;
+    fpTotIncorrect += 1 - times[i].fpTime.correct;
   }
   results << "\n"
-          << "Total resultant computations: " << resTotIP
+          << "Total FP Time: " << testTimes[1].elapsed_s()
+          << "." << std::setw(9) << std::setfill('0')
+          << testTimes[1].elapsed_ns() << "\n"
+          << "Total FP Disagreements: " << fpTotIncorrect
+          << "\n\n"
+
+          << "Total MP Computations: " << mpTotIP << "\n"
+          << "Total MP Time (s): "
+          << testTimes[2].elapsed_s() << "." << std::setw(9)
+          << std::setfill('0') << testTimes[2].elapsed_ns()
+          << "\n\n"
+
+          << "Total Resultant Computations: " << resTotIP
           << "\n"
           << "Total Resultant Time (s): "
           << testTimes[0].elapsed_s() << "." << std::setw(9)
           << std::setfill('0') << testTimes[0].elapsed_ns()
           << "\n"
-          << "Total increased precision computations: "
-          << MPTotIP << "\n"
-          << "Total Approximate Time (s): "
-          << testTimes[1].elapsed_s() << "." << std::setw(9)
-          << std::setfill('0') << testTimes[1].elapsed_ns()
-          << "\n";
-  results << "Total potentially incorrect: " << totIncorrect
-          << "\n";
+          << "Total Resultant Disagreements: "
+          << resTotIncorrect << "\n";
   delete[] times;
 }
 

@@ -1,4 +1,7 @@
 
+#ifndef _ACCURATE_INTERSECTIONS_MULTI_HPP_
+#define _ACCURATE_INTERSECTIONS_MULTI_HPP_
+
 #include "accurate_intersections.hpp"
 
 namespace Geometry {
@@ -503,3 +506,6 @@ class IntersectionResultantMulti
   }
 };
 }
+
+#endif
+
