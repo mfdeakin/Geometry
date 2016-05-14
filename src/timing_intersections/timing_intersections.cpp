@@ -99,7 +99,7 @@ bool validateResults(ListTest &inter, ListTrue &truth) {
 	}
   auto j = truth->begin();
   for(auto i = inter->begin();
-      i != inter->end() || j != truth->end();) {
+      i != inter->end() || j != truth->end(); i++, j++) {
     if(i->q != j->q || i->intPos != j->intPos) {
       return false;
     }
