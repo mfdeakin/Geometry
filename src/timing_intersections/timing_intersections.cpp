@@ -88,58 +88,19 @@ bool isSameInt(mpfr::mpreal int1, mpfr::mpreal int2) {
   return maxExp >= diffExp;
 }
 
-template <typename ListFP, typename ListMP>
-bool validateResults(ListFP &inter, ListMP &truth) {
+template <typename ListTest, typename ListTrue>
+bool validateResults(ListTest &inter, ListTrue &truth) {
+  /* Note that because the same method is used to determine
+   * if an intersection is in the list, these lists will be
+   * the same length
+   */
+	if(inter->size() != truth->size()) {
+		return false;
+	}
   auto j = truth->begin();
   for(auto i = inter->begin();
       i != inter->end() || j != truth->end();) {
-    /* First determine the length of the region of equal
-     * intersections.
-     * Then verify there's an equal number of
-     * intersections in the approximately equal range and
-     * that they correspond to the correct intersections.
-     * If not, then print the intersection
-     */
-    if(j != truth->end()) {
-      /* Create the region boundaries [sameBeg, sameEnd).
-       * These are intersections which are probably the same
-       */
-      auto sameBeg = j;
-      auto sameEnd = j;
-      int regLen = 0;
-      while(sameEnd != truth->end() &&
-            isSameInt(j->intPos, sameEnd->intPos)) {
-        sameEnd++;
-        regLen++;
-      }
-      /* Increment i until it's not found in the region */
-      int numInRegion = 0;
-      bool isInRegion = true;
-      while(i != inter->end() && isInRegion &&
-            numInRegion < regLen) {
-        j = sameBeg;
-        while(j != sameEnd && i->q != j->q) j++;
-        /* sameEnd is not in the region, so if j reaches it,
-         * i isn't in the region */
-        if(j == sameEnd) {
-          isInRegion = false;
-        } else {
-          i++;
-          numInRegion++;
-        }
-      }
-      /* i isn't in the region.
-       * Verify all elements in the region were used */
-      if(regLen != numInRegion) {
-        return false;
-      }
-      j = sameEnd;
-    } else {
-      int numRemaining = 0;
-      while(i != inter->end()) {
-        i++;
-        numRemaining++;
-      }
+    if(i->q != j->q || i->intPos != j->intPos) {
       return false;
     }
   }
