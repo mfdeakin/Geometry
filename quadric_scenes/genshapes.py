@@ -1,7 +1,7 @@
 
 import sys
 import io
-from sympy import sqrt, exp, N, S
+from sympy import sqrt, exp, N, S, sin, cos
 from sympy.matrices import Matrix
 from numpy import float32
 
@@ -88,29 +88,36 @@ def scaleMtx(scaleX, scaleY, scaleZ):
                    [0.0, 0.0, scaleZ, 0.0],
                    [0.0, 0.0, 0.0, 1.0]])
 
+def scaleAllMtx(scale):
+    return Matrix([[1.0, 0.0, 0.0, 0.0],
+                   [0.0, 1.0, 0.0, 0.0],
+                   [0.0, 0.0, 1.0, 0.0],
+                   [0.0, 0.0, 0.0, 1.0 / S(scale)]])
+
 def rotateMtx(axis, angle):
-    ct = np.cos(angle)
-    st = np.sin(angle)
-    tpMtx = Matrix([[axis[0] ** 2, axis[0] * axis[1], axis[0] * axis[2], 0],
-                    [axis[0] * axis[1], axis[1] ** 2, axis[1] * axis[2], 0],
-                    [axis[0] * axis[2], axis[1] * axis[2], axis[2] ** 2, 0],
-                    [0, 0, 0, 0]]) * (1 - ct)
-    return Matrix([[ct + axis[0] ** 2 * (1 - ct),
-                    axis[0] * axis[1] * (1 - ct) - axis[2] * st,
-                    axis[0] * axis[2] * (1 - ct) + axis[1] * st,
+    ct = cos(angle)
+    st = sin(angle)
+    tpMtx = Matrix([[S(axis[0]) ** 2, S(axis[0]) * S(axis[1]), S(axis[0]) * S(axis[2]), S(0)],
+                    [S(axis[0]) * S(axis[1]), S(axis[1]) ** 2, S(axis[1]) * S(axis[2]), S(0)],
+                    [S(axis[0]) * S(axis[2]), S(axis[1]) * S(axis[2]), S(axis[2]) ** 2, S(0)],
+                    [S(0), S(0), S(0), S(0)]]) * S(1 - ct)
+    return Matrix([[ct + S(axis[0]) ** 2 * S(1 - ct),
+                    S(axis[0]) * S(axis[1]) * S(1 - ct) - S(axis[2]) * st,
+                    S(axis[0]) * S(axis[2]) * S(1 - ct) + S(axis[1]) * st,
                     0]
-                   [axis[0] * axis[1] * (1 - ct) - axis[2] * st,
-                    ct + axis[1] ** 2 * (1 - ct),
-                    axis[1] * axis[2] * (1 - ct) - axis[0] * st,
+                   [S(axis[0]) * S(axis[1]) * S(1 - ct) - S(axis[2]) * st,
+                    ct + S(axis[1]) ** 2 * S(1 - ct),
+                    S(axis[1]) * S(axis[2]) * S(1 - ct) - S(axis[0]) * st,
                     0]
-                   [axis[0] * axis[2] * (1 - ct) - axis[1] * st,
-                    axis[1] * axis[2] * (1 - ct) + axis[0] * st,
-                    ct + axis[2] ** 2 * (1 - ct),
-                    0]
-                   [0, 0, 0, 1]])
+                   [S(axis[0]) * S(axis[2]) * S(1 - ct) - S(axis[1]) * st,
+                    S(axis[1]) * S(axis[2]) * S(1 - ct) + S(axis[0]) * st,
+                    ct + S(axis[2]) ** 2 * S(1 - ct),
+                    S(0)]
+                   [S(0), S(0), S(0), S(1)]])
 
 def writeScene(fname, quads):
     f = io.open(fname, "w")
+    f.write("-20 1\n")
     i = 0
     for q in quads:
         if i > 0:
@@ -137,19 +144,20 @@ def genAxialCylinders(numCyls, eps = (2 ** -8)):
     return scene
 
 def genSingleAmbiguousEllipsoids(numEllipsoids):
-    x, y, z = 0.5, 0.5, 0.5
-    radius = 0.5
-    epsilon = radius / (2 * numEllipsoids + 1)
+    x0, y0, z0 = 0.5, 0.5, 0.5
+    radius0 = 0.5
+    epsilon = 2 ** -19
+    delta = (radius0 - (numEllipsoids + 8) * epsilon) / numEllipsoids
     defEll = canonicalShapes["ellipsoid"]
     scene = []
     for i in range(numEllipsoids):
+        x = x0 + i * delta
+        y = y0
+        z = z0
+        radius = radius0 - (i * delta + i * epsilon)
         scene.append(applyTForm(applyTForm(defEll,
-                                           scaleMtx(1 / radius,
-                                                    1 / radius,
-                                                    1 / radius)),
+                                           scaleAllMtx(1 / S(radius))),
                                 translateMtx(-x, -y, -z)))
-        x = x + epsilon
-        radius -= 2 * epsilon
     return scene
 
 def genCenteredEllipsoids(numElls, eps = (2 ** -8)):
