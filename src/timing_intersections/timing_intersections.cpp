@@ -214,25 +214,26 @@ void intersectionTest(
   }
   /* Output all of the results */
   results << "Test #, Approximate Times (ns), Approximates "
-             "Correct Increased Precs, MP Time (ns), MP "
+             "Correct, Increased Precs, MP Time (ns), MP "
              "Correct, Resultants, Resultant Time (ns)\n";
   int resTotIP = 0;
   int fpTotIP = 0;
   int mpTotIP = 0;
-  int resTotIncorrect = 0;
+  int mpTotIncorrect = 0;
   int fpTotIncorrect = 0;
   for(int i = 0; i < t; i++) {
-    results << i + 1 << ", " << times[i].fpTime.ns << ", "
+    results << i + 1 << ", "
+						<< times[i].fpTime.ns << ", "
             << times[i].fpTime.correct << ", "
             << times[i].mpTime.numIP << ", "
             << times[i].mpTime.ns << ", "
-            << times[i].mpTime.correct
+            << times[i].mpTime.correct << ", "
             << times[i].resTime.numIP << ", "
             << times[i].resTime.ns << "\n";
     resTotIP += times[i].resTime.numIP;
     mpTotIP += times[i].mpTime.numIP;
-    resTotIncorrect += 1 - times[i].resTime.correct;
     fpTotIncorrect += 1 - times[i].fpTime.correct;
+    mpTotIncorrect += 1 - times[i].mpTime.correct;
   }
   results << "\n"
           << "Total FP Time: " << testTimes[1].elapsed_s()
@@ -245,16 +246,16 @@ void intersectionTest(
           << "Total MP Time (s): "
           << testTimes[2].elapsed_s() << "." << std::setw(9)
           << std::setfill('0') << testTimes[2].elapsed_ns()
-          << "\n\n"
+          << "\n"
+          << "Total Resultant Disagreements: "
+          << mpTotIncorrect << "\n\n"
 
           << "Total Resultant Computations: " << resTotIP
           << "\n"
           << "Total Resultant Time (s): "
           << testTimes[0].elapsed_s() << "." << std::setw(9)
           << std::setfill('0') << testTimes[0].elapsed_ns()
-          << "\n"
-          << "Total Resultant Disagreements: "
-          << resTotIncorrect << "\n";
+          << "\n";
   delete[] times;
 }
 
