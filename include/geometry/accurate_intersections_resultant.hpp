@@ -67,7 +67,9 @@ class IntersectionResultant
        */
       constexpr const unsigned machPrec =
           GenericFP::fpconvert<fptype>::precision;
-      constexpr const unsigned coeffPrec = 3 * machPrec;
+      /* The extra factor of two is for the range of the
+       * exponents - change it as necessary */
+      constexpr const unsigned coeffPrec = 2 * 3 * machPrec;
       constexpr const int partPrec = 2 * coeffPrec;
       constexpr const int discPrec = 2 * partPrec;
       mpfr::mpreal::set_default_prec(coeffPrec);

@@ -24,11 +24,29 @@ void sigInt(int signum) { globals.run = false; }
 
 template <int dim, typename fptype>
 std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
-    const char *fname) {
+    const char *fname, int *minExp, int *maxExp) {
   std::ifstream file(fname);
   if(!file.is_open()) {
     return std::list<Geometry::Quadric<dim, fptype>>();
   }
+  int buf = 0;
+  file >> buf;
+  if(minExp != NULL) {
+    *minExp = buf;
+  }
+  file >> buf;
+  if(maxExp != NULL) {
+    *maxExp = buf;
+  }
+  if(*minExp > 0) {
+    std::cout
+        << "Cannot generate a line with these exponents\n"
+        << *minExp << ", " << *maxExp << "\n";
+    exit(1);
+  }
+  std::cout << "Using " << *minExp << ", " << *maxExp
+            << " as the range of exponents\n";
+
   using Qf = Geometry::Quadric<dim, fptype>;
   int qtypeCount[QuadricClassify::QUADT_ERRORINVALID];
   for(int i = 0; i < QuadricClassify::QUADT_ERRORINVALID;
@@ -94,9 +112,9 @@ bool validateResults(ListTest &inter, ListTrue &truth) {
    * if an intersection is in the list, these lists will be
    * the same length
    */
-	if(inter->size() != truth->size()) {
-		return false;
-	}
+  if(inter->size() != truth->size()) {
+    return false;
+  }
   auto j = truth->begin();
   for(auto i = inter->begin();
       i != inter->end() || j != truth->end(); i++, j++) {
@@ -117,8 +135,8 @@ int countIP(List inter) {
 using rngAlg = std::mt19937_64;
 
 template <int dim, typename fptype>
-using randLineGen =
-    Geometry::Line<dim, fptype> (*)(rngAlg &rng);
+using randLineGen = Geometry::Line<dim, fptype> (*)(
+    rngAlg &rng, int minExp, int maxExp);
 
 template <int dim, typename fptype, typename cmpAlg>
 std::shared_ptr<std::list<cmpAlg>> __attribute__((noinline))
@@ -138,7 +156,7 @@ template <int dim, typename fptype>
 void intersectionTest(
     std::list<Geometry::Quadric<dim, fptype>> &quads,
     std::ostream &results, const int numTests,
-    randLineGen<dim, fptype> rlgf) {
+    randLineGen<dim, fptype> rlgf, int minExp, int maxExp) {
   /* First build a scene of quadrics.
    * Then generate random lines on a disk centered at the
    * intersection of the cylinders.
@@ -166,7 +184,7 @@ void intersectionTest(
   /* Run the tests */
   int t;
   for(t = 0; t < numTests && globals.run; t++) {
-    Lf line = rlgf(engine);
+    Lf line = rlgf(engine, minExp, maxExp);
     /* Then sort the intersections */
     auto resultant = runTest<
         dim, fptype,
@@ -185,10 +203,10 @@ void intersectionTest(
     times[t].fpTime.ns = testTimes[1].instant_ns();
     times[t].mpTime.ns = testTimes[2].instant_ns();
 
-    times[t].resTime.correct =
-        validateResults(resultant, mpApproximate);
+    times[t].mpTime.correct =
+        validateResults(mpApproximate, resultant);
     times[t].fpTime.correct =
-        validateResults(fpApproximate, mpApproximate);
+        validateResults(fpApproximate, resultant);
 
     times[t].resTime.numIP = countIP(resultant);
     times[t].fpTime.numIP = countIP(fpApproximate);
@@ -196,9 +214,8 @@ void intersectionTest(
   }
   /* Output all of the results */
   results << "Test #, Approximate Times (ns), Approximates "
-             "Correct, Resultants, Resultant Time (ns), "
-             "Resultants Correct, Increased Precs, MP Time "
-             "(ns)\n";
+             "Correct Increased Precs, MP Time (ns), MP "
+             "Correct, Resultants, Resultant Time (ns)\n";
   int resTotIP = 0;
   int fpTotIP = 0;
   int mpTotIP = 0;
@@ -207,11 +224,11 @@ void intersectionTest(
   for(int i = 0; i < t; i++) {
     results << i + 1 << ", " << times[i].fpTime.ns << ", "
             << times[i].fpTime.correct << ", "
-            << times[i].resTime.numIP << ", "
-            << times[i].resTime.ns << ", "
-            << times[i].resTime.correct << ", "
             << times[i].mpTime.numIP << ", "
-            << times[i].mpTime.ns << "\n";
+            << times[i].mpTime.ns << ", "
+            << times[i].mpTime.correct
+            << times[i].resTime.numIP << ", "
+            << times[i].resTime.ns << "\n";
     resTotIP += times[i].resTime.numIP;
     mpTotIP += times[i].mpTime.numIP;
     resTotIncorrect += 1 - times[i].resTime.correct;
@@ -254,9 +271,28 @@ void lockCPU() {
   delete[] cpus;
 }
 
+template <typename fptype>
+bool checkExp(fptype fpVal, int minExp, int maxExp) {
+  if(fpVal == fptype(0.0)) {
+    return true;
+  }
+  GenericFP::fpconvert<fptype> *fpbits =
+      reinterpret_cast<GenericFP::fpconvert<fptype> *>(
+          &fpVal);
+  int exponent = fpbits->exponent;
+  exponent -= fpbits->centralExp;
+  if(exponent < minExp || exponent > maxExp) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 template <int dim, typename fptype>
-Geometry::Line<dim, fptype> defRandLine(rngAlg &rng) {
-  constexpr const fptype minPos = 0, maxPos = 2;
+Geometry::Line<dim, fptype> defRandLine(rngAlg &rng,
+                                        int minExp,
+                                        int maxExp) {
+  constexpr const fptype minPos = 0, maxPos = 1;
   std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
   std::uniform_real_distribution<fptype> genDir(-1.0, 1.0);
@@ -265,16 +301,26 @@ Geometry::Line<dim, fptype> defRandLine(rngAlg &rng) {
   Geometry::Vector<dim, fptype> lineInt;
   for(int i = 0; i < dim; i++) {
     fptype tmp = genPos(rng);
-    lineInt.set(i, tmp);
+    if(checkExp(tmp, minExp, maxExp)) {
+      assert(MathFuncs::MathFuncs<fptype>::abs(tmp) >=
+             9.5367431640625e-7);
+      lineInt.set(i, tmp);
+    }
     tmp = genDir(rng);
-    lineDir.set(i, tmp);
+    if(checkExp(tmp, minExp, maxExp)) {
+      assert(MathFuncs::MathFuncs<fptype>::abs(tmp) >=
+             9.5367431640625e-7);
+      lineDir.set(i, tmp);
+    }
   }
   return Geometry::Line<dim, fptype>(
       Geometry::Point<dim, fptype>(lineInt), lineInt);
 }
 
 template <int dim, typename fptype>
-Geometry::Line<dim, fptype> cylRandLine(rngAlg &rng) {
+Geometry::Line<dim, fptype> cylRandLine(rngAlg &rng,
+                                        int minExp,
+                                        int maxExp) {
   constexpr const fptype minPos = 0.375, maxPos = 0.625;
   std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
@@ -300,18 +346,22 @@ int main(int argc, char **argv) {
   const char *outFName = "results";
   int numTests = 1e4;
   randLineGen<dim, fptype> rlg = cylRandLine<dim, fptype>;
+  int minExp, maxExp;
   if(argc > 1) {
-    quads = parseQuadrics<dim, fptype>(argv[1]);
+    quads = parseQuadrics<dim, fptype>(argv[1], &minExp,
+                                       &maxExp);
     rlg = defRandLine<dim, fptype>;
     if(argc > 2) {
       outFName = argv[2];
       if(argc > 3) numTests = atoi(argv[3]);
     }
   } else {
-    quads = parseQuadrics<dim, fptype>("cylinders.csg");
+    quads = parseQuadrics<dim, fptype>("cylinders.csg",
+                                       &minExp, &maxExp);
   }
   std::ofstream results(outFName);
   signal(SIGINT, sigInt);
-  intersectionTest(quads, results, numTests, defRandLine);
+  intersectionTest(quads, results, numTests, defRandLine,
+                   minExp, maxExp);
   return 0;
 }
