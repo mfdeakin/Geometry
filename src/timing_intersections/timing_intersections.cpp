@@ -170,7 +170,7 @@ void intersectionTest(
   std::random_device rd;
   rngAlg engine(rd());
 
-  const double eps = 0.75 / (2 * quads.size());
+  const double eps = 1.52587890625e-5;
 
   constexpr const int numTestTypes = 3;
   Timer::Timer testTimes[numTestTypes];
@@ -246,7 +246,7 @@ void intersectionTest(
           << testTimes[2].elapsed_s() << "." << std::setw(9)
           << std::setfill('0') << testTimes[2].elapsed_ns()
           << "\n"
-          << "Total Resultant Disagreements: "
+          << "Total MP Disagreements: "
           << mpTotIncorrect << "\n\n"
 
           << "Total Resultant Computations: " << resTotIP
@@ -382,11 +382,14 @@ int main(int argc, char **argv) {
     switch(lineGenAlg) {
       case 1:
         rlg = nestedEllRandLine<dim, fptype>;
+				std::cout << "Using the nested spheres random lines\n";
         break;
       case 2:
+				std::cout << "Using the cylinders random lines\n";
         rlg = cylRandLine<dim, fptype>;
         break;
       default:
+				std::cout << "Using the default random lines\n";
         rlg = defRandLine<dim, fptype>;
     }
   }
