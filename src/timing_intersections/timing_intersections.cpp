@@ -222,8 +222,7 @@ void intersectionTest(
   int mpTotIncorrect = 0;
   int fpTotIncorrect = 0;
   for(int i = 0; i < t; i++) {
-    results << i + 1 << ", "
-						<< times[i].fpTime.ns << ", "
+    results << i + 1 << ", " << times[i].fpTime.ns << ", "
             << times[i].fpTime.correct << ", "
             << times[i].mpTime.numIP << ", "
             << times[i].mpTime.ns << ", "
@@ -301,21 +300,38 @@ Geometry::Line<dim, fptype> defRandLine(rngAlg &rng,
   Geometry::Vector<dim, fptype> lineDir;
   Geometry::Vector<dim, fptype> lineInt;
   for(int i = 0; i < dim; i++) {
-    fptype tmp = genPos(rng);
-    if(checkExp(tmp, minExp, maxExp)) {
-      assert(MathFuncs::MathFuncs<fptype>::abs(tmp) >=
-             9.5367431640625e-7);
-      lineInt.set(i, tmp);
-    }
-    tmp = genDir(rng);
-    if(checkExp(tmp, minExp, maxExp)) {
-      assert(MathFuncs::MathFuncs<fptype>::abs(tmp) >=
-             9.5367431640625e-7);
-      lineDir.set(i, tmp);
-    }
+    do {
+      lineInt.set(i, genPos(rng));
+    } while(checkExp(lineInt.get(i), minExp, maxExp) ==
+            false);
+    do {
+      lineDir.set(i, genDir(rng));
+    } while(checkExp(lineDir.get(i), minExp, maxExp) ==
+            false);
   }
   return Geometry::Line<dim, fptype>(
       Geometry::Point<dim, fptype>(lineInt), lineInt);
+}
+
+template <int dim, typename fptype>
+Geometry::Line<dim, fptype> nestedEllRandLine(rngAlg &rng,
+                                              int minExp,
+                                              int maxExp) {
+  constexpr const fptype minPos = 0.0, maxPos = 1.0;
+  std::uniform_real_distribution<fptype> genPos(minPos,
+                                                maxPos);
+  Geometry::Vector<dim, fptype> lineInt;
+  for(int i = 0; i < dim; i++) {
+    fptype tmp = genPos(rng);
+    lineInt.set(i, genPos(rng));
+  }
+  /* Direct the line towards (1.0, 0.5, 0.5) */
+  const Geometry::Vector<dim, fptype> destination(
+      {1.0, 0.5, 0.5});
+  Geometry::Vector<dim, fptype> lineDir =
+      destination - lineInt;
+  return Geometry::Line<dim, fptype>(
+      Geometry::Point<dim, fptype>(lineInt), lineDir);
 }
 
 template <int dim, typename fptype>
@@ -346,23 +362,37 @@ int main(int argc, char **argv) {
   std::list<Geometry::Quadric<dim, fptype>> quads;
   const char *outFName = "results";
   int numTests = 1e4;
-  randLineGen<dim, fptype> rlg = cylRandLine<dim, fptype>;
   int minExp, maxExp;
   if(argc > 1) {
     quads = parseQuadrics<dim, fptype>(argv[1], &minExp,
                                        &maxExp);
-    rlg = defRandLine<dim, fptype>;
-    if(argc > 2) {
-      outFName = argv[2];
-      if(argc > 3) numTests = atoi(argv[3]);
-    }
   } else {
     quads = parseQuadrics<dim, fptype>("cylinders.csg",
                                        &minExp, &maxExp);
   }
+  if(argc > 2) {
+    outFName = argv[2];
+  }
+  if(argc > 3) {
+    numTests = atoi(argv[3]);
+  }
+  randLineGen<dim, fptype> rlg = cylRandLine<dim, fptype>;
+  if(argc > 4) {
+    int lineGenAlg = atoi(argv[4]);
+    switch(lineGenAlg) {
+      case 1:
+        rlg = nestedEllRandLine<dim, fptype>;
+        break;
+      case 2:
+        rlg = cylRandLine<dim, fptype>;
+        break;
+      default:
+        rlg = defRandLine<dim, fptype>;
+    }
+  }
   std::ofstream results(outFName);
   signal(SIGINT, sigInt);
-  intersectionTest(quads, results, numTests, defRandLine,
-                   minExp, maxExp);
+  intersectionTest(quads, results, numTests, rlg, minExp,
+                   maxExp);
   return 0;
 }
