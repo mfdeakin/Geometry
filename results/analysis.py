@@ -1,12 +1,15 @@
 import csv
 import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import sklearn.decomposition
 
-testNameMap = {"hardEllipsoidsSingle": ("Shifted", "Ellipsoids"),
-               "packedEll": ("Packed", "Ellipsoids")}
+testNameMap = {"hardEllipsoidsSingle": ["Nested", "Spheres"],
+               "packedEll": ["Packed", "Spheres"]}
+
+machineNameMap = {"gentoo": ["Gentoo"], "arch": ["Arch"]}
 
 def readData(fname, size):
     fd = open(fname, 'r')
@@ -16,11 +19,11 @@ def readData(fname, size):
     for row in reader:
         if len(row) != 8:
             continue
-        number, fpTime, fpCorrect, resNum, resTime, resCorrect, mpNum, mpTime = map(int, row)
+        number, fpTime, fpCorrect, mpNum, mpTime, mpCorrect, resNum, resTime = map(int, row)
         data.append([size,
-                     resNum, resTime / 1e6, resCorrect,
+                     mpNum, mpTime / 1e6, mpCorrect,
                      resNum, fpTime / 1e6, fpCorrect,
-                     mpNum, mpTime / 1e6,
+                     resNum, resTime / 1e6,
                      number])
     return np.array(data)
 
@@ -65,17 +68,16 @@ def createPlot(data, fname, maxPrec,
                fpCoeff, fpConst,
                mpCoeff, mpConst):
     (numQuads,
-     resNum, resTimes, resCorrect,
+     mpNum, mpTimes, mpCorrect,
      fpNum, fpTimes, fpCorrect,
-     mpNum, mpTimes, _) = data.T
-    #plt.suptitle(fname)
-    plt.axes().set_color_cycle(["cyan", "orange", "chartreuse"])
+     resNum, resTimes, _) = data.T
+    plt.axes().set_color_cycle(["cyan", "chartreuse", "orange"])
     plt.scatter(resNum, resTimes, c = "blue",
-               label = "Resultant Method")
+                label = "Resultant Method", marker = "+")
     plt.scatter(mpNum, mpTimes, c = "red",
-                label = "Increased Precision Method")
+                label = "Increased Precision Method", marker = "x")
     plt.scatter(fpNum, fpTimes, c = "green",
-                label = "Machine Precision Method")
+                label = "Machine Precision Method", marker = "o")
     if not (np.isnan(resCoeff) or np.isnan(resConst) or
             np.isnan(mpCoeff) or np.isnan(mpConst)):
         lines = plt.plot([0, maxPrec],
@@ -87,13 +89,13 @@ def createPlot(data, fname, maxPrec,
                          [0, maxPrec],
                          [fpConst,
                           maxPrec * fpCoeff + fpConst], '-')
-        plt.setp(lines, linewidth=3)
+        plt.setp(lines, linewidth=2)
     plt.axes().set_xlim(left = 0,
                         right = maxPrec)
     maxTime = max(max(mpTimes), max(resTimes)) * 1.0625
     plt.axes().set_ylim(bottom = 0,
                         top = maxTime)
-    plt.yticks(np.arange(0, maxTime + 1, maxTime / 10.0))
+    plt.yticks(np.arange(0, 750, 50.0))
     plt.axes().yaxis.get_major_formatter().set_powerlimits((0, 3))
     print("Saving '" + fname + "'")
     plt.savefig(fname, format = "png", dpi = 300)
@@ -102,7 +104,6 @@ def createPlot(data, fname, maxPrec,
 def analyzeData(datum, plotData = False):
     analysis = {}
     for machine in datum:
-        analysis[machine] = {}
         for test in datum[machine]:
             mtData = np.array([])
             for size in datum[machine][test]:
@@ -112,9 +113,9 @@ def analyzeData(datum, plotData = False):
                 mtData = np.append(mtData, testData)
                 mtData = mtData.reshape(mtShape)
             (numQuads,
-             resNum, resTimes, resCorrect,
              fpNum, fpTimes, fpCorrect,
-             mpNum, mpTimes, _) = mtData.T
+             mpNum, mpTimes, mpCorrect,
+             resNum, resTimes, _) = mtData.T
             if max(numQuads) == min(numQuads):
                 quadComp = False
                 resIndep = np.vstack([resNum,
@@ -134,15 +135,17 @@ def analyzeData(datum, plotData = False):
             resLSqr = np.linalg.lstsq(resIndep, resTimes)
             fpLSqr = np.linalg.lstsq(fpIndep, fpTimes)
             mpLSqr = np.linalg.lstsq(mpIndep, mpTimes)
-            fpDisagree = len(resNum) - np.sum(mtData.T[6])
-            resDisagree = len(resNum) - np.sum(mtData.T[3])
-            analysis[machine][test] = (resLSqr, resDisagree,
+            fpDisagree = len(resNum) - np.sum(fpCorrect)
+            mpDisagree = len(resNum) - np.sum(mpCorrect)
+            if not test in analysis:
+                analysis[test] = {}
+            analysis[test][machine] = (mpLSqr, mpDisagree,
                                        fpLSqr, fpDisagree,
-                                       mpLSqr)
+                                       resLSqr)
             print(machine, test)
-            print("Resultant Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", resLSqr)
             print("Machine Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", fpLSqr)
             print("Increased Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", mpLSqr)
+            print("Resultant Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", resLSqr)
             print()
             if plotData:
                 plotFName = test + "." + machine + ".all.png"
@@ -166,69 +169,109 @@ def analyzeData(datum, plotData = False):
                                mpLSqr[0][-2], mpLSqr[0][-1])
     return analysis
 
+def formatFloat(fpval, sigDigits, shiftRight, negativeSpace = True):
+    digitsLeft = int(np.floor(np.log10(abs(fpval))))
+    printable = round(fpval, sigDigits - 1 - digitsLeft)
+    if printable == int(printable):
+        printable = int(printable)
+    digitsPrec = sigDigits - digitsLeft - 1
+    printed = ("{:." + str(digitsPrec) + "f}").format(printable)
+    if printed[0] != '-' and negativeSpace:
+        printed = "\\hphantom{-}" + printed
+    if digitsLeft >= 0:
+        shiftRight -= digitsLeft + 1
+    if shiftRight > 0:
+        printed = "\\hphantom{" + "0" * shiftRight + "}" + printed
+    return printed
+
+def formatInt(ival, shiftRight, negativeSpace = False):
+    printed = str(int(ival))
+    digits = len(printed)
+    spacer = ""
+    if printed[0] == '-':
+        digits -= 1
+    elif negativeSpace:
+        spacer = "\\hphantom{-}"
+    shiftRight -= digits
+    if shiftRight > 0:
+        spacer = "\\hphantom{" + "0" * shiftRight + "}" + spacer
+    return spacer + printed
+
+def printRow(test, testIdx, machine, machIdx, method,
+             lsqrVals, errors = None):
+    if testIdx < len(testNameMap[test]):
+        testPrint = testNameMap[test][testIdx]
+    else:
+        testPrint = ""
+    if machIdx < len(machineNameMap[machine]):
+        machPrint = machineNameMap[machine][machIdx]
+    else:
+        machPrint = ""
+    if errors == None:
+        errorPrint = "\\hphantom{-}---"
+    else:
+        errorPrint = formatInt(errors, 3)
+    if len(lsqrVals[0]) == 3:
+        mspquad = formatFloat(lsqrVals[0][0], 3, 0, False)
+    else:
+        mspquad = "--"
+    mspcomp = formatFloat(lsqrVals[0][-2], 3, 0)
+    msconst = formatFloat(lsqrVals[0][-1], 3, 0)
+    residual = formatFloat(lsqrVals[1][0], 6, 6)
+    fmtString = ("{:s} & {:s} & {:s} & {:s} & {:s} & {:s} & " +
+                 "{:s} & {:s}\\\\\n")
+    rowStr = fmtString.format(testPrint, machPrint, method,
+                              errorPrint, mspquad, mspcomp, msconst, residual)
+    return rowStr
+
 def buildTable(analysis, fname):
     tableOut = open(fname, 'w')
     header = ("\\begin{tabular}{|l|l|ll|lll|l|}\n" +
               "\\hline\n" +
-              "Machine & Scene & Method & Disagreements & " +
+              "Scene & Machine & Method & Errors & " +
               "ms/Quadric & ms/Comp & Const ms & " +
-              "Residual ($err^2$)\\\\\n" +
-              "\\hline\n")
+              "$\\sum$ Residual ($\\text{ms}^2$)\\\\\n" +
+              "\\hhline{|=|=|==|===|=|}\n")
     tableOut.write(header)
-    for m in analysis:
-        oneMachine = False
-        for t in analysis[m]:
-            (resLSqr, resDisagree,
-             fpLSqr, fpDisagree, mpLSqr) = analysis[m][t]
-            rowStr = "\\hline\n"
-            if oneMachine == False:
-                rowStr += m.capitalize() + " "
-                oneMachine = True
-            rowStr += ("& {:s} & Increased Prec. & -- & " +
-                       "{:s} & {:0.06f} & {:0.06f} & " +
-                       "{:0.06f}\\\\\n")
-            rSqr = mpLSqr[1][0]
-            if len(fpLSqr[0]) == 3:
-                quadCoeffStr = "{:0.06f}".format(mpLSqr[0][0])
-            else:
-                quadCoeffStr = "--"
-            rowStr = rowStr.format(testNameMap[t][0],
-                                   quadCoeffStr, mpLSqr[0][-2],
-                                   mpLSqr[0][-1], rSqr)
+    printHLine = False
+    for t in analysis:
+        if printHLine:
+            tableOut.write("\\hhline{|-|-|--|---|-|}\n")
+        printHLine = True
+        testPrinted = 0
+        for m in analysis[t]:
+            if printHLine:
+                tableOut.write("\\hhline{|~|-|--|---|-|}\n")
+            printHLine = True
+            (mpLSqr, mpDisagree,
+             fpLSqr, fpDisagree,
+             resLSqr) = analysis[t][m]
+            rowStr = printRow(t, testPrinted, m, 0,
+                              "Approximate", fpLSqr,
+                              fpDisagree)
             tableOut.write(rowStr)
+            testPrinted += 1
             
-            rowStr = ("& {:s} & Approximate & {:d} & " +
-                      "{:s} & {:0.06f} & {:0.06f} & " +
-                      "{:0.06f}\\\\\n")
-            rSqr = fpLSqr[1][0]
-            if len(fpLSqr[0]) == 3:
-                quadCoeffStr = "{:0.06f}".format(fpLSqr[0][0])
-            else:
-                quadCoeffStr = "--"
-            rowStr = rowStr.format(testNameMap[t][1],
-                                   int(fpDisagree),
-                                   quadCoeffStr, fpLSqr[0][-2],
-                                   fpLSqr[0][-1], rSqr)
+            rowStr = printRow(t, testPrinted, m, 1,
+                              "Increased Prec.", mpLSqr,
+                              mpDisagree)
             tableOut.write(rowStr)
+            testPrinted += 1
             
-            rowStr = ("&& Resultant & {:d} & " +
-                       "{:s} & {:0.06f} & {:0.06f} & " +
-                       "{:0.06f}\\\\\n")
-            rSqr = resLSqr[1][0]
-            if len(resLSqr[0]) == 3:
-                quadCoeffStr = "{:0.06f}".format(resLSqr[0][0])
-            else:
-                quadCoeffStr = "--"
-            rowStr = rowStr.format(int(resDisagree),
-                                   quadCoeffStr, resLSqr[0][-2],
-                                   resLSqr[0][-1], rSqr)
+            rowStr = printRow(t, testPrinted, m, 2,
+                              "Approximate", fpLSqr,
+                              None)
             tableOut.write(rowStr)
+            testPrinted += 1
     footer = ("\\hline\n" +
               "\\end{tabular}\n")
     tableOut.write(footer)
 
 if __name__ == "__main__":
     datum = aggregateData()
-    analysis = analyzeData(datum, False)
+    genPlots = False
+    if len(sys.argv) > 1:
+        genPlots = bool(sys.argv[1])
+    analysis = analyzeData(datum, genPlots)
     buildTable(analysis, "comparison_table.tex")
     
