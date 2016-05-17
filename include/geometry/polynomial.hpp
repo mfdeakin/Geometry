@@ -113,10 +113,21 @@ class PolyIsSolvable<2, fptype, true>
   PolyIsSolvable(const PolyIsSolvable<2, fptype, true> &p)
       : PolynomialBase<2, fptype>(p) {}
   Array<fptype, 2> calcRoots() {
-    return AccurateMath::kahanQuadratic(
-        PolynomialBase<2, fptype>::get(2),
-        PolynomialBase<2, fptype>::get(1),
-        PolynomialBase<2, fptype>::get(0));
+    fptype sqCoeff = this->get(2);
+    fptype linCoeff = this->get(1);
+    fptype constant = this->get(0);
+    fptype disc = fptype(linCoeff * linCoeff / 4.0) - fptype(sqCoeff * constant);
+    if(disc < 0)
+      return Array<fptype, 2>({{fptype(NAN), fptype(NAN)}});
+    fptype fracPart =
+        -MathFuncs::MathFuncs<fptype>::copysign(
+            MathFuncs::MathFuncs<fptype>::fabs(linCoeff /
+                                               2.0) +
+                MathFuncs::MathFuncs<fptype>::sqrt(disc),
+            linCoeff);
+    Array<fptype, 2> roots = {
+        {fracPart / sqCoeff, constant / fracPart}};
+    return roots;
   }
 };
 
