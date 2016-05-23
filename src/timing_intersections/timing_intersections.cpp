@@ -8,6 +8,7 @@
 #include "quadric_classify.hpp"
 #include "timer.hpp"
 
+#include <array>
 #include <fstream>
 #include <iomanip>
 #include <list>
@@ -152,11 +153,24 @@ runTest(
   return inter;
 }
 
+struct Results {
+  long long ns;
+  int numIP;
+  bool correct;
+};
+enum class Tests {
+  RESULTANT = 0,
+  SINGLE = 1,
+  DOUBLE = 2,
+  MP = 3,
+};
+
 template <int dim, typename fptype>
 void intersectionTest(
     std::list<Geometry::Quadric<dim, fptype>> &quads,
-    std::ostream &results, const int numTests,
-    randLineGen<dim, fptype> rlgf, int minExp, int maxExp) {
+    std::ostream &output, const int numTests,
+    randLineGen<dim, fptype> rlgf, int minExp, int maxExp,
+    bool fixedSeed) {
   /* First build a scene of quadrics.
    * Then generate random lines on a disk centered at the
    * intersection of the cylinders.
@@ -167,20 +181,18 @@ void intersectionTest(
   using Pf = Geometry::Point<dim, fptype>;
   using Lf = Geometry::Line<dim, fptype>;
 
-  std::random_device rd;
-  rngAlg engine(rd());
+  rngAlg engine;
+  if(fixedSeed) {
+    engine.seed(682185716);
+  }
 
   const double eps = 1.52587890625e-5;
 
-  constexpr const int numTestTypes = 3;
+  constexpr const int numTestTypes = 4;
+
   Timer::Timer testTimes[numTestTypes];
-  struct TimeArr {
-    struct TestData {
-      long long ns;
-      int numIP;
-      bool correct;
-    } mpTime, fpTime, resTime;
-  } *times = new struct TimeArr[numTests];
+
+  std::vector<std::array<Results, numTestTypes>> results;
   /* Run the tests */
   int t;
   for(t = 0; t < numTests && globals.run; t++) {
@@ -189,73 +201,78 @@ void intersectionTest(
     auto resultant = runTest<
         dim, fptype,
         Geometry::IntersectionResultant<dim, fptype>>(
-        quads, line, testTimes[0], eps);
-    auto fpApproximate = runTest<
-        dim, fptype,
-        Geometry::IntersectionApproximate<dim, fptype>>(
-        quads, line, testTimes[1], eps);
-    auto mpApproximate = runTest<
+        quads, line,
+        testTimes[static_cast<int>(Tests::RESULTANT)], eps);
+
+    auto sng = runTest<dim, fptype,
+                       Geometry::IntersectionApproximate<
+                           dim, fptype, float>>(
+        quads, line,
+        testTimes[static_cast<int>(Tests::SINGLE)], eps);
+
+    auto dbl = runTest<dim, fptype,
+                       Geometry::IntersectionApproximate<
+                           dim, fptype, double>>(
+        quads, line,
+        testTimes[static_cast<int>(Tests::DOUBLE)], eps);
+
+    auto mp = runTest<
         dim, fptype,
         Geometry::IntersectionIncreasedPrec<dim, fptype>>(
-        quads, line, testTimes[2], eps);
+        quads, line, testTimes[static_cast<int>(Tests::MP)],
+        eps);
 
-    times[t].resTime.ns = testTimes[0].instant_ns();
-    times[t].fpTime.ns = testTimes[1].instant_ns();
-    times[t].mpTime.ns = testTimes[2].instant_ns();
+    std::array<Results, numTestTypes> current;
+    for(int i = 0; i < numTestTypes; i++) {
+      current[i].ns = testTimes[i].instant_ns();
+    }
 
-    times[t].mpTime.correct =
-        validateResults(mpApproximate, resultant);
-    times[t].fpTime.correct =
-        validateResults(fpApproximate, resultant);
+    current[static_cast<int>(Tests::RESULTANT)].correct =
+        validateResults(resultant, resultant);
+    current[static_cast<int>(Tests::RESULTANT)].numIP =
+        countIP(resultant);
 
-    times[t].resTime.numIP = countIP(resultant);
-    times[t].fpTime.numIP = countIP(fpApproximate);
-    times[t].mpTime.numIP = countIP(mpApproximate);
+    current[static_cast<int>(Tests::SINGLE)].correct =
+        validateResults(sng, resultant);
+    current[static_cast<int>(Tests::SINGLE)].numIP =
+        countIP(sng);
+
+    current[static_cast<int>(Tests::DOUBLE)].correct =
+        validateResults(dbl, resultant);
+    current[static_cast<int>(Tests::DOUBLE)].numIP =
+        countIP(dbl);
+
+    current[static_cast<int>(Tests::MP)].correct =
+        validateResults(mp, resultant);
+    current[static_cast<int>(Tests::MP)].numIP =
+        countIP(mp);
+
+    results.push_back(current);
   }
   /* Output all of the results */
-  results << "Test #, Approximate Times (ns), Approximates "
-             "Correct, Increased Precs, MP Time (ns), MP "
-             "Correct, Resultants, Resultant Time (ns)\n";
-  int resTotIP = 0;
-  int fpTotIP = 0;
-  int mpTotIP = 0;
-  int mpTotIncorrect = 0;
-  int fpTotIncorrect = 0;
-  for(int i = 0; i < t; i++) {
-    results << i + 1 << ", " << times[i].fpTime.ns << ", "
-            << times[i].fpTime.correct << ", "
-            << times[i].mpTime.numIP << ", "
-            << times[i].mpTime.ns << ", "
-            << times[i].mpTime.correct << ", "
-            << times[i].resTime.numIP << ", "
-            << times[i].resTime.ns << "\n";
-    resTotIP += times[i].resTime.numIP;
-    mpTotIP += times[i].mpTime.numIP;
-    fpTotIncorrect += 1 - times[i].fpTime.correct;
-    mpTotIncorrect += 1 - times[i].mpTime.correct;
+  output << "Test #, Singles, Single Times (ns), Single "
+            "Correct, Doubles, Double Times (ns), Double "
+            "Correct, Increased Precs, MP Time (ns), MP "
+            "Correct, Resultants, Resultant Time (ns)\n";
+  int totIP[numTestTypes];
+  int totIncorrect[numTestTypes];
+  for(int i = 0; i < numTestTypes; i++) {
+    totIP[i] = 0;
+    totIncorrect[i] = 0;
   }
-  results << "\n"
-          << "Total FP Time: " << testTimes[1].elapsed_s()
-          << "." << std::setw(9) << std::setfill('0')
-          << testTimes[1].elapsed_ns() << "\n"
-          << "Total FP Disagreements: " << fpTotIncorrect
-          << "\n\n"
-
-          << "Total MP Computations: " << mpTotIP << "\n"
-          << "Total MP Time (s): "
-          << testTimes[2].elapsed_s() << "." << std::setw(9)
-          << std::setfill('0') << testTimes[2].elapsed_ns()
-          << "\n"
-          << "Total MP Disagreements: "
-          << mpTotIncorrect << "\n\n"
-
-          << "Total Resultant Computations: " << resTotIP
-          << "\n"
-          << "Total Resultant Time (s): "
-          << testTimes[0].elapsed_s() << "." << std::setw(9)
-          << std::setfill('0') << testTimes[0].elapsed_ns()
-          << "\n";
-  delete[] times;
+  for(int i = 0; i < t; i++) {
+    output << i + 1 << ", ";
+    for(int j = 0; j < numTestTypes; j++) {
+      output << results[i][j].numIP << ", "
+             << results[i][j].ns;
+      if(j != numTestTypes - 1) {
+        output << ", " << results[i][j].correct << ", ";
+      }
+      totIP[j] += results[i][j].numIP;
+      totIncorrect[j] += 1 - results[i][j].correct;
+    }
+    output << "\n";
+  }
 }
 
 void lockCPU() {
@@ -321,15 +338,35 @@ Geometry::Line<dim, fptype> nestedEllRandLine(rngAlg &rng,
   std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
   Geometry::Vector<dim, fptype> lineInt;
+  constexpr const fptype maxDeltaMag = 0.0625;
+  std::uniform_real_distribution<fptype> genDelta(
+      -maxDeltaMag, maxDeltaMag);
+  Geometry::Vector<dim, fptype> delta;
   for(int i = 0; i < dim; i++) {
-    fptype tmp = genPos(rng);
-    lineInt.set(i, genPos(rng));
+    do {
+      lineInt.set(i, genPos(rng));
+    } while(checkExp(lineInt.get(i), minExp, maxExp) ==
+            false);
+    do {
+      delta.set(i, genDelta(rng));
+    } while(checkExp(delta.get(i), minExp, maxExp) ==
+            false);
   }
-  /* Direct the line towards (1.0, 0.5, 0.5) */
-  const Geometry::Vector<dim, fptype> destination(
-      {1.0, 0.5, 0.5});
+  /* Direct the line towards (1.0, 0.5, 0.5) + delta */
+  const Geometry::Vector<dim, fptype> destination =
+      Geometry::Vector<dim, fptype>({1.0, 0.5, 0.5}) +
+      delta;
   Geometry::Vector<dim, fptype> lineDir =
       destination - lineInt;
+  for(int i = 0; i < dim; i++) {
+    if(checkExp(lineDir.get(i), minExp, maxExp) == false) {
+      if(lineDir.get(i) > 1.0) {
+        lineDir.set(i, 1.0);
+      } else {
+        lineDir.set(i, 0);
+      }
+    }
+  }
   return Geometry::Line<dim, fptype>(
       Geometry::Point<dim, fptype>(lineInt), lineDir);
 }
@@ -376,26 +413,33 @@ int main(int argc, char **argv) {
   if(argc > 3) {
     numTests = atoi(argv[3]);
   }
-  randLineGen<dim, fptype> rlg = cylRandLine<dim, fptype>;
+  randLineGen<dim, fptype> rlg = defRandLine<dim, fptype>;
   if(argc > 4) {
     int lineGenAlg = atoi(argv[4]);
     switch(lineGenAlg) {
       case 1:
         rlg = nestedEllRandLine<dim, fptype>;
-				std::cout << "Using the nested spheres random lines\n";
+        std::cout
+            << "Using the nested spheres random lines\n";
         break;
       case 2:
-				std::cout << "Using the cylinders random lines\n";
+        std::cout << "Using the cylinders random lines\n";
         rlg = cylRandLine<dim, fptype>;
         break;
       default:
-				std::cout << "Using the default random lines\n";
+        std::cout << "Using the default random lines\n";
         rlg = defRandLine<dim, fptype>;
+    }
+  }
+  bool fixedSeed = false;
+  if(argc > 5) {
+    if(strcmp(argv[5], "fixed") == 0) {
+      fixedSeed = true;
     }
   }
   std::ofstream results(outFName);
   signal(SIGINT, sigInt);
   intersectionTest(quads, results, numTests, rlg, minExp,
-                   maxExp);
+                   maxExp, fixedSeed);
   return 0;
 }

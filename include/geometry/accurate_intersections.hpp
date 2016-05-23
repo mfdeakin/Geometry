@@ -68,8 +68,11 @@ class IntersectionBase {
 
   bool isUndetermined(const fptype &i1,
                       const fptype &i2) const {
-    return MathFuncs::MathFuncs<fptype>::fabs(i1 - i2) <
-           absErrMargin;
+    fptype norm1 = l.getDirection().norm();
+    fptype norm2 = l.getDirection().norm();
+    return MathFuncs::MathFuncs<fptype>::fabs(i1 * norm2 -
+                                              i2 * norm1) <
+           absErrMargin * norm1 * norm2;
   }
 
   int incPrecCount() const { return numIP; }
