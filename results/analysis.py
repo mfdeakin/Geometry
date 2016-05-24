@@ -65,19 +65,17 @@ def aggregateData():
 
 def createPlot(data, fname, maxPrec,
                resCoeff, resConst,
-               fpCoeff, fpConst,
-               mpCoeff, mpConst):
+               mpCoeff, mpConst,
+               fpCoeff, fpConst):
     (numQuads,
-     mpNum, mpTimes, mpCorrect,
-     fpNum, fpTimes, fpCorrect,
+     fpNum, fpTimes, mpCorrect,
+     mpNum, mpTimes, fpCorrect,
      resNum, resTimes, _) = data.T
-    plt.axes().set_color_cycle(["cyan", "chartreuse", "orange"])
+    plt.axes().set_color_cycle(["cyan", "orange"])
     plt.scatter(resNum, resTimes, c = "blue",
                 label = "Resultant Method", marker = "+")
     plt.scatter(mpNum, mpTimes, c = "red",
                 label = "Increased Precision Method", marker = "x")
-    plt.scatter(fpNum, fpTimes, c = "green",
-                label = "Machine Precision Method", marker = "o")
     if not (np.isnan(resCoeff) or np.isnan(resConst) or
             np.isnan(mpCoeff) or np.isnan(mpConst)):
         lines = plt.plot([0, maxPrec],
@@ -86,15 +84,15 @@ def createPlot(data, fname, maxPrec,
                          [0, maxPrec],
                          [mpConst,
                           maxPrec * mpCoeff + mpConst], '-',
-                         [0, maxPrec],
-                         [fpConst,
-                          maxPrec * fpCoeff + fpConst], '-')
+                         [0, maxPrec])
         plt.setp(lines, linewidth=2)
     plt.axes().set_xlim(left = 0,
                         right = maxPrec)
     maxTime = max(max(mpTimes), max(resTimes)) * 1.0625
     plt.axes().set_ylim(bottom = 0,
                         top = maxTime)
+    plt.xlabel("Accurate Comparisons")
+    plt.ylabel("Time (ms)")
     plt.yticks(np.arange(0, 750, 50.0))
     plt.axes().yaxis.get_major_formatter().set_powerlimits((0, 3))
     print("Saving '" + fname + "'")
@@ -113,8 +111,8 @@ def analyzeData(datum, plotData = False):
                 mtData = np.append(mtData, testData)
                 mtData = mtData.reshape(mtShape)
             (numQuads,
-             fpNum, fpTimes, fpCorrect,
-             mpNum, mpTimes, mpCorrect,
+             mpNum, mpTimes, fpCorrect,
+             fpNum, fpTimes, mpCorrect,
              resNum, resTimes, _) = mtData.T
             if max(numQuads) == min(numQuads):
                 quadComp = False
