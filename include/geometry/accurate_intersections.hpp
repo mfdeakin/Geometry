@@ -68,11 +68,10 @@ class IntersectionBase {
 
   bool isUndetermined(const fptype &i1,
                       const fptype &i2) const {
-    fptype norm1 = l.getDirection().norm();
-    fptype norm2 = l.getDirection().norm();
-    return MathFuncs::MathFuncs<fptype>::fabs(i1 * norm2 -
-                                              i2 * norm1) <
-           absErrMargin * norm1 * norm2;
+    fptype scale = l.getDirection().norm();
+    return MathFuncs::MathFuncs<fptype>::fabs(i1 - i2) *
+               scale <
+           absErrMargin;
   }
 
   int incPrecCount() const { return numIP; }
@@ -89,16 +88,15 @@ class IntersectionBase {
   fptype compare(
       const IntersectionBase<dim, fptype, otherCmpAlg> &i)
       const {
-    fptype delta = intPos - i.intPos;
     if(isUndetermined(intPos, i.intPos) && i.q != q &&
        !MathFuncs::MathFuncs<fptype>::isnan(otherIntPos) &&
        !MathFuncs::MathFuncs<fptype>::isnan(
            i.otherIntPos)) {
       numIP++;
-      return static_cast<cmpAlg>(*this).accurateCompare(
-          static_cast<cmpAlg>(i));
+      return static_cast<cmpAlg>(*this)
+          .accurateCompare(static_cast<cmpAlg>(i));
     } else {
-      return delta;
+      return intPos - i.intPos;
     }
   }
 };

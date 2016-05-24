@@ -338,7 +338,7 @@ Geometry::Line<dim, fptype> nestedEllRandLine(rngAlg &rng,
   std::uniform_real_distribution<fptype> genPos(minPos,
                                                 maxPos);
   Geometry::Vector<dim, fptype> lineInt;
-  constexpr const fptype maxDeltaMag = 0.0625;
+  constexpr const fptype maxDeltaMag = 0.0078125;
   std::uniform_real_distribution<fptype> genDelta(
       -maxDeltaMag, maxDeltaMag);
   Geometry::Vector<dim, fptype> delta;
@@ -347,10 +347,7 @@ Geometry::Line<dim, fptype> nestedEllRandLine(rngAlg &rng,
       lineInt.set(i, genPos(rng));
     } while(checkExp(lineInt.get(i), minExp, maxExp) ==
             false);
-    do {
-      delta.set(i, genDelta(rng));
-    } while(checkExp(delta.get(i), minExp, maxExp) ==
-            false);
+    delta.set(i, genDelta(rng));
   }
   /* Direct the line towards (1.0, 0.5, 0.5) + delta */
   const Geometry::Vector<dim, fptype> destination =
