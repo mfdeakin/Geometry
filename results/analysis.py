@@ -206,9 +206,9 @@ def printRow(test, testIdx, machine, machIdx, method,
     else:
         machPrint = ""
     if errors == None:
-        errorPrint = "\\hphantom{-}---"
+        errorPrint = "\\hphantom{---}---"
     else:
-        errorPrint = formatInt(errors, 3)
+        errorPrint = formatInt(errors, 4)
     if len(lsqrVals[0]) == 3:
         mspquad = formatFloat(lsqrVals[0][0], 3, 0, False)
     else:
@@ -235,14 +235,14 @@ def buildTable(analysis, fname):
     for t in analysis:
         if printHLine:
             tableOut.write("\\hhline{|-|-|--|---|-|}\n")
-        printHLine = True
+        printHLine = False
         testPrinted = 0
         for m in analysis[t]:
             if printHLine:
                 tableOut.write("\\hhline{|~|-|--|---|-|}\n")
             printHLine = True
-            (mpLSqr, mpDisagree,
-             fpLSqr, fpDisagree,
+            (fpLSqr, fpDisagree,
+             mpLSqr, mpDisagree,
              resLSqr) = analysis[t][m]
             rowStr = printRow(t, testPrinted, m, 0,
                               "Approximate", fpLSqr,
@@ -257,7 +257,7 @@ def buildTable(analysis, fname):
             testPrinted += 1
             
             rowStr = printRow(t, testPrinted, m, 2,
-                              "Approximate", fpLSqr,
+                              "Resultant", resLSqr,
                               None)
             tableOut.write(rowStr)
             testPrinted += 1
@@ -269,7 +269,7 @@ if __name__ == "__main__":
     datum = aggregateData()
     genPlots = False
     if len(sys.argv) > 1:
-        genPlots = bool(sys.argv[1])
+        genPlots = (sys.argv[1].lower() == "true")
     analysis = analyzeData(datum, genPlots)
     buildTable(analysis, "comparison_table.tex")
     

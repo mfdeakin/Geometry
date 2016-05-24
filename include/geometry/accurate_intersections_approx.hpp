@@ -6,49 +6,84 @@
 
 namespace Geometry {
 
-template <int dim, typename fptype>
+template <int dim, typename inptype, typename calctype>
 class IntersectionApproximate
     : public IntersectionBase<
-          dim, fptype,
-          IntersectionApproximate<dim, fptype>> {
+          dim, inptype,
+          IntersectionApproximate<dim, inptype, calctype>> {
  public:
   IntersectionApproximate()
-      : IntersectionBase<
-            dim, fptype,
-            IntersectionApproximate<dim, fptype>>() {}
+      : IntersectionBase<dim, inptype,
+                         IntersectionApproximate<
+                             dim, inptype, calctype>>() {
+    calcIntPos = calctype(NAN);
+  }
 
   IntersectionApproximate(
-      const Quadric<dim, fptype> &quad,
-      const Line<dim, fptype> &line, fptype intPos = NAN,
-      fptype otherIntPos = NAN,
-      fptype absErrMargin = defAbsPrecision)
-      : IntersectionBase<
-            dim, fptype,
-            IntersectionApproximate<dim, fptype>>(
+      const Quadric<dim, inptype> &quad,
+      const Line<dim, inptype> &line, inptype intPos = NAN,
+      inptype otherIntPos = NAN,
+      inptype absErrMargin = defAbsPrecision)
+      : IntersectionBase<dim, inptype,
+                         IntersectionApproximate<
+                             dim, inptype, calctype>>(
             quad, line, intPos, otherIntPos, absErrMargin) {
+    calcIntPos = calctype(NAN);
   }
 
   template <typename cmpAlg>
   IntersectionApproximate(
-      const IntersectionBase<dim, fptype, cmpAlg> &i)
-      : IntersectionBase<
-            dim, fptype,
-            IntersectionApproximate<dim, fptype>>(i) {}
+      const IntersectionBase<dim, inptype, cmpAlg> &i)
+      : IntersectionBase<dim, inptype,
+                         IntersectionApproximate<
+                             dim, inptype, calctype>>(i) {
+    calcIntPos = calctype(NAN);
+  }
 
-  IntersectionApproximate<dim, fptype> operator=(
-      const IntersectionApproximate<dim, fptype> &i) {
-    IntersectionBase<dim, fptype,
-                     IntersectionApproximate<dim, fptype>>::
+  IntersectionApproximate<dim, inptype, calctype> operator=(
+      const IntersectionApproximate<dim, inptype, calctype>
+          &i) {
+    IntersectionBase<
+        dim, inptype,
+        IntersectionApproximate<dim, inptype, calctype>>::
     operator=(i);
+    calcIntPos = calctype(NAN);
     return *this;
   }
 
-  fptype accurateCompare(
-      const IntersectionBase<
-          dim, fptype, IntersectionApproximate<dim, fptype>>
-          &i) const {
-    return this->intPos - i.intPos;
+  bool rootReady() const {
+    return !MathFuncs::MathFuncs<calctype>::isnan(
+        calcIntPos);
   }
+
+  calctype getRoot() const {
+    if(!rootReady()) {
+      Line<dim, calctype> line(this->l);
+      Quadric<dim, calctype> quad(this->q);
+
+      auto poly = quad.calcLineDistPoly(line);
+      auto roots = poly.calcRoots();
+
+      if((this->intPos < this->otherIntPos &&
+          roots[0] > roots[1]) ||
+         (this->intPos > this->otherIntPos &&
+          roots[0] < roots[1])) {
+        calcIntPos = roots[1];
+      } else {
+        calcIntPos = roots[0];
+      }
+    }
+    return calcIntPos;
+  }
+
+  inptype accurateCompare(
+      const IntersectionApproximate<dim, inptype, calctype>
+          &i) const {
+    return getRoot() - i.getRoot();
+  }
+
+ protected:
+  mutable calctype calcIntPos;
 };
 }
 
