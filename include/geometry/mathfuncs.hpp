@@ -9,6 +9,12 @@
 
 #include "cudadef.h"
 
+#ifdef __CUDA_ARCH__
+#define CUDASTL(expression) expression
+#else
+#define CUDASTL(expression) std::expression
+#endif
+
 /* A stupid solution to an annoying limitation of C++
  * But a better one than giving up all the fast hardware
  * math functionality.
@@ -28,22 +34,20 @@ struct IsMPFRMathFuncs;
 
 template <typename fptype>
 struct IsStdMathFuncs<fptype, true> {
+	CUDA_CALLABLE static fptype frexp(fptype v, int *exp) {
+		return CUDASTL(frexp(v, exp));
+	}
+	CUDA_CALLABLE static fptype ldexp(fptype x, int exp) {
+		return CUDASTL(ldexp(x, exp));
+	}
   CUDA_CALLABLE static int getPrec(fptype v) {
     return GenericFP::fpconvert<fptype>::precision;
   }
   CUDA_CALLABLE static fptype abs(fptype v) {
-#ifdef __CUDA_ARCH__
-    return abs(v);
-#else
-    return std::abs(v);
-#endif
+    return CUDASTL(abs(v));
   }
   CUDA_CALLABLE static fptype fabs(fptype v) {
-#ifdef __CUDA_ARCH__
-    return fabs(v);
-#else
-    return std::fabs(v);
-#endif
+    return CUDASTL(fabs(v));
   }
   CUDA_CALLABLE static fptype min(fptype v1, fptype v2) {
 #ifdef __CUDA_ARCH__

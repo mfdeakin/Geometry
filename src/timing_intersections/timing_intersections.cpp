@@ -17,6 +17,8 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include "tester.hpp"
+
 struct GlobalVars {
   bool run = true;
 } globals;
@@ -84,86 +86,11 @@ std::list<Geometry::Quadric<dim, fptype>> parseQuadrics(
   return quads;
 }
 
-bool isSameInt(mpfr::mpreal int1, mpfr::mpreal int2) {
-  /* Use a heuristic on truth to determine whether adjacent
-   * intersections occur at the same place.
-   * This will basically be a threshold on the largest
-   * different bit in the mantissa.
-   */
-  /* A relative heuristic does not work when one (or both!)
-   * is 0 */
-  if(int1 == 0.0 || int2 == 0.0) {
-    constexpr const double eps = 0.000001;
-    return (mpfr::fabs(int1 - int2) < eps);
-  }
-  mpfr::mpreal largest =
-      mpfr::max(mpfr::fabs(int1), mpfr::fabs(int2));
-  mp_exp_t largestExp = largest.get_exp();
-  mpfr::mpreal diff = mpfr::fabs(int1 - int2);
-  int p1 = int1.getPrecision(), p2 = int2.getPrecision();
-  int minPrec = std::min(p1, p2);
-  mp_exp_t maxExp = largestExp - minPrec * 1 / 48,
-           diffExp = diff.get_exp();
-  return maxExp >= diffExp;
-}
-
-template <typename ListTest, typename ListTrue>
-bool validateResults(ListTest &inter, ListTrue &truth) {
-  /* Note that because the same method is used to determine
-   * if an intersection is in the list, these lists will be
-   * the same length
-   */
-  if(inter->size() != truth->size()) {
-    return false;
-  }
-  auto j = truth->begin();
-  for(auto i = inter->begin();
-      i != inter->end() || j != truth->end(); i++, j++) {
-    if(i->q != j->q || i->intPos != j->intPos) {
-      return false;
-    }
-  }
-  return true;
-}
-
-template <typename List>
-int countIP(List inter) {
-  int numIP = 0;
-  for(auto i : *inter) numIP += i.incPrecCount();
-  return numIP;
-}
-
 using rngAlg = std::mt19937_64;
 
 template <int dim, typename fptype>
 using randLineGen = Geometry::Line<dim, fptype> (*)(
     rngAlg &rng, int minExp, int maxExp);
-
-template <int dim, typename fptype, typename cmpAlg>
-std::shared_ptr<std::list<cmpAlg>> __attribute__((noinline))
-runTest(
-    std::list<Geometry::Quadric<dim, fptype>> &quads,
-    Geometry::Line<dim, fptype> &line, Timer::Timer &timer,
-    double eps = std::numeric_limits<fptype>::infinity()) {
-  timer.startTimer();
-  auto inter =
-      Geometry::sortIntersections<dim, fptype, cmpAlg>(
-          line, quads, fptype(eps));
-  timer.stopTimer();
-  return inter;
-}
-
-struct Results {
-  long long ns;
-  int numIP;
-  bool correct;
-};
-enum class Tests {
-  RESULTANT = 0,
-  SINGLE = 1,
-  DOUBLE = 2,
-  MP = 3,
-};
 
 template <int dim, typename fptype>
 void intersectionTest(
@@ -188,89 +115,50 @@ void intersectionTest(
 
   const double eps = 1.52587890625e-5;
 
-  constexpr const int numTestTypes = 4;
+  Tester<dim, fptype,
+         Geometry::IntersectionResultant<dim, fptype>>
+      resultantTest(numTests, &quads, eps);
 
-  Timer::Timer testTimes[numTestTypes];
+  Tester<dim, fptype, Geometry::IntersectionApproximate<
+                          dim, fptype, float>>
+      singleTest(numTests, &quads, eps);
 
-  std::vector<std::array<Results, numTestTypes>> results;
+  Tester<dim, fptype, Geometry::IntersectionApproximate<
+                          dim, fptype, float>>
+      doubleTest(numTests, &quads, eps);
+
+  Tester<dim, fptype,
+         Geometry::IntersectionIncreasedPrec<dim, fptype>>
+      mpTest(numTests, &quads, eps);
+
   /* Run the tests */
   int t;
   for(t = 0; t < numTests && globals.run; t++) {
     Lf line = rlgf(engine, minExp, maxExp);
     /* Then sort the intersections */
-    auto resultant = runTest<
-        dim, fptype,
-        Geometry::IntersectionResultant<dim, fptype>>(
-        quads, line,
-        testTimes[static_cast<int>(Tests::RESULTANT)], eps);
-
-    auto sng = runTest<dim, fptype,
-                       Geometry::IntersectionApproximate<
-                           dim, fptype, float>>(
-        quads, line,
-        testTimes[static_cast<int>(Tests::SINGLE)], eps);
-
-    auto dbl = runTest<dim, fptype,
-                       Geometry::IntersectionApproximate<
-                           dim, fptype, double>>(
-        quads, line,
-        testTimes[static_cast<int>(Tests::DOUBLE)], eps);
-
-    auto mp = runTest<
-        dim, fptype,
-        Geometry::IntersectionIncreasedPrec<dim, fptype>>(
-        quads, line, testTimes[static_cast<int>(Tests::MP)],
-        eps);
-
-    std::array<Results, numTestTypes> current;
-    for(int i = 0; i < numTestTypes; i++) {
-      current[i].ns = testTimes[i].instant_ns();
-    }
-
-    current[static_cast<int>(Tests::RESULTANT)].correct =
-        validateResults(resultant, resultant);
-    current[static_cast<int>(Tests::RESULTANT)].numIP =
-        countIP(resultant);
-
-    current[static_cast<int>(Tests::SINGLE)].correct =
-        validateResults(sng, resultant);
-    current[static_cast<int>(Tests::SINGLE)].numIP =
-        countIP(sng);
-
-    current[static_cast<int>(Tests::DOUBLE)].correct =
-        validateResults(dbl, resultant);
-    current[static_cast<int>(Tests::DOUBLE)].numIP =
-        countIP(dbl);
-
-    current[static_cast<int>(Tests::MP)].correct =
-        validateResults(mp, resultant);
-    current[static_cast<int>(Tests::MP)].numIP =
-        countIP(mp);
-
-    results.push_back(current);
+    resultantTest.runTest(line);
+    singleTest.runTest(line);
+    doubleTest.runTest(line);
+    mpTest.runTest(line);
+    singleTest.updateResults(resultantTest.getResults());
+    doubleTest.updateResults(resultantTest.getResults());
+    mpTest.updateResults(resultantTest.getResults());
+    resultantTest.updateResults(resultantTest.getResults());
   }
   /* Output all of the results */
   output << "Test #, Singles, Single Times (ns), Single "
             "Correct, Doubles, Double Times (ns), Double "
             "Correct, Increased Precs, MP Time (ns), MP "
             "Correct, Resultants, Resultant Time (ns)\n";
-  int totIP[numTestTypes];
-  int totIncorrect[numTestTypes];
-  for(int i = 0; i < numTestTypes; i++) {
-    totIP[i] = 0;
-    totIncorrect[i] = 0;
-  }
   for(int i = 0; i < t; i++) {
     output << i + 1 << ", ";
-    for(int j = 0; j < numTestTypes; j++) {
-      output << results[i][j].numIP << ", "
-             << results[i][j].ns;
-      if(j != numTestTypes - 1) {
-        output << ", " << results[i][j].correct << ", ";
-      }
-      totIP[j] += results[i][j].numIP;
-      totIncorrect[j] += 1 - results[i][j].correct;
-    }
+    printResult(singleTest.getResult(i), output);
+    output << ", ";
+    printResult(doubleTest.getResult(i), output);
+    output << ", ";
+    printResult(mpTest.getResult(i), output);
+    output << ", ";
+    printResult(resultantTest.getResult(i), output);
     output << "\n";
   }
 }
@@ -318,11 +206,23 @@ Geometry::Line<dim, fptype> defRandLine(rngAlg &rng,
   Geometry::Vector<dim, fptype> lineInt;
   for(int i = 0; i < dim; i++) {
     do {
-      lineInt.set(i, genPos(rng));
+      union {
+        fptype tmp;
+        GenericFP::fpconvert<fptype> bitmanipulate;
+      };
+      tmp = genPos(rng);
+      bitmanipulate.mantissa &= ~((1 << 12) - 1);
+      lineInt.set(i, tmp);
     } while(checkExp(lineInt.get(i), minExp, maxExp) ==
             false);
     do {
-      lineDir.set(i, genDir(rng));
+      union {
+        fptype tmp;
+        GenericFP::fpconvert<fptype> bitmanipulate;
+      };
+      tmp = genDir(rng);
+      bitmanipulate.mantissa &= ~((1 << 12) - 1);
+      lineDir.set(i, tmp);
     } while(checkExp(lineDir.get(i), minExp, maxExp) ==
             false);
   }
@@ -344,7 +244,13 @@ Geometry::Line<dim, fptype> nestedEllRandLine(rngAlg &rng,
   Geometry::Vector<dim, fptype> delta;
   for(int i = 0; i < dim; i++) {
     do {
-      lineInt.set(i, genPos(rng));
+      union {
+        fptype tmp;
+        GenericFP::fpconvert<fptype> bitmanipulate;
+      };
+      tmp = genPos(rng);
+      bitmanipulate.mantissa &= ~((1 << 12) - 1);
+      lineInt.set(i, tmp);
     } while(checkExp(lineInt.get(i), minExp, maxExp) ==
             false);
     delta.set(i, genDelta(rng));
@@ -355,14 +261,33 @@ Geometry::Line<dim, fptype> nestedEllRandLine(rngAlg &rng,
       delta;
   Geometry::Vector<dim, fptype> lineDir =
       destination - lineInt;
+  /* Fix the exponent and the mantissa to fit within our
+   * bounds for correctness
+   */
+  int maximum = std::numeric_limits<int>::min();
   for(int i = 0; i < dim; i++) {
-    if(checkExp(lineDir.get(i), minExp, maxExp) == false) {
-      if(lineDir.get(i) > 1.0) {
-        lineDir.set(i, 1.0);
-      } else {
-        lineDir.set(i, 0);
-      }
+    int exp = 0;
+    MathFuncs::MathFuncs<fptype>::frexp(lineDir.get(i),
+                                        &exp);
+    if(exp > maximum) {
+      maximum = exp;
     }
+  }
+  fptype multiplier = MathFuncs::MathFuncs<fptype>::ldexp(
+      1.0, maxExp - maximum);
+  for(int i = 0; i < dim; i++) {
+    union {
+      fptype tmp;
+      GenericFP::fpconvert<fptype> bitmanipulate;
+    };
+
+    tmp = lineDir.get(i) * multiplier;
+    bitmanipulate.mantissa &= ~((1 << 12) - 1);
+    if(MathFuncs::MathFuncs<fptype>::fabs(tmp) <
+       MathFuncs::MathFuncs<fptype>::ldexp(1.0, minExp)) {
+      tmp = 0.0;
+    }
+    lineDir.set(i, tmp);
   }
   return Geometry::Line<dim, fptype>(
       Geometry::Point<dim, fptype>(lineInt), lineDir);
@@ -379,12 +304,26 @@ Geometry::Line<dim, fptype> cylRandLine(rngAlg &rng,
   /* First build the line */
   Geometry::Vector<dim, fptype> lineDir;
   Geometry::Vector<dim, fptype> lineInt;
-  lineInt.set(1, genPos(rng));
+  union {
+    fptype tmp;
+    GenericFP::fpconvert<fptype> bitmanipulate;
+  };
+  tmp = genPos(rng);
+  bitmanipulate.mantissa &= ~((1 << 12) - 1);
+  lineInt.set(1, tmp);
   for(int i = 0; i < dim; i++) {
     lineInt.set(i, lineInt.get(1));
-    lineDir.set(i, genDir(rng));
+    union {
+      fptype tmp;
+      GenericFP::fpconvert<fptype> bitmanipulate;
+    };
+    tmp = genDir(rng);
+    bitmanipulate.mantissa &= ~((1 << 12) - 1);
+    lineDir.set(i, tmp);
   }
-  lineInt.set(0, genPos(rng));
+  tmp = genPos(rng);
+  bitmanipulate.mantissa &= ~((1 << 12) - 1);
+  lineInt.set(0, tmp);
   return Geometry::Line<dim, fptype>(
       Geometry::Point<dim, fptype>(lineInt), lineInt);
 }
