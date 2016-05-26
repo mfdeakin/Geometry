@@ -67,9 +67,16 @@ class IntersectionResultant
        */
       constexpr const unsigned machPrec =
           GenericFP::fpconvert<fptype>::precision;
-      /* The extra factor of two is for the range of the
-       * exponents - change it as necessary */
-      constexpr const unsigned coeffPrec = 2 * 3 * machPrec;
+      /* 10 bits required for the exponent
+       * 23 bits required for the mantissa of the quadric
+       * coefficients
+       * 12 bits required for the manitssa of the line
+       * coefficients
+       * Two multiplications with the line coefficients
+       * One multiplication with the quadric coefficient
+       * A total of 77 bits, which we round to 80 for safety
+       */
+      constexpr const unsigned coeffPrec = 80;
       constexpr const int partPrec = 2 * coeffPrec;
       constexpr const int discPrec = 2 * partPrec;
       mpfr::mpreal::set_default_prec(coeffPrec);
