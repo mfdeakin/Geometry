@@ -34,14 +34,14 @@ struct IsMPFRMathFuncs;
 
 template <typename fptype>
 struct IsStdMathFuncs<fptype, true> {
-	CUDA_CALLABLE static fptype frexp(fptype v, int *exp) {
-		return CUDASTL(frexp(v, exp));
-	}
-	CUDA_CALLABLE static fptype ldexp(fptype x, int exp) {
-		return CUDASTL(ldexp(x, exp));
-	}
   CUDA_CALLABLE static int getPrec(fptype v) {
     return GenericFP::fpconvert<fptype>::precision;
+  }
+  CUDA_CALLABLE static fptype frexp(fptype v, int *exp) {
+    return CUDASTL(frexp(v, exp));
+  }
+  CUDA_CALLABLE static fptype ldexp(fptype x, int exp) {
+    return CUDASTL(ldexp(x, exp));
   }
   CUDA_CALLABLE static fptype abs(fptype v) {
     return CUDASTL(abs(v));
@@ -50,72 +50,36 @@ struct IsStdMathFuncs<fptype, true> {
     return CUDASTL(fabs(v));
   }
   CUDA_CALLABLE static fptype min(fptype v1, fptype v2) {
-#ifdef __CUDA_ARCH__
-    return min(v1, v2);
-#else
-    return std::min(v1, v2);
-#endif
+    return CUDASTL(min(v1, v2));
   }
   CUDA_CALLABLE static fptype max(fptype v1, fptype v2) {
-#ifdef __CUDA_ARCH__
-    return max(v1, v2);
-#else
-    return std::max(v1, v2);
-#endif
+    return CUDASTL(max(v1, v2));
   }
   CUDA_CALLABLE static fptype fma(fptype m1, fptype m2,
                                   fptype a) {
-#ifdef __CUDA_ARCH__
-    return fma(m1, m2, a);
-#else
-    return std::fma(m1, m2, a);
-#endif
+    return CUDASTL(fma(m1, m2, a));
   }
   CUDA_CALLABLE static bool signbit(fptype val) {
-#ifdef __CUDA_ARCH__
-    return signbit(val);
-#else
-    return std::signbit(val);
-#endif
+    return CUDASTL(signbit(val));
   }
   CUDA_CALLABLE static fptype copysign(fptype val,
                                        fptype sign) {
-#ifdef __CUDA_ARCH__
-    return copysign(val, sign);
-#else
-    return std::copysign(val, sign);
-#endif
+    return CUDASTL(copysign(val, sign));
   }
   CUDA_CALLABLE static fptype sqr(fptype val) {
     return val * val;
   }
   CUDA_CALLABLE static fptype sqrt(fptype val) {
-#ifdef __CUDA_ARCH__
-    return sqrt(val);
-#else
-    return std::sqrt(val);
-#endif
+    return CUDASTL(sqrt(val));
   }
   CUDA_CALLABLE static fptype isinf(fptype val) {
-#ifdef __CUDA_ARCH__
-    return isinf(val);
-#else
-    return std::isinf(val);
-#endif
+    return CUDASTL(isinf(val));
   }
   CUDA_CALLABLE static fptype isnan(fptype val) {
-#ifdef __CUDA_ARCH__
-    return isnan(val);
-#else
-    return std::isnan(val);
-#endif
+    return CUDASTL(isnan(val));
   }
   CUDA_CALLABLE static fptype sin(fptype val) {
-#ifdef __CUDA_ARCH__
-    return sin(val);
-#else
-    return std::sin(val);
-#endif
+    return CUDASTL(sin(val));
   }
 
   CUDA_CALLABLE static fptype fastMult2Pow(fptype val,
@@ -138,6 +102,12 @@ struct IsStdMathFuncs<fptype, false> {};
 template <typename fptype>
 struct IsMPFRMathFuncs<fptype, true> {
   static int getPrec(fptype v) { return v.get_prec(); }
+  static fptype frexp(fptype v, int *exp) {
+    return mpfr::frexp(v, exp);
+  }
+  static fptype ldexp(fptype x, int exp) {
+    return mpfr::ldexp(x, exp);
+  }
   static fptype abs(fptype v) { return mpfr::abs(v); }
   static fptype fabs(fptype v) { return mpfr::fabs(v); }
   static fptype min(fptype v1, fptype v2) {
