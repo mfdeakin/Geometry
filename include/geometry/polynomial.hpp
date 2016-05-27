@@ -116,9 +116,11 @@ class PolyIsSolvable<2, fptype, true>
     fptype sqCoeff = this->get(2);
     fptype linCoeff = this->get(1);
     fptype constant = this->get(0);
-    fptype disc = fptype(linCoeff * linCoeff / 4.0) - fptype(sqCoeff * constant);
-    if(disc < 0)
+    fptype disc = fptype(linCoeff * linCoeff / 4.0) -
+                  fptype(sqCoeff * constant);
+    if(disc < 0) {
       return Array<fptype, 2>({{fptype(NAN), fptype(NAN)}});
+    }
     fptype fracPart =
         -MathFuncs::MathFuncs<fptype>::copysign(
             MathFuncs::MathFuncs<fptype>::fabs(linCoeff /
