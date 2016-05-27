@@ -131,6 +131,7 @@ void intersectionTest(
          Geometry::IntersectionIncreasedPrec<dim, fptype>>
       mpTest(numTests, &quads, eps);
 
+  std::vector<Lf> lines;
   /* Run the tests */
   int t;
   for(t = 0; t < numTests && globals.run; t++) {
@@ -140,6 +141,7 @@ void intersectionTest(
     singleTest.runTest(line);
     doubleTest.runTest(line);
     mpTest.runTest(line);
+    lines.push_back(line);
     singleTest.updateResults(resultantTest.getResults());
     doubleTest.updateResults(resultantTest.getResults());
     mpTest.updateResults(resultantTest.getResults());
@@ -164,7 +166,9 @@ void intersectionTest(
   output << "Test #, Singles, Single Times (ns), Single "
             "Correct, Doubles, Double Times (ns), Double "
             "Correct, Increased Precs, MP Time (ns), MP "
-            "Correct, Resultants, Resultant Time (ns)\n";
+            "Correct, Resultants, Resultant Time (ns), "
+            "Line Dir X, Line Dir Y, Line Dir Z, "
+            "Line Int X, Line Int Y, Line Int Z\n";
   for(int i = 0; i < t; i++) {
     output << i + 1 << ", ";
     printResult(singleTest.getResult(i), output);
@@ -174,6 +178,18 @@ void intersectionTest(
     printResult(mpTest.getResult(i), output);
     output << ", ";
     printResult(resultantTest.getResult(i), output);
+    output << ", ";
+    output << lines[i].getDirection().get(0);
+    output << ", ";
+    output << lines[i].getDirection().get(1);
+    output << ", ";
+    output << lines[i].getDirection().get(2);
+    output << ", ";
+    output << lines[i].getIntercept().getOffset().get(0);
+    output << ", ";
+    output << lines[i].getIntercept().getOffset().get(1);
+    output << ", ";
+    output << lines[i].getIntercept().getOffset().get(2);
     output << "\n";
   }
 }
@@ -300,7 +316,14 @@ Geometry::Line<dim, fptype> nestedEllRandLine(rngAlg &rng,
     bitmanipulate.mantissa &= ~((1 << 12) - 1);
     if(MathFuncs::MathFuncs<fptype>::fabs(tmp) <
        MathFuncs::MathFuncs<fptype>::ldexp(1.0, minExp)) {
-      tmp = 0.0;
+      if(MathFuncs::MathFuncs<fptype>::fabs(tmp) >
+         MathFuncs::MathFuncs<fptype>::ldexp(1.0,
+                                             minExp - 1)) {
+        tmp = MathFuncs::MathFuncs<fptype>::ldexp(1.0,
+                                                  minExp);
+      } else {
+        tmp = 0.0;
+      }
     }
     lineDir.set(i, tmp);
   }
