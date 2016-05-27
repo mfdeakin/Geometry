@@ -145,6 +145,21 @@ void intersectionTest(
     mpTest.updateResults(resultantTest.getResults());
     resultantTest.updateResults(resultantTest.getResults());
   }
+  /* Output the aggregate of the results */
+  output << "Singles Incorrect: "
+         << singleTest.getTotalIncorrect() << "\n"
+         << "Single Total Time (ns): "
+         << singleTest.getTotalTime_ns() << "\n\n";
+  output << "Doubles Incorrect: "
+         << doubleTest.getTotalIncorrect() << "\n"
+         << "Double Total Time (ns): "
+         << doubleTest.getTotalTime_ns() << "\n\n";
+  output << "Increased Precision Incorrect: "
+         << mpTest.getTotalIncorrect() << "\n"
+         << "Increased Precision Total Time (ns): "
+         << mpTest.getTotalTime_ns() << "\n\n";
+  output << "Resultant Total Time (ns): "
+         << resultantTest.getTotalTime_ns() << "\n\n\n";
   /* Output all of the results */
   output << "Test #, Singles, Single Times (ns), Single "
             "Correct, Doubles, Double Times (ns), Double "

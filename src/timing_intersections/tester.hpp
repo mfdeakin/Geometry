@@ -34,6 +34,8 @@ class Tester {
         eps(eps),
         numTests(numTests),
         curTest(0),
+        totalTime(0),
+        totalIncorrect(0),
         results(new TestResults[numTests]) {}
 
   virtual ~Tester() { delete[] results; }
@@ -53,6 +55,8 @@ class Tester {
     results[curTest].time_ns = timer.instant_ns();
     results[curTest].numAccurateComp = countCompares();
     results[curTest].correct = validateResults(truth);
+    totalTime += results[curTest].time_ns;
+    totalIncorrect += !results[curTest].correct;
     curTest++;
   }
 
@@ -98,6 +102,10 @@ class Tester {
     return prevResults;
   }
 
+  long long getTotalTime_ns() { return totalTime; }
+
+  int getTotalIncorrect() { return totalIncorrect; }
+
  private:
   Timer::Timer timer;
   std::list<Geometry::Quadric<dim, fptype>> *quads;
@@ -105,6 +113,8 @@ class Tester {
   double eps;
   int numTests;
   int curTest;
+  long long totalTime;
+  int totalIncorrect;
   TestResults *results;
 };
 
