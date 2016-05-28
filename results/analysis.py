@@ -7,23 +7,36 @@ from mpl_toolkits.mplot3d import Axes3D
 import sklearn.decomposition
 
 testNameMap = {"hardEllipsoidsSingle": ["Nested", "Spheres"],
-               "packedEll": ["Packed", "Spheres"]}
+               "hardEllipsoidsSingle_fixedlines": ["Nested", "Spheres", "Fixed"],
+               "packedEll_fixedlines": ["Packed", "Spheres"]}
 
 machineNameMap = {"gentoo": ["Gentoo"], "arch": ["Arch"]}
 
 def readData(fname, size):
     fd = open(fname, 'r')
     reader = csv.reader(fd)
-    next(reader)
     data = []
     for row in reader:
-        if len(row) != 8:
+        if len(row) != 19:
             continue
-        number, fpTime, fpCorrect, mpNum, mpTime, mpCorrect, resNum, resTime = map(int, row)
+        try:
+            (number,
+             singleNum, singleTime, singleCorrect,
+             doubleNum, doubleTime, doubleCorrect,
+             mpNum, mpTime, mpCorrect,
+             resNum, resTime) = map(int, row[:12])
+            (lDirX, lDirY, lDirZ, lIntX, lIntY, lIntZ) = map(float, row[13:])
+        except ValueError:
+            continue
+        dirMag = np.sqrt(lDirX ** 2 + lDirY ** 2 + lDirZ ** 2)
+        dirTheta = np.arccos(lDirX / dirMag)
+        dirPhi = np.arccos(lDirY / (dirMag * np.sin(dirTheta)))
         data.append([size,
                      mpNum, mpTime / 1e6, mpCorrect,
-                     resNum, fpTime / 1e6, fpCorrect,
+                     singleNum, singleTime / 1e6, singleCorrect,
+                     doubleNum, doubleTime / 1e6, doubleCorrect,
                      resNum, resTime / 1e6,
+                     dirMag, dirTheta, dirPhi,
                      number])
     return np.array(data)
 
@@ -64,13 +77,15 @@ def aggregateData():
     return datum
 
 def createPlot(data, fname, maxPrec,
-               resCoeff, resConst,
                mpCoeff, mpConst,
-               fpCoeff, fpConst):
+               singleCoeff, singleConst,
+               doubleCoeff, doubleConst,
+               resCoeff, resConst):
     (numQuads,
-     fpNum, fpTimes, mpCorrect,
-     mpNum, mpTimes, fpCorrect,
-     resNum, resTimes, _) = data.T
+     mpNum, mpTimes, mpCorrect,
+     singleNum, singleTimes, singleCorrect,
+     doubleNum, doubleTimes, doubleCorrect,
+     resNum, resTimes) = data.T[:12]
     plt.axes().set_color_cycle(["cyan", "orange"])
     plt.scatter(resNum, resTimes, c = "blue",
                 label = "Resultant Method", marker = "+")
@@ -111,37 +126,46 @@ def analyzeData(datum, plotData = False):
                 mtData = np.append(mtData, testData)
                 mtData = mtData.reshape(mtShape)
             (numQuads,
-             mpNum, mpTimes, fpCorrect,
-             fpNum, fpTimes, mpCorrect,
-             resNum, resTimes, _) = mtData.T
+             mpNum, mpTimes, mpCorrect,
+             singleNum, singleTimes, singleCorrect,
+             doubleNum, doubleTimes, doubleCorrect,
+             resNum, resTimes) = mtData.T[:12]
             if max(numQuads) == min(numQuads):
                 quadComp = False
                 resIndep = np.vstack([resNum,
                                       np.ones(len(resNum))]).T
-                fpIndep = np.vstack([fpNum,
-                                     np.ones(len(fpNum))]).T
+                singleIndep = np.vstack([singleNum,
+                                     np.ones(len(singleNum))]).T
+                doubleIndep = np.vstack([doubleNum,
+                                     np.ones(len(doubleNum))]).T
                 mpIndep = np.vstack([mpNum,
                                      np.ones(len(mpNum))]).T
             else:
                 quadComp = True
                 resIndep = np.vstack([numQuads, resNum,
                                   np.ones(len(resNum))]).T
-                fpIndep = np.vstack([numQuads, fpNum,
-                                     np.ones(len(fpNum))]).T
+                singleIndep = np.vstack([numQuads, singleNum,
+                                         np.ones(len(singleNum))]).T
+                doubleIndep = np.vstack([numQuads, doubleNum,
+                                         np.ones(len(doubleNum))]).T
                 mpIndep = np.vstack([numQuads, mpNum,
                                      np.ones(len(mpNum))]).T
             resLSqr = np.linalg.lstsq(resIndep, resTimes)
-            fpLSqr = np.linalg.lstsq(fpIndep, fpTimes)
+            singleLSqr = np.linalg.lstsq(singleIndep, singleTimes)
+            doubleLSqr = np.linalg.lstsq(doubleIndep, doubleTimes)
             mpLSqr = np.linalg.lstsq(mpIndep, mpTimes)
-            fpDisagree = len(resNum) - np.sum(fpCorrect)
-            mpDisagree = len(resNum) - np.sum(mpCorrect)
+            singleDisagree = len(singleNum) - np.sum(singleCorrect)
+            doubleDisagree = len(doubleNum) - np.sum(doubleCorrect)
+            mpDisagree = len(mpNum) - np.sum(mpCorrect)
             if not test in analysis:
                 analysis[test] = {}
             analysis[test][machine] = (mpLSqr, mpDisagree,
-                                       fpLSqr, fpDisagree,
+                                       singleLSqr, singleDisagree,
+                                       doubleLSqr, doubleDisagree,
                                        resLSqr)
             print(machine, test)
-            print("Machine Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", fpLSqr)
+            print("Single Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", singleLSqr)
+            print("Double Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", doubleLSqr)
             print("Increased Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", mpLSqr)
             print("Resultant Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", resLSqr)
             print()
@@ -149,22 +173,24 @@ def analyzeData(datum, plotData = False):
                 plotFName = test + "." + machine + ".all.png"
                 createPlot(mtData, plotFName,
                            max(max(resNum), max(mpNum)),
-                           resLSqr[0][-2], resLSqr[0][-1],
-                           fpLSqr[0][-2], fpLSqr[0][-1],
-                           mpLSqr[0][-2], mpLSqr[0][-1])
+                           mpLSqr[0][-2], mpLSqr[0][-1],
+                           singleLSqr[0][-2], singleLSqr[0][-1],
+                           doubleLSqr[0][-2], doubleLSqr[0][-1],
+                           resLSqr[0][-2], resLSqr[0][-1])
                 if quadComp:
                     adjuster = np.identity(mtData.shape[1])
                     adjuster[2][0] = -resLSqr[0][0]
-                    adjuster[5][0] = -fpLSqr[0][0]
+                    adjuster[5][0] = -singleLSqr[0][0]
                     adjuster[8][0] = -mpLSqr[0][0]
                     sizeAdjusted = adjuster.dot(mtData.T).T
                     plotFName = (test + "." + machine +
                                  ".adjusted.png")
                     createPlot(sizeAdjusted, plotFName,
                                max(max(resNum), max(mpNum)),
-                               resLSqr[0][-2], resLSqr[0][-1],
-                               fpLSqr[0][-2], fpLSqr[0][-1],
-                               mpLSqr[0][-2], mpLSqr[0][-1])
+                               mpLSqr[0][-2], mpLSqr[0][-1],
+                               singleLSqr[0][-2], singleLSqr[0][-1],
+                               doubleLSqr[0][-2], doubleLSqr[0][-1],
+                               resLSqr[0][-2], resLSqr[0][-1])
     return analysis
 
 def formatFloat(fpval, sigDigits, shiftRight, negativeSpace = True):
@@ -241,22 +267,29 @@ def buildTable(analysis, fname):
             if printHLine:
                 tableOut.write("\\hhline{|~|-|--|---|-|}\n")
             printHLine = True
-            (fpLSqr, fpDisagree,
-             mpLSqr, mpDisagree,
+            (mpLSqr, mpDisagree,
+             singleLSqr, singleDisagree,
+             doubleLSqr, doubleDisagree,
              resLSqr) = analysis[t][m]
             rowStr = printRow(t, testPrinted, m, 0,
-                              "Approximate", fpLSqr,
-                              fpDisagree)
+                              "Single Prec", singleLSqr,
+                              singleDisagree)
             tableOut.write(rowStr)
             testPrinted += 1
             
             rowStr = printRow(t, testPrinted, m, 1,
+                              "Double Prec", doubleLSqr,
+                              doubleDisagree)
+            tableOut.write(rowStr)
+            testPrinted += 1
+            
+            rowStr = printRow(t, testPrinted, m, 2,
                               "Increased Prec.", mpLSqr,
                               mpDisagree)
             tableOut.write(rowStr)
             testPrinted += 1
             
-            rowStr = printRow(t, testPrinted, m, 2,
+            rowStr = printRow(t, testPrinted, m, 3,
                               "Resultant", resLSqr,
                               None)
             tableOut.write(rowStr)
