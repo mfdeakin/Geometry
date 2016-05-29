@@ -2,10 +2,10 @@ import csv
 import os
 import sys
 import math
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import sklearn.decomposition
 
 testNameMap = {"hardEllipsoidsSingle": ["Nested", "Spheres"],
                "hardEllipsoidsSingle_fixedlines": ["Nested", "Spheres", "Fixed"],
@@ -29,26 +29,12 @@ def readData(fname, size):
             (lDirX, lDirY, lDirZ, lIntX, lIntY, lIntZ) = map(float, row[13:])
         except ValueError:
             continue
-        # Convert the direction to polar coordinates
-        if lDirX == 0 and lDirY == 0:
-            dirMag = lDirZ
-            dirTheta = np.pi / 2
-            dirPhi = np.float(0)
-        else:
-            s1MagSq = lDirX ** 2 + lDirY ** 2
-            s1Mag = np.sqrt(s1MagSq)
-            dirMag = np.sqrt(s1MagSq + lDirZ ** 2)
-            dirTheta = np.arctan(lDirZ / s1Mag)
-            if lDirY == 0:
-                dirPhi = np.pi / 2
-            else:
-                dirPhi = np.arctan(lDirX / lDirY)
         data.append([size,
                      mpNum, mpTime / 1e6, mpCorrect,
                      singleNum, singleTime / 1e6, singleCorrect,
                      doubleNum, doubleTime / 1e6, doubleCorrect,
                      resNum, resTime / 1e6,
-                     dirMag, dirTheta, dirPhi,
+                     lDirX, lDirY, lDirZ,
                      number])
     return np.array(data)
 
@@ -126,6 +112,79 @@ def createPlot(data, fname, maxPrec,
     plt.savefig(fname, format = "png", dpi = 300)
     plt.close()
 
+def cycleVals(vals):
+    return np.vstack((np.zeros(len(vals)),
+                      vals)).T.reshape(2 * len(vals))
+
+def cycleShuffleCoords(cX, cY, cZ):
+    if len(cX) == 0:
+        return ([], [], [])
+    c = np.vstack((cX, cY, cZ)).T.tolist()
+    random.shuffle(c)
+    c = np.array(c).T
+    cSX = cycleVals(c[0])
+    cSY = cycleVals(c[1])
+    cSZ = cycleVals(c[2])
+    return (cSX, cSY, cSZ)
+
+def removeLabeledVals(vals, labels, keepLabel):
+    return [vals[i] for i in range(len(vals))
+            if labels[i] == keepLabel]
+
+def plotVectors(fname, correct, dirX, dirY, dirZ):
+    print("Plotting Vectors in " + fname)
+    maxLinesPlotted = 10000
+    f = plt.figure()
+    ax = f.add_subplot(111, projection="3d")
+    cX = removeLabeledVals(dirX, correct, 1)
+    cY = removeLabeledVals(dirY, correct, 1)
+    cZ = removeLabeledVals(dirZ, correct, 1)
+    cSX, cSY, cSZ = cycleShuffleCoords(cX, cY, cZ)
+    ax.plot(cSX[:2 * maxLinesPlotted],
+            cSY[:2 * maxLinesPlotted],
+            cSZ[:2 * maxLinesPlotted], c = "gray")
+    iX = removeLabeledVals(dirX, correct, 0)
+    iY = removeLabeledVals(dirY, correct, 0)
+    iZ = removeLabeledVals(dirZ, correct, 0)
+    iSX, iSY, iSZ = cycleShuffleCoords(iX, iY, iZ)
+    ax.plot(iSX[:2 * maxLinesPlotted],
+            iSY[:2 * maxLinesPlotted],
+            iSZ[:2 * maxLinesPlotted], c = "chartreuse")
+    plt.show()
+    #plt.savefig(fname, format = "png", dpi = 300)
+    plt.close()
+
+def saveData(data, machine, test):
+    fname = "dataAggregate.{:s}.{:s}.csv".format(test, machine)
+    print("Saving aggregated data in " + fname)
+    f = open(fname, 'w')
+    writer = csv.writer(f, delimiter = ',')
+    writer.writerow(("Number of Quadrics",
+                     "Number of Accurate Computations " +
+                     "Performed with Increased Precision (IPAC)",
+                     "Time of IPAC in ns",
+                     "Correct Result from IPAC?",
+                     "Number of Accurate Computations " +
+                     "Performed with Single Precision (SPAC)",
+                     "Time of SPAC in ns",
+                     "Correct Result from SPAC?",
+                     "Number of Accurate Computations " +
+                     "Performed with Double Precision (DPAC)",
+                     "Time of DPAC in ns",
+                     "Correct Result from DPAC?",
+                     "Number of Accurate Computations " +
+                     "Performed with Resultants (RAC)",
+                     "Time of RAC in ns",
+                     "",
+                     "Line Direction X Component",
+                     "Line Direction Y Component",
+                     "Line Direction Z Component"))
+    for i in range(len(data)):
+        rowData = data[i].T.tolist()
+        row = rowData[:12] + [""] + rowData[12:]
+        writer.writerow(row)
+    return None
+
 def analyzeData(datum, plotData = False):
     analysis = {}
     for machine in datum:
@@ -141,7 +200,8 @@ def analyzeData(datum, plotData = False):
              mpNum, mpTimes, mpCorrect,
              singleNum, singleTimes, singleCorrect,
              doubleNum, doubleTimes, doubleCorrect,
-             resNum, resTimes) = mtData.T[:12]
+             resNum, resTimes,
+             lDirX, lDirY, lDirZ) = mtData.T[:15]
             if max(numQuads) == min(numQuads):
                 quadComp = False
                 resIndep = np.vstack([resNum,
@@ -153,6 +213,7 @@ def analyzeData(datum, plotData = False):
                 mpIndep = np.vstack([mpNum,
                                      np.ones(len(mpNum))]).T
             else:
+                saveData(mtData, machine, test)
                 quadComp = True
                 resIndep = np.vstack([numQuads, resNum,
                                   np.ones(len(resNum))]).T
@@ -169,8 +230,6 @@ def analyzeData(datum, plotData = False):
             singleDisagree = len(singleNum) - np.sum(singleCorrect)
             doubleDisagree = len(doubleNum) - np.sum(doubleCorrect)
             mpDisagree = len(mpNum) - np.sum(mpCorrect)
-            
-            covMtx = np.cov(mtData.T)
             
             if not test in analysis:
                 analysis[test] = {}
@@ -196,16 +255,6 @@ def analyzeData(datum, plotData = False):
                   "(residual), rank, singular values):\n",
                   resLSqr)
             print()
-            print("Covariance Between Increased Precisions Correct and " +
-                  "Directions (rad, theta, phi):")
-            print(covMtx[3][12], covMtx[12][3], covMtx[3][13], covMtx[13][3], covMtx[3][14], covMtx[14][3])
-            print("Covariance Between Singles Correct and " +
-                  "Directions (rad, theta, phi):")
-            print(covMtx[6][12], covMtx[12][6], covMtx[6][13], covMtx[13][6], covMtx[6][14], covMtx[14][6])
-            print("Covariance Between Doubles Correct and " +
-                  "Directions (rad, theta, phi):")
-            print(covMtx[9][12], covMtx[12][9], covMtx[9][13], covMtx[13][9], covMtx[9][14], covMtx[14][9])
-            print()
             
             if plotData:
                 plotFName = test + "." + machine + ".all.png"
@@ -229,6 +278,13 @@ def analyzeData(datum, plotData = False):
                                singleLSqr[0][-2], singleLSqr[0][-1],
                                doubleLSqr[0][-2], doubleLSqr[0][-1],
                                resLSqr[0][-2], resLSqr[0][-1])
+                for type in [("mp", mpCorrect),
+                             ("single", singleCorrect),
+                             ("double", doubleCorrect)]:
+                    plotFName = (test + "." + machine + "." +
+                                 type[0] + ".vectors.png")
+                    plotVectors(plotFName, type[1],
+                                lDirX, lDirY, lDirZ)
     return analysis
 
 def formatFloat(fpval, sigDigits, shiftRight, negativeSpace = True):
@@ -335,12 +391,13 @@ def buildTable(analysis, fname):
     footer = ("\\hline\n" +
               "\\end{tabular}\n")
     tableOut.write(footer)
+    return None
 
 if __name__ == "__main__":
     datum = aggregateData()
-    genPlots = False
+    genPlots = True
     if len(sys.argv) > 1:
-        genPlots = (sys.argv[1].lower() == "true")
+        genPlots = not (sys.argv[1].lower() == "false")
     analysis = analyzeData(datum, genPlots)
     buildTable(analysis, "comparison_table.tex")
     
