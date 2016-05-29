@@ -108,7 +108,8 @@ void intersectionTest(
   using Pf = Geometry::Point<dim, fptype>;
   using Lf = Geometry::Line<dim, fptype>;
 
-  rngAlg engine;
+	std::random_device rd;
+  rngAlg engine(rd());
   if(fixedSeed) {
     engine.seed(682185716);
   }
