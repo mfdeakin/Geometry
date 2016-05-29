@@ -108,7 +108,7 @@ void intersectionTest(
   using Pf = Geometry::Point<dim, fptype>;
   using Lf = Geometry::Line<dim, fptype>;
 
-	std::random_device rd;
+  std::random_device rd;
   rngAlg engine(rd());
   if(fixedSeed) {
     engine.seed(682185716);
@@ -259,7 +259,7 @@ Geometry::Line<dim, fptype> defRandLine(rngAlg &rng,
             false);
   }
   return Geometry::Line<dim, fptype>(
-      Geometry::Point<dim, fptype>(lineInt), lineInt);
+      Geometry::Point<dim, fptype>(lineInt), lineDir);
 }
 
 template <int dim, typename fptype>
