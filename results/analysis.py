@@ -1,6 +1,7 @@
 import csv
 import os
 import sys
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -28,9 +29,20 @@ def readData(fname, size):
             (lDirX, lDirY, lDirZ, lIntX, lIntY, lIntZ) = map(float, row[13:])
         except ValueError:
             continue
-        dirMag = np.sqrt(lDirX ** 2 + lDirY ** 2 + lDirZ ** 2)
-        dirTheta = np.arccos(lDirX / dirMag)
-        dirPhi = np.arccos(lDirY / (dirMag * np.sin(dirTheta)))
+        # Convert the direction to polar coordinates
+        if lDirX == 0 and lDirY == 0:
+            dirMag = lDirZ
+            dirTheta = np.pi / 2
+            dirPhi = np.float(0)
+        else:
+            s1MagSq = lDirX ** 2 + lDirY ** 2
+            s1Mag = np.sqrt(s1MagSq)
+            dirMag = np.sqrt(s1MagSq + lDirZ ** 2)
+            dirTheta = np.arctan(lDirZ / s1Mag)
+            if lDirY == 0:
+                dirPhi = np.pi / 2
+            else:
+                dirPhi = np.arctan(lDirX / lDirY)
         data.append([size,
                      mpNum, mpTime / 1e6, mpCorrect,
                      singleNum, singleTime / 1e6, singleCorrect,
@@ -108,7 +120,7 @@ def createPlot(data, fname, maxPrec,
                         top = maxTime)
     plt.xlabel("Accurate Comparisons")
     plt.ylabel("Time (ms)")
-    plt.yticks(np.arange(0, 750, 50.0))
+    plt.yticks(np.arange(0, 400, 50.0))
     plt.axes().yaxis.get_major_formatter().set_powerlimits((0, 3))
     print("Saving '" + fname + "'")
     plt.savefig(fname, format = "png", dpi = 300)
@@ -157,6 +169,9 @@ def analyzeData(datum, plotData = False):
             singleDisagree = len(singleNum) - np.sum(singleCorrect)
             doubleDisagree = len(doubleNum) - np.sum(doubleCorrect)
             mpDisagree = len(mpNum) - np.sum(mpCorrect)
+            
+            covMtx = np.cov(mtData.T)
+            
             if not test in analysis:
                 analysis[test] = {}
             analysis[test][machine] = (mpLSqr, mpDisagree,
@@ -164,11 +179,34 @@ def analyzeData(datum, plotData = False):
                                        doubleLSqr, doubleDisagree,
                                        resLSqr)
             print(machine, test)
-            print("Single Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", singleLSqr)
-            print("Double Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", doubleLSqr)
-            print("Increased Precision Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", mpLSqr)
-            print("Resultant Least Square ((quadrics, precIncreases, constant), (residual), rank, singular values):\n", resLSqr)
+            print("Single Precision Least Square " +
+                  "((quadrics, precIncreases, constant), " +
+                  "(residual), rank, singular values):\n",
+                  singleLSqr)
+            print("Double Precision Least Square " +
+                  "((quadrics, precIncreases, constant), " +
+                  "(residual), rank, singular values):\n",
+                  doubleLSqr)
+            print("Increased Precision Least Square "
+                  + "((quadrics, precIncreases, constant), " +
+                  "(residual), rank, singular values):\n",
+                  mpLSqr)
+            print("Resultant Least Square " +
+                  "((quadrics, precIncreases, constant), " +
+                  "(residual), rank, singular values):\n",
+                  resLSqr)
             print()
+            print("Covariance Between Increased Precisions Correct and " +
+                  "Directions (rad, theta, phi):")
+            print(covMtx[3][12], covMtx[12][3], covMtx[3][13], covMtx[13][3], covMtx[3][14], covMtx[14][3])
+            print("Covariance Between Singles Correct and " +
+                  "Directions (rad, theta, phi):")
+            print(covMtx[6][12], covMtx[12][6], covMtx[6][13], covMtx[13][6], covMtx[6][14], covMtx[14][6])
+            print("Covariance Between Doubles Correct and " +
+                  "Directions (rad, theta, phi):")
+            print(covMtx[9][12], covMtx[12][9], covMtx[9][13], covMtx[13][9], covMtx[9][14], covMtx[14][9])
+            print()
+            
             if plotData:
                 plotFName = test + "." + machine + ".all.png"
                 createPlot(mtData, plotFName,
