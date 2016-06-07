@@ -17,7 +17,10 @@ class IntersectionResultantMulti
   mutable mpfr::mpreal scaledDisc;
   mutable mpfr::mpreal center;
 
-  IntersectionResultantMulti() : IntersectionBase() {
+  IntersectionResultantMulti()
+      : IntersectionBase<
+            dim, fptype,
+            IntersectionResultantMulti<dim, fptype>>() {
     partialProds[0] = mpfr::mpreal(NAN);
   }
 
@@ -26,15 +29,20 @@ class IntersectionResultantMulti
       const Line<dim, fptype> &line, fptype intPos = NAN,
       fptype otherIntPos = NAN,
       fptype absErrMargin = defAbsPrecision)
-      : IntersectionBase(quad, line, intPos, otherIntPos,
-                         absErrMargin, 0) {
+      : IntersectionBase<
+            dim, fptype,
+            IntersectionResultantMulti<dim, fptype>>(
+            quad, line, intPos, otherIntPos, absErrMargin,
+            0) {
     partialProds[numPartialProds - 1] = mpfr::mpreal(NAN);
   }
 
   template <typename cmpAlg>
   IntersectionResultantMulti(
       const IntersectionBase<dim, fptype, cmpAlg> &i)
-      : IntersectionBase(i) {
+      : IntersectionBase<
+            dim, fptype,
+            IntersectionResultantMulti<dim, fptype>>(i) {
     partialProds[numPartialProds - 1] = mpfr::mpreal(NAN);
   }
 
@@ -43,9 +51,6 @@ class IntersectionResultantMulti
     IntersectionBase<dim, fptype,
                      IntersectionResultantMulti<
                          dim, fptype>>::operator=(i);
-    IntersectionBase<dim, fptype,
-                     IntersectionResultant<dim, fptype>>::
-    operator=(i);
     center = i.center;
     scaledDisc = i.scaledDisc;
     partialProds = i.partialProds;
@@ -85,8 +90,8 @@ class IntersectionResultantMulti
       constexpr const int partPrec = 2 * coeffPrec;
       constexpr const int discPrec = 2 * partPrec;
       mpfr::mpreal::set_default_prec(coeffPrec);
-      Quadric<dim, mpfr::mpreal> quad(q);
-      Line<dim, mpfr::mpreal> line(l);
+      Quadric<dim, mpfr::mpreal> quad(this->q);
+      Line<dim, mpfr::mpreal> line(this->l);
       Polynomial<2, mpfr::mpreal> lqInt =
           quad.calcLineDistPoly(line);
       center =
@@ -115,7 +120,10 @@ class IntersectionResultantMulti
   }
 
   mpfr::mpreal resultantDet(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<
+          dim, fptype,
+          IntersectionResultantMulti<dim, fptype>> &i)
+      const {
     assert(l == i.l);
     /* The fastest way to compute our determinant
      * 1.0(0 0 5 5)+1.0(2 2 3 3)+1.0(1 1 3 5)+1.0(4 4 0 2)+
@@ -177,7 +185,10 @@ class IntersectionResultantMulti
   }
 
   fptype accurateCompare_EqualDiscs(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<
+          dim, fptype,
+          IntersectionResultantMulti<dim, fptype>> &i)
+      const {
     /* For equal discriminants,
      * we can just compare the discriminants
      * to the difference in centers
@@ -185,7 +196,7 @@ class IntersectionResultantMulti
     const mpfr::mpreal centralDiff =
         getCenter() - i.getCenter();
     bool rootSign1 = MathFuncs::MathFuncs<fptype>::signbit(
-        intPos - otherIntPos);
+        this->intPos - this->otherIntPos);
     bool rootSign2 = MathFuncs::MathFuncs<fptype>::signbit(
         i.intPos - i.otherIntPos);
     bool cdSign =
@@ -246,7 +257,10 @@ class IntersectionResultantMulti
   }
 
   fptype accurateCompare_OneRepeated(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<
+          dim, fptype,
+          IntersectionResultantMulti<dim, fptype>> &i)
+      const {
     /* We just need to compare the squared difference of
      * centers divided by four to the other discriminant
      */
@@ -283,7 +297,10 @@ class IntersectionResultantMulti
   }
 
   fptype accurateCompare_TwoRepeated(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<
+          dim, fptype,
+          IntersectionResultantMulti<dim, fptype>> &i)
+      const {
     mpfr::mpreal centralDiff =
         mpfr::sub(getCenter(), i.getCenter(), -1);
     if(mpfr::iszero(centralDiff)) {
@@ -301,7 +318,10 @@ class IntersectionResultantMulti
   }
 
   fptype accurateCompare_One(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<
+          dim, fptype,
+          IntersectionResultantMulti<dim, fptype>> &i)
+      const {
     /* Since this is the only undetermined root,
      * the resultant will determine the sign
      */
@@ -315,8 +335,9 @@ class IntersectionResultantMulti
      */
     constexpr const int numPartialTerms = 3;
     fptype partResTerms[numPartialTerms] = {
-        intPos - i.otherIntPos, otherIntPos - i.intPos,
-        otherIntPos - i.otherIntPos};
+        this->intPos - i.otherIntPos,
+        this->otherIntPos - i.intPos,
+        this->otherIntPos - i.otherIntPos};
     int numNeg = resultant < 0;
     for(int i = 0; i < numPartialTerms; i++) {
       if(partResTerms[i] < 0.0)
@@ -339,7 +360,10 @@ class IntersectionResultantMulti
   }
 
   fptype accurateCompare_EqCenter(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<
+          dim, fptype,
+          IntersectionResultantMulti<dim, fptype>> &i)
+      const {
     if(getDiscriminant() == i.getDiscriminant()) {
       return fptype(0.0);
     } else {
@@ -356,7 +380,10 @@ class IntersectionResultantMulti
   }
 
   fptype accurateCompare_Multi(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<
+          dim, fptype,
+          IntersectionResultantMulti<dim, fptype>> &i)
+      const {
     mpfr::mpreal centralDiff = getCenter() - i.getCenter();
     if(mpfr::iszero(centralDiff)) {
       return accurateCompare_EqCenter(i);
@@ -369,7 +396,7 @@ class IntersectionResultantMulti
         MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
             centralDiff);
     int intNeg = MathFuncs::MathFuncs<fptype>::signbit(
-        intPos - otherIntPos);
+        this->intPos - this->otherIntPos);
     int otherIntNeg = MathFuncs::MathFuncs<fptype>::signbit(
         i.intPos - i.otherIntPos);
     if(centralDiffNeg != intNeg &&
@@ -476,7 +503,10 @@ class IntersectionResultantMulti
   }
 
   fptype accurateCompare(
-      const IntersectionBase<dim, fptype, true> &i) const {
+      const IntersectionBase<
+          dim, fptype,
+          IntersectionResultantMulti<dim, fptype>> &i)
+      const {
     /* First determine which root is more likely */
     if(getDiscriminant() > i.getDiscriminant()) {
       return -i.accurateCompare(*this);
@@ -494,9 +524,9 @@ class IntersectionResultantMulti
         return ret;
       }
     }
-    if(isUndetermined(intPos, i.otherIntPos) ||
-       isUndetermined(otherIntPos, i.intPos) ||
-       isUndetermined(otherIntPos, i.otherIntPos)) {
+    if(isUndetermined(this->intPos, i.otherIntPos) ||
+       isUndetermined(this->otherIntPos, i.intPos) ||
+       isUndetermined(this->otherIntPos, i.otherIntPos)) {
       fptype ret = accurateCompare_Multi(i);
       return ret;
     } else {
@@ -508,4 +538,3 @@ class IntersectionResultantMulti
 }
 
 #endif
-
