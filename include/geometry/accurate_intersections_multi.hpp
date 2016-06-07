@@ -13,9 +13,8 @@ class IntersectionResultantMulti
           IntersectionResultantMulti<dim, fptype>> {
  public:
   static constexpr const int numPartialProds = 6;
+  mutable Polynomial<2, mpfr::mpreal> lqInt;
   mutable Array<mpfr::mpreal, numPartialProds> partialProds;
-  mutable mpfr::mpreal scaledDisc;
-  mutable mpfr::mpreal center;
 
   IntersectionResultantMulti()
       : IntersectionBase<
@@ -50,72 +49,92 @@ class IntersectionResultantMulti
     IntersectionBase<dim, fptype,
                      IntersectionResultantMulti<
                          dim, fptype>>::operator=(i);
-    center = i.center;
-    scaledDisc = i.scaledDisc;
     partialProds = i.partialProds;
     return *this;
   }
 
-  bool ppReady() const {
+  bool intermediatesReady() const {
     return !MathFuncs::MathFuncs<mpfr::mpreal>::isnan(
         partialProds[numPartialProds - 1]);
   }
 
-  const mpfr::mpreal &getCenter() const {
-    if(!ppReady()) {
-      getPartialProd(0);
-    }
-    return center;
-  }
-
-  const mpfr::mpreal &getDiscriminant() const {
-    if(!ppReady()) {
-      getPartialProd(1);
-    }
-    return scaledDisc;
+  void cacheIntermediates() const {
+    const unsigned prevPrec =
+        mpfr::mpreal::get_default_prec();
+    /* This is less efficient than we'd like,
+     * but is the only way to implement this in a
+     * manner which is agnostic floating point type
+     */
+    constexpr const unsigned machPrec =
+        GenericFP::fpconvert<fptype>::precision;
+    constexpr const unsigned coeffPrec = 3 * machPrec;
+    constexpr const int partPrec = 2 * coeffPrec;
+    constexpr const int discPrec = 2 * partPrec;
+    mpfr::mpreal::set_default_prec(coeffPrec);
+    Quadric<dim, mpfr::mpreal> quad(this->q);
+    Line<dim, mpfr::mpreal> line(this->l);
+    lqInt = quad.calcLineDistPoly(line);
+    partialProds[2] =
+        mpfr::mult(lqInt.get(2), lqInt.get(2), partPrec);
+    partialProds[3] =
+        mpfr::mult(lqInt.get(0), lqInt.get(1), partPrec);
+    partialProds[4] =
+        mpfr::mult(lqInt.get(0), lqInt.get(2), partPrec);
+    /* This is also the discriminant */
+    partialProds[1] =
+        mpfr::sub(mpfr::sqr(lqInt.get(1), partPrec),
+                  partialProds[4], partPrec);
+    partialProds[0] =
+        mpfr::mult(lqInt.get(0), lqInt.get(0), partPrec);
+    partialProds[5] =
+        mpfr::mult(lqInt.get(1), lqInt.get(2), partPrec);
+    mpfr::mpreal::set_default_prec(prevPrec);
   }
 
   const mpfr::mpreal &getPartialProd(int idx) const {
-    if(!ppReady()) {
-      const unsigned prevPrec =
-          mpfr::mpreal::get_default_prec();
-      /* This is less efficient than we'd like,
-       * but is the only way to implement this in a
-       * manner which is agnostic floating point type
-       */
-      constexpr const unsigned machPrec =
-          GenericFP::fpconvert<fptype>::precision;
-      constexpr const unsigned coeffPrec = 3 * machPrec;
-      constexpr const int partPrec = 2 * coeffPrec;
-      constexpr const int discPrec = 2 * partPrec;
-      mpfr::mpreal::set_default_prec(coeffPrec);
-      Quadric<dim, mpfr::mpreal> quad(this->q);
-      Line<dim, mpfr::mpreal> line(this->l);
-      Polynomial<2, mpfr::mpreal> lqInt =
-          quad.calcLineDistPoly(line);
-      center =
-          mpfr::div(lqInt.get(1), lqInt.get(2), partPrec);
-      scaledDisc = mpfr::sub(
-          mpfr::sqr(center, discPrec),
-          mpfr::div(lqInt.get(0), lqInt.get(2), partPrec),
-          discPrec);
-      partialProds[2] =
-          mpfr::mult(lqInt.get(2), lqInt.get(2), partPrec);
-      partialProds[3] =
-          mpfr::mult(lqInt.get(0), lqInt.get(1), partPrec);
-      partialProds[4] =
-          mpfr::mult(lqInt.get(0), lqInt.get(2), partPrec);
-      /* This is also the discriminant */
-      partialProds[1] =
-          mpfr::sub(mpfr::sqr(lqInt.get(1), partPrec),
-                    partialProds[4], partPrec);
-      partialProds[0] =
-          mpfr::mult(lqInt.get(0), lqInt.get(0), partPrec);
-      partialProds[5] =
-          mpfr::mult(lqInt.get(1), lqInt.get(2), partPrec);
-      mpfr::mpreal::set_default_prec(prevPrec);
+    if(!intermediatesReady()) {
+      cacheIntermediates();
     }
     return partialProds[idx];
+  }
+
+  const Polynomial<2, mpfr::mpreal> &getLQIntPoly() const {
+    if(!intermediatesReady()) {
+      cacheIntermediates();
+    }
+    return lqInt;
+  }
+
+  const fptype centralDiffSign(
+      const IntersectionResultantMulti &i) const {
+    /* The sign of the central differences can be computed
+     * exactly as
+     * sign(b_2 a_1 - b_1 a_2) sign(a_1) sign(a_2)
+     */
+    constexpr const unsigned machPrec =
+        GenericFP::fpconvert<fptype>::precision;
+    constexpr const unsigned coeffPrec = 3 * machPrec;
+    constexpr const int termPrec = 2 * coeffPrec;
+    const Polynomial<2, mpfr::mpreal> p1 = getLQIntPoly(),
+                                      p2 = i.getLQIntPoly();
+    mpfr::mpreal sign1 =
+        mpfr::mult(p1.get(1), p2.get(2), termPrec) -
+        mpfr::mult(p1.get(2), p2.get(1), termPrec);
+    if(MathFuncs::MathFuncs<mpfr::mpreal>::iszero(sign1)) {
+      return fptype(0.0);
+    }
+    int negCounter =
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(sign1);
+    negCounter ^=
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+            p1.get(2));
+    negCounter ^=
+        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
+            p2.get(2));
+    if(negCounter) {
+      return fptype(-1.0);
+    }
+    return fptype(1.0);
   }
 
   mpfr::mpreal resultantDet(
@@ -188,15 +207,11 @@ class IntersectionResultantMulti
      * we can just compare the discriminants
      * to the difference in centers
      */
-    const mpfr::mpreal centralDiff =
-        getCenter() - i.getCenter();
     bool rootSign1 = MathFuncs::MathFuncs<fptype>::signbit(
         this->intPos - this->otherIntPos);
     bool rootSign2 = MathFuncs::MathFuncs<fptype>::signbit(
         i.intPos - i.otherIntPos);
-    bool cdSign =
-        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
-            centralDiff);
+    fptype cdSign = centralDiffSign(i);
     /* For the case of ++,
      * the sign of the central difference gives the result
      * For the case of --,
@@ -207,13 +222,13 @@ class IntersectionResultantMulti
      * of the discriminants gives the result
      */
     if(rootSign1 == rootSign2) {
-      if(mpfr::iszero(centralDiff)) {
+      if(MathFuncs::MathFuncs<fptype>::iszero(cdSign)) {
         /* If the centers are on top of each other,
          * then the roots must be as well
          */
         return 0.0;
       }
-      if(cdSign == 0) {
+      if(cdSign > 0.0) {
         return fptype(1.0);
       } else {
         return fptype(-1.0);
@@ -224,7 +239,7 @@ class IntersectionResultantMulti
        * result
        */
       mpfr::mpreal centralDiffSqr =
-          mpfr::sqr(centralDiff, -1) >> 2;
+          mpfr::sqr(cdSign, -1) >> 2;
       /* This must be computed to the full precision to
        * verify it's not zero
        */
@@ -259,7 +274,7 @@ class IntersectionResultantMulti
      */
     bool rootSign = MathFuncs::MathFuncs<fptype>::signbit(
         i.intPos - i.otherIntPos);
-    mpfr::mpreal centralDiff = getCenter() - i.getCenter();
+    fptype centralDiff = centralDiffSign(i);
     bool cdSign =
         MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
             centralDiff);
@@ -292,8 +307,7 @@ class IntersectionResultantMulti
   fptype accurateCompare_TwoRepeated(
       const IntersectionResultantMulti<dim, fptype> &i)
       const {
-    mpfr::mpreal centralDiff =
-        mpfr::sub(getCenter(), i.getCenter(), -1);
+    fptype centralDiff = centralDiffSign(i);
     if(mpfr::iszero(centralDiff)) {
       return fptype(0.0);
     } else {
@@ -369,7 +383,7 @@ class IntersectionResultantMulti
   fptype accurateCompare_Multi(
       const IntersectionResultantMulti<dim, fptype> &i)
       const {
-    mpfr::mpreal centralDiff = getCenter() - i.getCenter();
+    fptype centralDiff = centralDiffSign(i);
     if(mpfr::iszero(centralDiff)) {
       return accurateCompare_EqCenter(i);
     }

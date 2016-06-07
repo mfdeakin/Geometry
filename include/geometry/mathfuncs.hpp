@@ -34,6 +34,9 @@ struct IsMPFRMathFuncs;
 
 template <typename fptype>
 struct IsStdMathFuncs<fptype, true> {
+  CUDA_CALLABLE static bool iszero(fptype v) {
+    return v == 0.0;
+  }
   CUDA_CALLABLE static int getPrec(fptype v) {
     return GenericFP::fpconvert<fptype>::precision;
   }
@@ -101,6 +104,9 @@ struct IsStdMathFuncs<fptype, false> {};
 
 template <typename fptype>
 struct IsMPFRMathFuncs<fptype, true> {
+  CUDA_CALLABLE static bool iszero(fptype v) {
+    return mpfr::iszero(v);
+  }
   static int getPrec(fptype v) { return v.get_prec(); }
   static fptype frexp(fptype v, int *exp) {
     return mpfr::frexp(v, exp);
