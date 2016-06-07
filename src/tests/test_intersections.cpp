@@ -99,10 +99,39 @@ TEST(QLIntersect, LineIntersection) {
     }
     quadrics.push_back(q);
   }
-  auto inter = Geometry::sortIntersections<dim, fptype, IR>(
-      l, quadrics, eps);
+
+  auto interFP =
+      Geometry::sortIntersections<dim, fptype, IF>(
+          l, quadrics, eps);
   int i = 0;
-  for(auto intersects : *inter) {
+  for(auto intersects : *interFP) {
+    EXPECT_EQ(intersects.intPos, expected[i]);
+    i++;
+  }
+
+  auto interMP =
+      Geometry::sortIntersections<dim, fptype, II>(
+          l, quadrics, eps);
+  i = 0;
+  for(auto intersects : *interMP) {
+    EXPECT_EQ(intersects.intPos, expected[i]);
+    i++;
+  }
+
+  auto interResultant =
+      Geometry::sortIntersections<dim, fptype, IR>(
+          l, quadrics, eps);
+  i = 0;
+  for(auto intersects : *interResultant) {
+    EXPECT_EQ(intersects.intPos, expected[i]);
+    i++;
+  }
+
+  auto interMulti =
+      Geometry::sortIntersections<dim, fptype, IM>(
+          l, quadrics, eps);
+  i = 0;
+  for(auto intersects : *interMulti) {
     EXPECT_EQ(intersects.intPos, expected[i]);
     i++;
   }
