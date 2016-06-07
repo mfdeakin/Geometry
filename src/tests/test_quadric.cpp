@@ -135,10 +135,11 @@ TEST(Quadric, LineIntersection) {
     V offset(t.lineInt);
     P intercept(o, offset);
     V dir(t.lineDir);
-    L l(intercept, dir);
+    L l(intercept, dir.normalize());
     Q q(o);
-    for(unsigned i = 0; i < numCoeffs; i++)
+    for(unsigned i = 0; i < numCoeffs; i++) {
       q.setCoeff(i, t.coeffs[i]);
+    }
     auto intersects = q.calcLineIntersect(l);
     for(unsigned i = 0; i < 2; i++) {
       Geometry::Point<dim, fptype> expected(
@@ -146,8 +147,9 @@ TEST(Quadric, LineIntersection) {
       Geometry::Point<dim, fptype> p(intersects[i]);
       /* Either none or all coordinates are NAN */
       if(std::isnan(t.roots[i][0])) {
-        for(unsigned j = 0; j < dim; j++)
+        for(unsigned j = 0; j < dim; j++) {
           EXPECT_EQ(std::isnan(p.getOffset()(j)), true);
+        }
       } else {
         Geometry::Vector<dim, fptype> delta =
             p.ptDiff(expected);

@@ -51,13 +51,13 @@ class Point : public Solid<dim, fptype>,
     Solid<dim, fptype>::shiftOrigin(newOrigin);
   }
 
-  CUDA_CALLABLE virtual Origin<dim, fptype> getOrigin()
-      const {
+  CUDA_CALLABLE virtual const Origin<dim, fptype>
+      &getOrigin() const {
     return this->origin;
   }
 
-  CUDA_CALLABLE virtual Vector<dim, fptype> getOffset()
-      const {
+  CUDA_CALLABLE virtual const Vector<dim, fptype>
+      &getOffset() const {
     return offset;
   }
 

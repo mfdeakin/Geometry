@@ -116,6 +116,10 @@ class PolyIsSolvable<2, fptype, true>
     fptype sqCoeff = this->get(2);
     fptype linCoeff = this->get(1);
     fptype constant = this->get(0);
+    if(sqCoeff == 0.0) {
+      return Array<fptype, 2>(
+          {{-constant / linCoeff, fptype(NAN)}});
+    }
     fptype disc = fptype(linCoeff * linCoeff / 4.0) -
                   fptype(sqCoeff * constant);
     if(disc < 0) {

@@ -119,7 +119,7 @@ TEST(Line, CalcPointAtDistance) {
     Geometry::Point<dim, fptype> intersect(defOrigin,
                                            offset);
     Geometry::Vector<dim, fptype> dir(t.dir);
-    Geometry::Line<dim, fptype> line(intersect, dir);
+    Geometry::Line<dim, fptype> line(intersect, dir.normalize());
     Geometry::Point<dim, fptype> pos =
         line.getPosAtDist(t.distance);
     Geometry::Vector<dim, fptype> off = pos.getOffset();

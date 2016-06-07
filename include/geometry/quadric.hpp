@@ -270,11 +270,26 @@ class Quadric : public Solid<dim, fptype> {
       return PT_OUTSIDE;
   }
 
+  CUDA_CALLABLE Vector<dim, fptype> normal(
+      const Point<dim, fptype> &pt) {
+    Vector<dim, fptype> n;
+    for(int i = 0; i < dim; i++) {
+      fptype tmp = coeff(i, i) * pt.getOffset().get(i);
+      for(int j = 0; j < dim; j++) {
+        tmp += coeff(i, j) * pt.getOffset().get(j);
+      }
+      tmp += coeff(i, dim);
+      n.set(i, tmp);
+    }
+    return n;
+  }
+
   CUDA_CALLABLE Quadric<dim, fptype> operator=(
       const Quadric<dim, fptype> &q) {
     Solid<dim, fptype>::operator=(q);
-    for(int i = 0; i < numCoeffs; i++)
+    for(int i = 0; i < numCoeffs; i++) {
       setCoeff(i, q.coeff(i));
+    }
     return *this;
   }
 
@@ -416,14 +431,19 @@ class Quadric : public Solid<dim, fptype> {
     bool once = false;
     for(unsigned i = 0; i < dim + 1; i++) {
       for(unsigned j = i; j < dim + 1; j++) {
-        if(once)
-          os << " + ";
-        else
-          once = !once;
-        os << q.coeff(i, j);
-        if(i < dim) {
-          os << " * x" << i;
-          if(j < dim) os << " * x" << j;
+        if(q.coeff(i, j) != 0) {
+          if(once) {
+            os << " + ";
+          } else {
+            once = !once;
+          }
+          os << q.coeff(i, j);
+          if(i < dim) {
+            os << " * x" << i;
+            if(j < dim) {
+              os << " * x" << j;
+            }
+          }
         }
       }
     }

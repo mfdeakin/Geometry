@@ -7,7 +7,9 @@
 
 #include "quadric.hpp"
 #include "origin.hpp"
-#include "accurate_intersections.hpp"
+#include "accurate_intersections_approx.hpp"
+#include "accurate_intersections_incprec.hpp"
+#include "accurate_intersections_resultant.hpp"
 #include "accurate_math.hpp"
 #include "timer.hpp"
 #include "genericfp.hpp"
@@ -19,7 +21,10 @@ using Q = Geometry::Quadric<dim, fptype>;
 using V = Geometry::Vector<dim, fptype>;
 using P = Geometry::Point<dim, fptype>;
 using L = Geometry::Line<dim, fptype>;
-using I = Geometry::Intersection<dim, fptype>;
+using IF =
+    Geometry::IntersectionApproximate<dim, fptype, fptype>;
+using II = Geometry::IntersectionIncreasedPrec<dim, fptype>;
+using IR = Geometry::IntersectionResultant<dim, fptype>;
 
 TEST(QLIntersect, Determinant) {
   constexpr const int numTests = 1;
@@ -41,29 +46,40 @@ TEST(QLIntersect, Determinant) {
     L l(intercept, V({1.0, 0.0, 0.0}));
     constexpr const fptype expectedDet = 0.0625;
 
-    I intersections[2];
+    IF fpInt[numQuads];
+    II mpInt[numQuads];
+    IR resInt[numQuads];
     for(int i = 0; i < numQuads; i++) {
-      intersections[i].l = l;
-      intersections[i].intPos =
-          MathFuncs::MathFuncs<fptype>::sqrt(
-              -quadCoeffs[t][i][3]);
-      intersections[i].otherIntPos =
+      fpInt[i].l = l;
+      mpInt[i].l = l;
+      resInt[i].l = l;
+
+      fpInt[i].intPos = MathFuncs::MathFuncs<fptype>::sqrt(
+          -quadCoeffs[t][i][3]);
+      mpInt[i].intPos = fpInt[i].intPos;
+      resInt[i].intPos = fpInt[i].intPos;
+
+      fpInt[i].otherIntPos =
           -MathFuncs::MathFuncs<fptype>::sqrt(
               -quadCoeffs[t][i][3]);
+      mpInt[i].otherIntPos = fpInt[i].intPos;
+      resInt[i].otherIntPos = fpInt[i].intPos;
+
       for(int j = 0; j < Q::numCoeffs; j++) {
-        intersections[i].q.setCoeff(j, quadCoeffs[t][i][j]);
+        fpInt[i].q.setCoeff(j, quadCoeffs[t][i][j]);
+        mpInt[i].q.setCoeff(j, quadCoeffs[t][i][j]);
+        resInt[i].q.setCoeff(j, quadCoeffs[t][i][j]);
       }
     }
-    fptype calcedDet = intersections[0]
-                           .resultantDet(intersections[1])
-                           .toLDouble();
+    fptype calcedDet =
+        resInt[0].resultantDet(resInt[1]).toLDouble();
     EXPECT_EQ(calcedDet, expectedDet);
   }
 }
 
 TEST(QLIntersect, LineIntersection) {
   P intercept(V({1.0, 0.0, -1.0}));
-  L l(intercept, V({1.0, 1.0, 1.0}));
+  L l(intercept, V({1.0, 1.0, 1.0}).normalize());
   fptype quadCoeffs[][Q::numCoeffs] = {
       {1.0, 1.0, 1.0, -3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
       {1.0, 1.0, 1.0, -3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
@@ -87,8 +103,8 @@ TEST(QLIntersect, LineIntersection) {
     }
     quadrics.push_back(q);
   }
-  auto inter =
-      Geometry::sortIntersections(l, quadrics, eps);
+  auto inter = Geometry::sortIntersections<dim, fptype, IR>(
+      l, quadrics, eps);
   int i = 0;
   for(auto intersects : *inter) {
     EXPECT_EQ(intersects.intPos, expected[i]);
