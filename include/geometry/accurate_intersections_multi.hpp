@@ -284,9 +284,19 @@ class IntersectionResultantMulti
        * compared to the discriminant will give us the
        * result
        */
-      return fptype(NAN);
+      Polynomial<2, mpfr::mpreal> p1 = getLQIntPoly(),
+                                  p2 = i.getLQIntPoly();
+      mpfr::mpreal terms[] = {
+          getPartialProd(1) << 3,
+          mpfr::mult(-p1.get(2), p2.get(1),
+                     2 * coeffPrec()),
+          mpfr::mult(p1.get(1), p2.get(2),
+                     2 * coeffPrec())};
+      int status = 0;
+      return fptype(
+          mpfr::sum(terms, 2 * coeffPrec() + 3, status,
+                    mpfr::mpreal::get_default_rnd()));
     }
-    return fptype(NAN);
   }
 
   fptype accurateCompare_OneRepeated(
@@ -496,7 +506,6 @@ class IntersectionResultantMulti
   fptype accurateCompare(
       const IntersectionResultantMulti<dim, fptype> &i)
       const {
-    /* First determine which root is more likely */
     fptype ddSign = discDiffSign(i);
     if(MathFuncs::MathFuncs<fptype>::iszero(ddSign)) {
       fptype ret = accurateCompare_EqualDiscs(i);
