@@ -68,18 +68,18 @@
 #ifndef __MPREAL_H__
 #define __MPREAL_H__
 
-#include <cstddef>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
-#include <cstring>
-#include <limits>
-#include <cstdint>
 #include <complex>
-#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
 // Options
 #define MPREAL_HAVE_MSVC_DEBUGVIEW  // Enable Debugger
@@ -280,6 +280,8 @@ class mpreal {
   mpreal &operator=(const std::complex<real_t> &z);
 
   // +
+  friend mpreal sum(const mpreal &lhs, const mpreal &rhs,
+                    int finalPrec);
   mpreal &operator+=(const mpreal &v);
   mpreal &operator+=(const mpf_t v);
   mpreal &operator+=(const mpz_t v);
@@ -336,6 +338,8 @@ class mpreal {
 
   // *
   friend mpreal mult(const mpreal &lhs, const mpreal &rhs,
+                     int finalPrec);
+  friend mpreal mult(const double &lhs, const mpreal &rhs,
                      int finalPrec);
   mpreal &operator*=(const mpreal &v);
   mpreal &operator*=(const mpz_t v);
@@ -608,9 +612,6 @@ class mpreal {
   friend const mpreal agm(const mpreal &v1,
                           const mpreal &v2,
                           mp_rnd_t rnd_mode);
-  friend const mpreal sum(const mpreal tab[],
-                          const unsigned long int n,
-                          int &status, mp_rnd_t rnd_mode);
   friend int sgn(const mpreal &v);  // returns -1 or +1
 
 // MPFR 2.4.0 Specifics
@@ -1507,6 +1508,18 @@ inline mpreal &mpreal::operator=(
 
 //////////////////////////////////////////////////////////////////////////
 // + Addition
+inline mpreal sum(const mpreal &lhs, const mpreal &rhs,
+                  int finalPrec = -1) {
+  if(finalPrec < 0) {
+    finalPrec =
+        std::max(lhs.getPrecision(), rhs.getPrecision());
+  }
+  mpreal summation(0, finalPrec);
+  mpfr_add(summation.mpfr_ptr(), lhs.mpfr_srcptr(),
+           rhs.mpfr_srcptr(), mpreal::get_default_rnd());
+  return summation;
+}
+
 inline mpreal &mpreal::operator+=(const mpreal &v) {
   mpfr_add(mpfr_ptr(), mpfr_srcptr(), v.mpfr_srcptr(),
            mpreal::get_default_rnd());
@@ -1824,6 +1837,17 @@ inline mpreal mult(const mpreal &lhs, const mpreal &rhs,
   mpreal prod(0, finalPrec);
   mpfr_mul(prod.mpfr_ptr(), lhs.mpfr_srcptr(),
            rhs.mpfr_srcptr(), mpreal::get_default_rnd());
+  return prod;
+}
+
+inline mpreal mult(const double &lhs, const mpreal &rhs,
+                   int finalPrec = -1) {
+  if(finalPrec < 0) {
+    finalPrec = 53 + rhs.getPrecision();
+  }
+  mpreal prod(0, finalPrec);
+  mpfr_mul_d(prod.mpfr_ptr(), rhs.mpfr_srcptr(), lhs,
+             mpreal::get_default_rnd());
   return prod;
 }
 
@@ -2887,8 +2911,9 @@ inline mp_exp_t mpreal::get_emax_max(void) {
   mpfr_##f(y.mpfr_ptr(), x.mpfr_srcptr(), r);  \
   return y;
 
-inline const mpreal sqr(const mpreal &v, int finalPrec,
-                        mp_rnd_t r = mpreal::get_default_rnd()) {
+inline const mpreal sqr(
+    const mpreal &v, int finalPrec,
+    mp_rnd_t r = mpreal::get_default_rnd()) {
   if(finalPrec < 0) {
     finalPrec = 2 * v.getPrecision();
   }
@@ -3341,22 +3366,6 @@ inline const mpreal agm(
   mpfr_agm(a.mp, v1.mp, v2.mp, rnd_mode);
 
   return a;
-}
-
-inline const mpreal sum(
-    const mpreal tab[], const unsigned long int n,
-    int &status,
-    mp_rnd_t mode = mpreal::get_default_rnd()) {
-  mpfr_srcptr *p = new mpfr_srcptr[n];
-
-  for(unsigned long int i = 0; i < n; i++)
-    p[i] = tab[i].mpfr_srcptr();
-
-  mpreal x(mpreal::get_default_prec());
-  status = mpfr_sum(x.mpfr_ptr(), (mpfr_ptr *)p, n, mode);
-
-  delete[] p;
-  return x;
 }
 
 //////////////////////////////////////////////////////////////////////////

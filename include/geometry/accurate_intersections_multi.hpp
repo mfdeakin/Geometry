@@ -286,16 +286,36 @@ class IntersectionResultantMulti
        */
       Polynomial<2, mpfr::mpreal> p1 = getLQIntPoly(),
                                   p2 = i.getLQIntPoly();
+      constexpr const int intermediatePrec =
+          partialProdPrec() + 5;
+      constexpr const int maxPrec =
+          i.partialProdPrec() + partialProdPrec() + 5;
       mpfr::mpreal terms[] = {
-          getPartialProd(1) << 3,
-          mpfr::mult(-p1.get(2), p2.get(1),
-                     2 * coeffPrec()),
-          mpfr::mult(p1.get(1), p2.get(2),
-                     2 * coeffPrec())};
-      int status = 0;
-      return fptype(
-          mpfr::sum(terms, 2 * coeffPrec() + 3, status,
-                    mpfr::mpreal::get_default_rnd()));
+          /* -2 a1 b1 a2 b2 */
+          mpfr::mult(-getPartialProd(5),
+                     i.getPartialProd(5) << 2,
+                     2 * partialProdPrec()),
+          /* a1^2 b2^2 */
+          mpfr::mult(
+              getPartialProd(2),
+              mpfr::sqr(p2.get(1), 2 * i.coeffPrec()),
+              2 * i.coeffPrec() + partialProdPrec()),
+          /* a2^2 (-3 b1^2 + 16 a1 c1) */
+          mpfr::mult(
+              i.getPartialProd(2),
+              mpfr::sum(mpfr::mult(-3.0, getPartialProd(1),
+                                   partialProdPrec() + 2),
+                        mpfr::mult(19.0, getPartialProd(4),
+                                   intermediatePrec),
+                        intermediatePrec),
+              maxPrec)};
+      constexpr const int lastTerm =
+          sizeof(terms) / sizeof(terms[0]) - 1;
+      mpfr::mpreal sum(terms[lastTerm]);
+      for(int i = lastTerm - 1; i >= 0; i--) {
+        sum += terms[i];
+      }
+      return fptype(sum);
     }
   }
 
@@ -309,8 +329,7 @@ class IntersectionResultantMulti
         i.intPos - i.otherIntPos);
     fptype centralDiff = centralDiffSign(i);
     bool cdSign =
-        MathFuncs::MathFuncs<mpfr::mpreal>::signbit(
-            centralDiff);
+        MathFuncs::MathFuncs<fptype>::signbit(centralDiff);
     /* If they're not on the same side of the center, the
      * result must be the sign of the central difference
      */
@@ -320,6 +339,7 @@ class IntersectionResultantMulti
       } else {
         return fptype(1.0);
       }
+    } else {
     }
     return fptype(NAN);
   }
