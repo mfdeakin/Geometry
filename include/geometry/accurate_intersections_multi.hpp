@@ -315,6 +315,9 @@ class IntersectionResultantMulti
       for(int i = lastTerm - 1; i >= 0; i--) {
         sum += terms[i];
       }
+      if(rootSign1 == 1) {
+        sum = -sum;
+      }
       return fptype(sum);
     }
   }
@@ -340,8 +343,27 @@ class IntersectionResultantMulti
         return fptype(1.0);
       }
     } else {
+      Polynomial<2, mpfr::mpreal> p1 = getLQIntPoly(),
+                                  p2 = i.getLQIntPoly();
+      mpfr::mpreal terms[] = {
+          /* a2 b1^2 */
+          mpfr::mult(p2.get(2),
+                     mpfr::sqr(p1.get(1), 2 * coeffPrec()),
+                     i.coeffPrec() + 2 * coeffPrec()),
+          /* -2 a1 b1 b2 */
+          mpfr::mult(-getPartialProd(5), p2.get(2) << 1,
+                     partialProdPrec() + i.coeffPrec()),
+          /* 4 a1^2 c2 */
+          mpfr::mult(getPartialProd(2), p2.get(0),
+                     partialProdPrec() + i.coeffPrec())};
+      constexpr const int lastTerm =
+          sizeof(terms) / sizeof(terms[0]) - 1;
+      mpfr::mpreal sum(terms[lastTerm]);
+      for(int i = lastTerm - 1; i >= 0; i--) {
+        sum += terms[i];
+      }
+      return fptype(sum);
     }
-    return fptype(NAN);
   }
 
   fptype accurateCompare_TwoRepeated(
